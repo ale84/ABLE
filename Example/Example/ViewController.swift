@@ -7,19 +7,19 @@
 //
 
 import UIKit
+import ABLE
 
 class ViewController: UIViewController {
 
+    var central: CentralManager = CentralManager(queue: DispatchQueue.main)
+    
     override func viewDidLoad() {
         super.viewDidLoad()
-        // Do any additional setup after loading the view, typically from a nib.
+        
+        central.wait(for: .poweredOn) { (central) in
+            print("ble state is \(self.central.bluetoothState)")
+        }
     }
-
-    override func didReceiveMemoryWarning() {
-        super.didReceiveMemoryWarning()
-        // Dispose of any resources that can be recreated.
-    }
-
 
 }
 

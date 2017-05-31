@@ -12,9 +12,9 @@ public class Logger {
     public class func debug(_ message:String? = nil, function: String = #function, file: String = #file, line: Int = #line) {
 #if DEBUG
         if let message = message {
-            Logger.debug("\(file):\(function):\(line): \(message)")
+            print("\(file):\(function):\(line): \(message)")
         } else {
-            Logger.debug("\(file):\(function):\(line)")
+            print("\(file):\(function):\(line)")
         }
 #endif
     }

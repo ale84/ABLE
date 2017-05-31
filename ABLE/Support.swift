@@ -9,7 +9,7 @@
 import Foundation
 import CoreBluetooth
 
-enum ManagerState: Int {
+public enum ManagerState: Int {
     case poweredOff
     case poweredOn
     case resetting
@@ -18,7 +18,7 @@ enum ManagerState: Int {
     case unsupported
     
     @available(iOS 10.0, *)
-    init(with state: CBManagerState) {
+    public init(with state: CBManagerState) {
         switch state {
         case .poweredOff:
             self = .poweredOff
@@ -36,7 +36,7 @@ enum ManagerState: Int {
     }
     
     // For iOS < 10 support.
-    init(with rawValue: Int) {
+    public init(with rawValue: Int) {
         switch rawValue {
         case 1:
             self = .resetting

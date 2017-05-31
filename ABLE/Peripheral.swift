@@ -48,9 +48,9 @@ public struct PeripheralAdvertisements {
     }
 }
 
-class Peripheral: NSObject {
+public class Peripheral: NSObject {
     
-    enum PeripheralError: Error {
+    public enum PeripheralError: Error {
         case timeoutReached
         case cbError(detail: Error)
     }
@@ -84,49 +84,49 @@ class Peripheral: NSObject {
     fileprivate (set) var cbPeripheral: CBPeripheral
 
     /// Connection name.
-    var name: String? {
+    public var name: String? {
         return cbPeripheral.name
     }
     
     /// Connection state.
-    var isConnected: Bool {
+    public var isConnected: Bool {
         return cbPeripheral.state == .connected
     }
     
-    var discoveredServices: [CBService] {
+    public var discoveredServices: [CBService] {
         return cbPeripheral.services ?? []
     }
     
-    var RSSI: Int
+    public var RSSI: Int
     
-    var state: CBPeripheralState {
+    public var state: CBPeripheralState {
         return cbPeripheral.state
     }
     
     public private(set) var advertisements: PeripheralAdvertisements
     
-    typealias ReadRSSICompletion = ((Result<Int>) -> Void)
+    public typealias ReadRSSICompletion = ((Result<Int>) -> Void)
     fileprivate var readRSSICompletion: ReadRSSICompletion?
     
-    typealias DiscoverServicesCompletion = ((Result<[CBService]>) -> Void)
+    public typealias DiscoverServicesCompletion = ((Result<[CBService]>) -> Void)
     fileprivate var discoverServicesAttempt: DiscoverServicesAttempt?
     
-    typealias DiscoverCharacteristicsCompletion = ((Result<[CBCharacteristic]>) -> Void)
+    public typealias DiscoverCharacteristicsCompletion = ((Result<[CBCharacteristic]>) -> Void)
     fileprivate var discoverCharacteristicsAttempt: DiscoverCharacteristicsAttempt?
     
-    typealias ReadCharacteristicCompletion = ((Result<Data>) -> Void)
+    public typealias ReadCharacteristicCompletion = ((Result<Data>) -> Void)
     fileprivate var readCharacteristicCompletion: ReadCharacteristicCompletion?
     
-    typealias WriteCharacteristicCompletion = ((Result<Void>) -> Void)
+    public typealias WriteCharacteristicCompletion = ((Result<Void>) -> Void)
     fileprivate var writeCharacteristicCompletion: WriteCharacteristicCompletion?
     
-    typealias SetNotifyUpdateStateCompletion = ((Result<Void>) -> Void)
+    public typealias SetNotifyUpdateStateCompletion = ((Result<Void>) -> Void)
     fileprivate var setNotifyUpdateStateCompletion: SetNotifyUpdateStateCompletion?
     
-    typealias SetNotifyUpdateValueCallback = ((Result<Data>) -> Void)
+    public typealias SetNotifyUpdateValueCallback = ((Result<Data>) -> Void)
     fileprivate var setNotifyUpdateValueCallback: SetNotifyUpdateValueCallback?
     
-    init(with peripheral: CBPeripheral, advertisements: [String: Any] = [:], RSSI: Int = 0) {
+    public init(with peripheral: CBPeripheral, advertisements: [String: Any] = [:], RSSI: Int = 0) {
         self.cbPeripheral = peripheral
         self.advertisements = PeripheralAdvertisements(advertisements: advertisements)
         self.RSSI = RSSI
@@ -134,12 +134,12 @@ class Peripheral: NSObject {
         cbPeripheral.delegate = self
     }
     
-    func readRSSI(with completion: @escaping ReadRSSICompletion) {
+    public func readRSSI(with completion: @escaping ReadRSSICompletion) {
         self.readRSSICompletion = completion
         cbPeripheral.readRSSI()
     }
     
-    func discoverServices(with uuid: [CBUUID], timeout: TimeInterval = 3, completion: @escaping DiscoverServicesCompletion) {
+    public func discoverServices(with uuid: [CBUUID], timeout: TimeInterval = 3, completion: @escaping DiscoverServicesCompletion) {
         discoverServicesAttempt?.invalidate()
         let timer = Timer.scheduledTimer(timeInterval: timeout, target: self, selector: #selector(handleDiscoverServicesTimeoutReached(timer:)), userInfo: nil, repeats: false)
         discoverServicesAttempt = DiscoverServicesAttempt(uuids: uuid, completion: completion, timer: timer)
@@ -147,7 +147,7 @@ class Peripheral: NSObject {
         Logger.debug("start discovering services: \(uuid), timeout: \(timeout)")
     }
     
-    func discoverCharacteristics(with uuid: [CBUUID], service: CBService, timeout: TimeInterval = 3, completion: @escaping DiscoverCharacteristicsCompletion) {
+    public func discoverCharacteristics(with uuid: [CBUUID], service: CBService, timeout: TimeInterval = 3, completion: @escaping DiscoverCharacteristicsCompletion) {
         discoverCharacteristicsAttempt?.invalidate()
         let timer = Timer.scheduledTimer(timeInterval: timeout, target: self, selector: #selector(handleDiscoverCharacteristicsTimeoutReached(timer:)), userInfo: nil, repeats: false)
         discoverCharacteristicsAttempt = DiscoverCharacteristicsAttempt(uuids: uuid, completion: completion, timer: timer)
@@ -155,28 +155,28 @@ class Peripheral: NSObject {
         Logger.debug("start discovering characteristics: \(uuid) from: \(service), timeout: \(timeout)")
     }
     
-    func service(for uuid: CBUUID) -> CBService? {
+    public func service(for uuid: CBUUID) -> CBService? {
         return cbPeripheral.services?.filter { $0.uuid == uuid }.first
     }
     
-    func characteristic(for uuid: CBUUID, service: CBService) -> CBCharacteristic? {
+    public func characteristic(for uuid: CBUUID, service: CBService) -> CBCharacteristic? {
         return service.characteristics?.filter { $0.uuid == uuid }.first
     }
     
-    func readValue(for characteristic: CBCharacteristic, completion: @escaping ReadCharacteristicCompletion) {
+    public func readValue(for characteristic: CBCharacteristic, completion: @escaping ReadCharacteristicCompletion) {
         self.readCharacteristicCompletion = completion
         cbPeripheral.readValue(for: characteristic)
     }
     
     // TODO: Vedere se aggiungere un timeout per le operazioni di write con response, per gestire casi in cui la periferica viene disconnessa prima che venga chiamato il metodo didWrite del delegato.
-    func write(_ data: Data, for characteristic: CBCharacteristic, type: CBCharacteristicWriteType, completion: @escaping WriteCharacteristicCompletion) {
+    public func write(_ data: Data, for characteristic: CBCharacteristic, type: CBCharacteristicWriteType, completion: @escaping WriteCharacteristicCompletion) {
         if type == .withResponse {
             writeCharacteristicCompletion = completion
         }
         cbPeripheral.writeValue(data, for: characteristic, type: type)
     }
     
-    func setNotifyValue(_ enabled: Bool, for characteristic: CBCharacteristic, updateState: @escaping SetNotifyUpdateStateCompletion, updateValue: @escaping SetNotifyUpdateValueCallback) {
+    public func setNotifyValue(_ enabled: Bool, for characteristic: CBCharacteristic, updateState: @escaping SetNotifyUpdateStateCompletion, updateValue: @escaping SetNotifyUpdateValueCallback) {
         setNotifyUpdateStateCompletion = updateState
         setNotifyUpdateValueCallback = updateValue
         Logger.debug("peripheral setting notyfy: \(enabled), for: \(characteristic)")
@@ -203,7 +203,7 @@ class Peripheral: NSObject {
 }
 
 extension Peripheral: CBPeripheralDelegate {
-    func peripheral(_ peripheral: CBPeripheral, didReadRSSI RSSI: NSNumber, error: Error?) {
+    public func peripheral(_ peripheral: CBPeripheral, didReadRSSI RSSI: NSNumber, error: Error?) {
         if let error = error {
             readRSSICompletion?(.failure(error))
         }
@@ -213,7 +213,7 @@ extension Peripheral: CBPeripheralDelegate {
         readRSSICompletion = nil
     }
     
-    func peripheral(_ peripheral: CBPeripheral, didDiscoverServices error: Error?) {
+    public func peripheral(_ peripheral: CBPeripheral, didDiscoverServices error: Error?) {
         if let attempt = discoverServicesAttempt {
             if let error = error {
                 Logger.debug("discover services failure: \(error)")
@@ -228,7 +228,7 @@ extension Peripheral: CBPeripheralDelegate {
         discoverServicesAttempt = nil
     }
     
-    func peripheral(_ peripheral: CBPeripheral, didDiscoverCharacteristicsFor service: CBService, error: Error?) {
+    public func peripheral(_ peripheral: CBPeripheral, didDiscoverCharacteristicsFor service: CBService, error: Error?) {
         if let attempt = discoverCharacteristicsAttempt {
             if let error = error {
                 Logger.debug("discover characteristics failure: \(error)")
@@ -243,7 +243,7 @@ extension Peripheral: CBPeripheralDelegate {
         discoverCharacteristicsAttempt = nil
     }
     
-    func peripheral(_ peripheral: CBPeripheral, didUpdateValueFor characteristic: CBCharacteristic, error: Error?) {
+    public func peripheral(_ peripheral: CBPeripheral, didUpdateValueFor characteristic: CBCharacteristic, error: Error?) {
         if let error = error {
             readCharacteristicCompletion?(.failure(PeripheralError.cbError(detail: error)))
             setNotifyUpdateValueCallback?(.failure(PeripheralError.cbError(detail: error)))
@@ -256,7 +256,7 @@ extension Peripheral: CBPeripheralDelegate {
         readCharacteristicCompletion = nil
     }
     
-    func peripheral(_ peripheral: CBPeripheral, didWriteValueFor characteristic: CBCharacteristic, error: Error?) {
+    public func peripheral(_ peripheral: CBPeripheral, didWriteValueFor characteristic: CBCharacteristic, error: Error?) {
         if let error = error {
             writeCharacteristicCompletion?(.failure(PeripheralError.cbError(detail: error)))
         }
@@ -266,7 +266,7 @@ extension Peripheral: CBPeripheralDelegate {
         writeCharacteristicCompletion = nil
     }
     
-    func peripheral(_ peripheral: CBPeripheral, didUpdateNotificationStateFor characteristic: CBCharacteristic, error: Error?) {
+    public func peripheral(_ peripheral: CBPeripheral, didUpdateNotificationStateFor characteristic: CBCharacteristic, error: Error?) {
         if let error = error {
             setNotifyUpdateStateCompletion?(.failure(PeripheralError.cbError(detail: error)))
         }
@@ -281,7 +281,7 @@ extension Peripheral: CBPeripheralDelegate {
 }
 
 extension Peripheral {
-    override var debugDescription: String {
+    override public var debugDescription: String {
         return name ?? "-"
     }
 }

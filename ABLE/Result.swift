@@ -18,7 +18,7 @@ public enum Result <T>{
     case success (T)
     case failure (Error)
     
-    func map<P>(_ f: (T) -> P) -> Result<P> {
+    public func map<P>(_ f: (T) -> P) -> Result<P> {
         switch self {
         case .success(let value):
             return .success(f(value))

@@ -11,7 +11,7 @@ import UIKit
 import CoreBluetooth
 
 /// BLE Manager delegate.
-protocol CentralManagerDelegate: class {
+public protocol CentralManagerDelegate: class {
     
     func didUpdateBluetoothState(_ state: CentralManager.BluetoothState, from central: CentralManager)
     func didDiscoverPeripheral(_ peripheral: Peripheral, from central: CentralManager)
@@ -24,17 +24,17 @@ protocol CentralManagerDelegate: class {
  - Definire livelli di accesso alle varie componenti.
  - Chiamare tutti i metodi della central sulla queue specificata su init.
  */
-class CentralManager: NSObject {
+public class CentralManager: NSObject {
     
     /// BLE error.
-    enum BLEError: Error {
+    public enum BLEError: Error {
         case connectionFailed(Error?)
         case bluetoothNotAvailable(CentralManager.BluetoothState)
         case connectionTimeoutReached
     }
     
     /// Bluetooth state. Mirrors CBManagerState of CoreBluetooth framework.
-    enum BluetoothState: Int {
+    public enum BluetoothState: Int {
         case poweredOff
         case poweredOn
         case resetting
@@ -43,7 +43,7 @@ class CentralManager: NSObject {
         case unsupported
         
         @available(iOS 10.0, *)
-        init(with state: CBManagerState) {
+        public init(with state: CBManagerState) {
             switch state {
             case .poweredOff:
                 self = .poweredOff
@@ -61,7 +61,7 @@ class CentralManager: NSObject {
         }
         
         // For iOS < 10 support.
-        init(with rawValue: Int) {
+        public init(with rawValue: Int) {
             switch rawValue {
             case 1:
                 self = .resetting
@@ -141,9 +141,9 @@ class CentralManager: NSObject {
     
     // MARK: Aliases.
     
-    typealias ConnectionCompletion = ((Result<Peripheral>) -> Void)
-    typealias ScanCompletion = ((Result<[Peripheral]>) -> Void)
-    typealias WaitForStateCompletion = ((BluetoothState) -> Void)
+    public typealias ConnectionCompletion = ((Result<Peripheral>) -> Void)
+    public typealias ScanCompletion = ((Result<[Peripheral]>) -> Void)
+    public typealias WaitForStateCompletion = ((BluetoothState) -> Void)
     
     // MARK: -.
     
@@ -154,25 +154,25 @@ class CentralManager: NSObject {
     
     fileprivate (set) var centralManager: CBCentralManager
     fileprivate (set) var centralQueue: DispatchQueue
-    weak var delegate: CentralManagerDelegate?
+    public weak var delegate: CentralManagerDelegate?
     
     fileprivate (set) var isScanning: Bool = false
     
     fileprivate (set) var knownPeripherals: Set<UUID> = []
     fileprivate (set) var foundPeripherals: Set<Peripheral> = []
     fileprivate (set) var cachedPeripherals: Set<Peripheral> = []
-    var allPeripherals: Set<Peripheral> {
+    public var allPeripherals: Set<Peripheral> {
         return foundPeripherals.union(cachedPeripherals)
     }
     
-    static var bluetoothChangedNotification: Notification.Name {
+    public static var bluetoothChangedNotification: Notification.Name {
         return ManagerNotification.bluetoothStateChanged.notificationName
     }
     
     fileprivate var waitForStateAttempt: WaitForStateAttempt?
     fileprivate var scanAttempt: ScanAttempt?
     
-    init(withDelegate delegate: CentralManagerDelegate? = nil, queue: DispatchQueue?, options: [String : Any]? = nil, userDefaults: UserDefaults = UserDefaults.standard) {
+    public init(withDelegate delegate: CentralManagerDelegate? = nil, queue: DispatchQueue?, options: [String : Any]? = nil, userDefaults: UserDefaults = UserDefaults.standard) {
         self.centralQueue = queue ?? DispatchQueue.main
         centralManager = CBCentralManager(delegate: nil, queue: queue, options: options)
         self.userDefaults = userDefaults
@@ -184,7 +184,7 @@ class CentralManager: NSObject {
     }
     
     /// Current bluetooth state.
-    var bluetoothState: BluetoothState {
+    public var bluetoothState: BluetoothState {
         if #available(iOS 10.0, *) {
             return BluetoothState(with: centralManager.state)
         }
@@ -194,7 +194,7 @@ class CentralManager: NSObject {
         }
     }
     
-    func wait(for state: BluetoothState, timeout: TimeInterval = 3, completion: @escaping WaitForStateCompletion) {
+    public func wait(for state: BluetoothState, timeout: TimeInterval = 3, completion: @escaping WaitForStateCompletion) {
         if bluetoothState == state {
             completion(bluetoothState)
             return
@@ -203,7 +203,7 @@ class CentralManager: NSObject {
         waitForStateAttempt = WaitForStateAttempt(state: state, completion: completion, timer: timer)
     }
     
-    func scanForPeripherals(withServices services: [CBUUID]? = nil, timeout:(interval: TimeInterval, completion: ScanCompletion)? = nil, options: [String : Any]? = nil) {
+    public func scanForPeripherals(withServices services: [CBUUID]? = nil, timeout:(interval: TimeInterval, completion: ScanCompletion)? = nil, options: [String : Any]? = nil) {
         scanAttempt?.timer.invalidate()
         scanAttempt = nil
         
@@ -225,7 +225,7 @@ class CentralManager: NSObject {
     }
     
     /// Stop the current BLE scan.
-    func stopScan() {
+    public func stopScan() {
         centralManager.stopScan()
         scanAttempt?.timer.invalidate()
         scanAttempt = nil
@@ -233,7 +233,7 @@ class CentralManager: NSObject {
         Logger.debug("ble scan stopped.")
     }
     
-    func connect(to peripheral: Peripheral, options: [String : Any]? = nil, attemptTimeout: TimeInterval? = nil, connectionTimeout: TimeInterval? = nil, completion: @escaping ConnectionCompletion) {
+    public func connect(to peripheral: Peripheral, options: [String : Any]? = nil, attemptTimeout: TimeInterval? = nil, connectionTimeout: TimeInterval? = nil, completion: @escaping ConnectionCompletion) {
         
         let connectionAttempt = ConnectionAttempt(peripheral: peripheral, completion: completion, connectionTimeout: connectionTimeout)
         connectionAttempts.update(with: connectionAttempt)
@@ -254,7 +254,7 @@ class CentralManager: NSObject {
         centralManager.connect(peripheral.cbPeripheral, options: options)
     }
     
-    func disconnect(from peripheral: Peripheral) {
+    public func disconnect(from peripheral: Peripheral) {
         if let connectionInfo = getConnectionInfo(for: peripheral) {
             connectionInfo.timer?.invalidate()
             connectionInfos.remove(connectionInfo)
@@ -344,7 +344,7 @@ extension CentralManager {
 }
 
 extension CentralManager: CBCentralManagerDelegate {
-    func centralManagerDidUpdateState(_ central: CBCentralManager) {
+    public func centralManagerDidUpdateState(_ central: CBCentralManager) {
         Logger.debug("ble updated state: \(bluetoothState)")
         delegate?.didUpdateBluetoothState(bluetoothState, from: self)
         NotificationCenter.default.post(name: ManagerNotification.bluetoothStateChanged.notificationName, object: self, userInfo: ["state": bluetoothState])
@@ -354,7 +354,7 @@ extension CentralManager: CBCentralManagerDelegate {
         }
     }
     
-    func centralManager(_ central: CBCentralManager, didDiscover peripheral: CBPeripheral, advertisementData: [String : Any], rssi RSSI: NSNumber) {
+    public func centralManager(_ central: CBCentralManager, didDiscover peripheral: CBPeripheral, advertisementData: [String : Any], rssi RSSI: NSNumber) {
         let peripheral = Peripheral(with: peripheral, advertisements: advertisementData, RSSI: RSSI.intValue)
         knownPeripherals.insert(peripheral.cbPeripheral.identifier)
         writeKnownPeripherals()
@@ -363,7 +363,7 @@ extension CentralManager: CBCentralManagerDelegate {
         }
     }
     
-    func centralManager(_ central: CBCentralManager, didConnect peripheral: CBPeripheral) {
+    public func centralManager(_ central: CBCentralManager, didConnect peripheral: CBPeripheral) {
         Logger.debug("ble did connect to peripheral: \(peripheral).")
         if let peripheral = self.peripheral(for: peripheral),
             let attempt = getConnectionAttempt(for: peripheral) {
@@ -373,7 +373,7 @@ extension CentralManager: CBCentralManagerDelegate {
         }
     }
     
-    func centralManager(_ central: CBCentralManager, didFailToConnect peripheral: CBPeripheral, error: Error?) {
+    public func centralManager(_ central: CBCentralManager, didFailToConnect peripheral: CBPeripheral, error: Error?) {
         knownPeripherals.remove(peripheral.identifier)
         writeKnownPeripherals()
         if let peripheral = self.peripheral(for: peripheral),
