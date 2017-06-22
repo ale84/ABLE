@@ -13,7 +13,7 @@ import CoreBluetooth
 /// BLE Manager delegate.
 public protocol CentralManagerDelegate: class {
     
-    func didUpdateBluetoothState(_ state: CentralManager.BluetoothState, from central: CentralManager)
+    func didUpdateBluetoothState(_ state: ManagerState, from central: CentralManager)
     func didDiscoverPeripheral(_ peripheral: Peripheral, from central: CentralManager)
 }
 
@@ -21,62 +21,15 @@ public protocol CentralManagerDelegate: class {
  - Supporto per retrieve di connessioni già connesse al sistema su inizialiazzazione.
  - Vedere come gestire possibilità di errore di connessione a periferica cachata dovuto a cambio di UUID della periferica.
  - Ampliare il delegato.
- - Definire livelli di accesso alle varie componenti.
- - Chiamare tutti i metodi della central sulla queue specificata su init.
+ - Vedere come usare DispatchQueue invece dei timer per le operazioni con timeout.
  */
 public class CentralManager: NSObject {
     
     /// BLE error.
     public enum BLEError: Error {
         case connectionFailed(Error?)
-        case bluetoothNotAvailable(CentralManager.BluetoothState)
+        case bluetoothNotAvailable(ManagerState)
         case connectionTimeoutReached
-    }
-    
-    /// Bluetooth state. Mirrors CBManagerState of CoreBluetooth framework.
-    public enum BluetoothState: Int {
-        case poweredOff
-        case poweredOn
-        case resetting
-        case unauthorized
-        case unknown
-        case unsupported
-        
-        @available(iOS 10.0, *)
-        public init(with state: CBManagerState) {
-            switch state {
-            case .poweredOff:
-                self = .poweredOff
-            case .poweredOn:
-                self = .poweredOn
-            case .resetting:
-                self = .resetting
-            case .unauthorized:
-                self = .unauthorized
-            case .unknown:
-                self = .unknown
-            case .unsupported:
-                self = .unsupported
-            }
-        }
-        
-        // For iOS < 10 support.
-        public init(with rawValue: Int) {
-            switch rawValue {
-            case 1:
-                self = .resetting
-            case 2:
-                self = .unsupported
-            case 3: // CBCentralManagerState.unauthorized :
-                self = .unauthorized
-            case 4: // CBCentralManagerState.poweredOff:
-                self = .poweredOff
-            case 5: //CBCentralManagerState.poweredOn:
-                self = .poweredOn
-            default:
-                self = .unknown
-            }
-        }
     }
     
     fileprivate enum ManagerNotification: String {
@@ -122,7 +75,7 @@ public class CentralManager: NSObject {
     }
     
     fileprivate struct WaitForStateAttempt {
-        var state: BluetoothState
+        var state: ManagerState
         var completion: WaitForStateCompletion
         var timer: Timer
         var isValid: Bool {
@@ -143,7 +96,7 @@ public class CentralManager: NSObject {
     
     public typealias ConnectionCompletion = ((Result<Peripheral>) -> Void)
     public typealias ScanCompletion = ((Result<[Peripheral]>) -> Void)
-    public typealias WaitForStateCompletion = ((BluetoothState) -> Void)
+    public typealias WaitForStateCompletion = ((ManagerState) -> Void)
     
     // MARK: -.
     
@@ -152,15 +105,15 @@ public class CentralManager: NSObject {
     fileprivate var connectionAttempts: Set<ConnectionAttempt> = []
     fileprivate var connectionInfos: Set<ConnectionInfo> = []
     
-    fileprivate (set) var centralManager: CBCentralManager
-    fileprivate (set) var centralQueue: DispatchQueue
+    public fileprivate (set) var cbCentralManager: CBCentralManager
+    public fileprivate (set) var centralQueue: DispatchQueue
     public weak var delegate: CentralManagerDelegate?
     
-    fileprivate (set) var isScanning: Bool = false
+    public fileprivate (set) var isScanning: Bool = false
     
-    fileprivate (set) var knownPeripherals: Set<UUID> = []
-    fileprivate (set) var foundPeripherals: Set<Peripheral> = []
-    fileprivate (set) var cachedPeripherals: Set<Peripheral> = []
+    public fileprivate (set) var knownPeripherals: Set<UUID> = []
+    public fileprivate (set) var foundPeripherals: Set<Peripheral> = []
+    public fileprivate (set) var cachedPeripherals: Set<Peripheral> = []
     public var allPeripherals: Set<Peripheral> {
         return foundPeripherals.union(cachedPeripherals)
     }
@@ -174,42 +127,42 @@ public class CentralManager: NSObject {
     
     public init(withDelegate delegate: CentralManagerDelegate? = nil, queue: DispatchQueue?, options: [String : Any]? = nil, userDefaults: UserDefaults = UserDefaults.standard) {
         self.centralQueue = queue ?? DispatchQueue.main
-        centralManager = CBCentralManager(delegate: nil, queue: queue, options: options)
+        cbCentralManager = CBCentralManager(delegate: nil, queue: queue, options: options)
         self.userDefaults = userDefaults
         self.delegate = delegate
         super.init()
         knownPeripherals = readKnownPeripherals()
-        cachedPeripherals = Set(centralManager.retrievePeripherals(withIdentifiers: Array(knownPeripherals)).map { Peripheral(with: $0) })
-        centralManager.delegate = self
+        cachedPeripherals = Set(cbCentralManager.retrievePeripherals(withIdentifiers: Array(knownPeripherals)).map { Peripheral(with: $0) })
+        cbCentralManager.delegate = self
     }
     
-    /// Current bluetooth state.
-    public var bluetoothState: BluetoothState {
+    public var state: ManagerState {
         if #available(iOS 10.0, *) {
-            return BluetoothState(with: centralManager.state)
+            return ManagerState(with: cbCentralManager.state)
         }
         else {
             // Fallback on earlier versions
-            return BluetoothState(with: centralManager.state.rawValue)
+            return ManagerState(with: cbCentralManager.state.rawValue)
         }
     }
     
-    public func wait(for state: BluetoothState, timeout: TimeInterval = 3, completion: @escaping WaitForStateCompletion) {
-        if bluetoothState == state {
-            completion(bluetoothState)
+    public func wait(for state: ManagerState, timeout: TimeInterval = 3, completion: @escaping WaitForStateCompletion) {
+        if self.state == state {
+            completion(self.state)
             return
         }
         let timer = Timer.scheduledTimer(timeInterval: timeout, target: self, selector: #selector(handleWaitStateTimeoutReached(_:)), userInfo: nil, repeats: false)
         waitForStateAttempt = WaitForStateAttempt(state: state, completion: completion, timer: timer)
     }
     
+    // TODO: Split the timeout parameter to allow trailing closure for the completion.
     public func scanForPeripherals(withServices services: [CBUUID]? = nil, timeout:(interval: TimeInterval, completion: ScanCompletion)? = nil, options: [String : Any]? = nil) {
         scanAttempt?.timer.invalidate()
         scanAttempt = nil
         
         Logger.debug("Attempt to start a new ble scan.")
-        guard centralManager.state == .poweredOn else {
-            timeout?.completion(.failure(BLEError.bluetoothNotAvailable(bluetoothState)))
+        guard cbCentralManager.state == .poweredOn else {
+            timeout?.completion(.failure(BLEError.bluetoothNotAvailable(state)))
             return
         }
         
@@ -219,14 +172,14 @@ public class CentralManager: NSObject {
             self.scanAttempt = scanAttempt
         }
         
-        centralManager.scanForPeripherals(withServices: services, options: options)
+        cbCentralManager.scanForPeripherals(withServices: services, options: options)
         isScanning = true
-        Logger.debug("ble scan started with services: \(services).")
+        Logger.debug("ble scan started with services: \(String(describing: services)).")
     }
     
     /// Stop the current BLE scan.
     public func stopScan() {
-        centralManager.stopScan()
+        cbCentralManager.stopScan()
         scanAttempt?.timer.invalidate()
         scanAttempt = nil
         isScanning = false
@@ -234,16 +187,15 @@ public class CentralManager: NSObject {
     }
     
     public func connect(to peripheral: Peripheral, options: [String : Any]? = nil, attemptTimeout: TimeInterval? = nil, connectionTimeout: TimeInterval? = nil, completion: @escaping ConnectionCompletion) {
-        
         let connectionAttempt = ConnectionAttempt(peripheral: peripheral, completion: completion, connectionTimeout: connectionTimeout)
         connectionAttempts.update(with: connectionAttempt)
         
         if let timeout = attemptTimeout {
-            delay(timeout) { [weak self] in
+            delay(timeout, queue: centralQueue) { [weak self] in
                 guard let strongSelf = self else {
                     return
                 }
-                if let attempt = self?.getConnectionAttempt(for: peripheral) {
+                if let attempt = strongSelf.getConnectionAttempt(for: peripheral) {
                     completion(.failure(BLEError.connectionTimeoutReached))
                     strongSelf.connectionAttempts.remove(attempt)
                     strongSelf.disconnect(from: peripheral)
@@ -251,7 +203,7 @@ public class CentralManager: NSObject {
             }
         }
         
-        centralManager.connect(peripheral.cbPeripheral, options: options)
+        cbCentralManager.connect(peripheral.cbPeripheral, options: options)
     }
     
     public func disconnect(from peripheral: Peripheral) {
@@ -259,7 +211,7 @@ public class CentralManager: NSObject {
             connectionInfo.timer?.invalidate()
             connectionInfos.remove(connectionInfo)
         }
-        centralManager.cancelPeripheralConnection(peripheral.cbPeripheral)
+        cbCentralManager.cancelPeripheralConnection(peripheral.cbPeripheral)
         Logger.debug("ble disconnected from peripheral: \(peripheral.cbPeripheral).")
     }
     
@@ -319,7 +271,7 @@ extension CentralManager {
     @objc fileprivate func handleWaitStateTimeoutReached(_ timer: Timer) {
         if let attempt = waitForStateAttempt, attempt.isValid {
             attempt.invalidate()
-            attempt.completion(bluetoothState)
+            attempt.completion(state)
         }
     }
     
@@ -336,20 +288,18 @@ extension CentralManager {
             attempt.timer.invalidate()
             stopScan()
             let connectionsArray = Array<Peripheral>(foundPeripherals)
-            centralQueue.async {
-                attempt.completion(.success(connectionsArray))
-            }
+            attempt.completion(.success(connectionsArray))
         }
     }
 }
 
 extension CentralManager: CBCentralManagerDelegate {
     public func centralManagerDidUpdateState(_ central: CBCentralManager) {
-        Logger.debug("ble updated state: \(bluetoothState)")
-        delegate?.didUpdateBluetoothState(bluetoothState, from: self)
-        NotificationCenter.default.post(name: ManagerNotification.bluetoothStateChanged.notificationName, object: self, userInfo: ["state": bluetoothState])
+        Logger.debug("ble updated state: \(state)")
+        delegate?.didUpdateBluetoothState(state, from: self)
+        NotificationCenter.default.post(name: ManagerNotification.bluetoothStateChanged.notificationName, object: self, userInfo: ["state": state])
         if let attempt = waitForStateAttempt, attempt.isValid {
-            attempt.completion(bluetoothState)
+            attempt.completion(state)
             attempt.invalidate()
         }
     }

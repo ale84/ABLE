@@ -189,7 +189,7 @@ extension PeripheralManager: CBPeripheralManagerDelegate {
     }
     
     public func peripheralManager(_ peripheral: CBPeripheralManager, didAdd service: CBService, error: Error?) {
-        if let attempt = addServiceAttempts.filter ({ $0.service.uuid.uuidString == service.uuid.uuidString }).first {
+        if let attempt = addServiceAttempts.filter({ $0.service.uuid.uuidString == service.uuid.uuidString }).first {
             if let error = error {
                 attempt.completion(.failure(PeripheralManagerError.cbError(error)))
             }

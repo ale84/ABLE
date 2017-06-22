@@ -81,7 +81,7 @@ public class Peripheral: NSObject {
         }
     }
     
-    fileprivate (set) var cbPeripheral: CBPeripheral
+    public fileprivate (set) var cbPeripheral: CBPeripheral
 
     /// Connection name.
     public var name: String? {
@@ -220,7 +220,7 @@ extension Peripheral: CBPeripheralDelegate {
                 attempt.completion(.failure(PeripheralError.cbError(detail: error)))
             }
             else {
-                Logger.debug("discover services success: \(peripheral.services)")
+                Logger.debug("discover services success: \(String(describing: peripheral.services))")
                 attempt.completion(.success(cbPeripheral.services ?? []))
             }
             attempt.invalidate()
@@ -235,7 +235,7 @@ extension Peripheral: CBPeripheralDelegate {
                 attempt.completion(.failure(PeripheralError.cbError(detail: error)))
             }
             else {
-                Logger.debug("discover characteristics success: \(service.characteristics)")
+                Logger.debug("discover characteristics success: \(String(describing: service.characteristics))")
                 attempt.completion(.success(service.characteristics ?? []))
             }
             attempt.invalidate()

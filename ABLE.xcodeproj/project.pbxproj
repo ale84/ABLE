@@ -12,9 +12,7 @@
 		606ECAC81EDEF131003BFA19 /* Peripheral.swift in Sources */ = {isa = PBXBuildFile; fileRef = 606ECAC41EDEF131003BFA19 /* Peripheral.swift */; };
 		606ECAC91EDEF131003BFA19 /* PeripheralManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 606ECAC51EDEF131003BFA19 /* PeripheralManager.swift */; };
 		606ECACA1EDEF131003BFA19 /* Support.swift in Sources */ = {isa = PBXBuildFile; fileRef = 606ECAC61EDEF131003BFA19 /* Support.swift */; };
-		606ECACC1EDEF13F003BFA19 /* Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 606ECACB1EDEF13F003BFA19 /* Utils.swift */; };
 		606ECACE1EDEF275003BFA19 /* Logger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 606ECACD1EDEF275003BFA19 /* Logger.swift */; };
-		606ECAD01EDEF302003BFA19 /* Result.swift in Sources */ = {isa = PBXBuildFile; fileRef = 606ECACF1EDEF302003BFA19 /* Result.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -25,9 +23,7 @@
 		606ECAC41EDEF131003BFA19 /* Peripheral.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; lineEnding = 0; path = Peripheral.swift; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.swift; };
 		606ECAC51EDEF131003BFA19 /* PeripheralManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; lineEnding = 0; path = PeripheralManager.swift; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.swift; };
 		606ECAC61EDEF131003BFA19 /* Support.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Support.swift; sourceTree = "<group>"; };
-		606ECACB1EDEF13F003BFA19 /* Utils.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Utils.swift; sourceTree = "<group>"; };
 		606ECACD1EDEF275003BFA19 /* Logger.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; lineEnding = 0; path = Logger.swift; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.swift; };
-		606ECACF1EDEF302003BFA19 /* Result.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Result.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -66,9 +62,7 @@
 				606ECACD1EDEF275003BFA19 /* Logger.swift */,
 				606ECAC41EDEF131003BFA19 /* Peripheral.swift */,
 				606ECAC51EDEF131003BFA19 /* PeripheralManager.swift */,
-				606ECACF1EDEF302003BFA19 /* Result.swift */,
 				606ECAC61EDEF131003BFA19 /* Support.swift */,
-				606ECACB1EDEF13F003BFA19 /* Utils.swift */,
 			);
 			path = ABLE;
 			sourceTree = "<group>";
@@ -156,11 +150,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				606ECACC1EDEF13F003BFA19 /* Utils.swift in Sources */,
 				606ECACE1EDEF275003BFA19 /* Logger.swift in Sources */,
 				606ECAC91EDEF131003BFA19 /* PeripheralManager.swift in Sources */,
 				606ECACA1EDEF131003BFA19 /* Support.swift in Sources */,
-				606ECAD01EDEF302003BFA19 /* Result.swift in Sources */,
 				606ECAC71EDEF131003BFA19 /* CentralManager.swift in Sources */,
 				606ECAC81EDEF131003BFA19 /* Peripheral.swift in Sources */,
 			);
@@ -330,6 +322,7 @@
 				606ECAC21EDEF101003BFA19 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
