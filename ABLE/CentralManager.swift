@@ -12,17 +12,10 @@ import CoreBluetooth
 
 /// BLE Manager delegate.
 public protocol CentralManagerDelegate: class {
-    
     func didUpdateBluetoothState(_ state: ManagerState, from central: CentralManager)
     func didDiscoverPeripheral(_ peripheral: Peripheral, from central: CentralManager)
 }
 
-/* TODO:
- - Supporto per retrieve di connessioni già connesse al sistema su inizialiazzazione.
- - Vedere come gestire possibilità di errore di connessione a periferica cachata dovuto a cambio di UUID della periferica.
- - Ampliare il delegato.
- - Vedere come usare DispatchQueue invece dei timer per le operazioni con timeout.
- */
 public class CentralManager: NSObject {
     
     /// BLE error.

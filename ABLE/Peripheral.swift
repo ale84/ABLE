@@ -126,7 +126,7 @@ public class Peripheral: NSObject {
     public typealias SetNotifyUpdateValueCallback = ((Result<Data>) -> Void)
     fileprivate var setNotifyUpdateValueCallback: SetNotifyUpdateValueCallback?
     
-    public init(with peripheral: CBPeripheral, advertisements: [String: Any] = [:], RSSI: Int = 0) {
+    public init(with peripheral: CBPeripheral, advertisements: [String : Any] = [:], RSSI: Int = 0) {
         self.cbPeripheral = peripheral
         self.advertisements = PeripheralAdvertisements(advertisements: advertisements)
         self.RSSI = RSSI
