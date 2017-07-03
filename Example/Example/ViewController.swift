@@ -13,33 +13,52 @@ import CoreBluetooth
 class ViewController: UIViewController {
 
     var central: CentralManager!
-    var customQueue: DispatchQueue = DispatchQueue(label: "com.ABLE.Example.customQueue")
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        central = CentralManager(queue: customQueue)
+        central = CentralManager(queue: DispatchQueue.main)
         
-        central.wait(for: .poweredOn) { (central) in
-            //print("ble state is \(self.central.bluetoothState)")
-            if #available(iOS 10.0, *) {
-                dispatchPrecondition(condition: .onQueue(self.customQueue))
-            }
-            else {
-                print("dispatchPrecondition is unavailable.")
+        // Wait for powered on state to begin using the central, specifying the desired timeout. You can also set yourself as delegate to receive all state change notification if you need to.
+        central.wait(for: .poweredOn, timeout: 6.0) { (state) in
+            guard state == .poweredOn else {
+                return
             }
             
-            self.central.scanForPeripherals(withServices: [CBUUID(string: "86433301-4227-4F53-BCCC-3DAD9DA9129C")], timeout: (interval: 10.0, completion: { result in
-                if #available(iOS 10.0, *) {
-                    dispatchPrecondition(condition: .onQueue(self.customQueue))
+            self.central.scanForPeripherals(withServices: nil, timeout: (interval: 6.0, completion: { result in
+                switch result {
+                case .success(let peripherals):
+                    print("found peripherals: \(peripherals)")
+                    // Connect to peripheral...
+                case .failure(let error):
+                    print("scan error: \(error)")
+                    // Handle error.
                 }
-                else {
-                    // Fallback on earlier versions
-                }
-                print("scan result: \(result)")
             }))
         }
+        
+        let peripheralManager = PeripheralManager(queue: DispatchQueue.main)
+        
+        peripheralManager.wait(for: .poweredOn, timeout: 6.0) { (state) in
+            guard state == .poweredOn else {
+                return
+            }
+            
+            let service = CBMutableService(type: CBUUID(string: "My service UUID."), primary: true)
+            peripheralManager.add(service) { (result) in
+                switch result {
+                case .success(let service):
+                    print("added service: \(service)")
+                    
+                    // Start advertising.
+                    peripheralManager.startAdvertising { (result) in
+                        print("advertising result: \(result)")
+                    }
+                case .failure(let error):
+                    print("add service failure: \(error)")
+                }
+            }
+        }
     }
-
 }
 
