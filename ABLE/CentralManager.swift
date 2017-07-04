@@ -148,7 +148,6 @@ public class CentralManager: NSObject {
         waitForStateAttempt = WaitForStateAttempt(state: state, completion: completion, timer: timer)
     }
     
-    // TODO: Split the timeout parameter to allow trailing closure for the completion.
     public func scanForPeripherals(withServices services: [CBUUID]? = nil, timeout:(interval: TimeInterval, completion: ScanCompletion)? = nil, options: [String : Any]? = nil) {
         scanAttempt?.timer.invalidate()
         scanAttempt = nil

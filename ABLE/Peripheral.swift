@@ -168,7 +168,6 @@ public class Peripheral: NSObject {
         cbPeripheral.readValue(for: characteristic)
     }
     
-    // TODO: Vedere se aggiungere un timeout per le operazioni di write con response, per gestire casi in cui la periferica viene disconnessa prima che venga chiamato il metodo didWrite del delegato.
     public func write(_ data: Data, for characteristic: CBCharacteristic, type: CBCharacteristicWriteType, completion: @escaping WriteCharacteristicCompletion) {
         if type == .withResponse {
             writeCharacteristicCompletion = completion

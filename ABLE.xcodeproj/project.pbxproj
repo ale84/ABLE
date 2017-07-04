@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		6058A7C61F0B946500D302E4 /* LICENSE in Resources */ = {isa = PBXBuildFile; fileRef = 6058A7C41F0B946500D302E4 /* LICENSE */; };
+		6058A7C71F0B946500D302E4 /* README.md in Sources */ = {isa = PBXBuildFile; fileRef = 6058A7C51F0B946500D302E4 /* README.md */; };
 		606ECABD1EDEF101003BFA19 /* ABLE.h in Headers */ = {isa = PBXBuildFile; fileRef = 606ECABB1EDEF101003BFA19 /* ABLE.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		606ECAC71EDEF131003BFA19 /* CentralManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 606ECAC31EDEF131003BFA19 /* CentralManager.swift */; };
 		606ECAC81EDEF131003BFA19 /* Peripheral.swift in Sources */ = {isa = PBXBuildFile; fileRef = 606ECAC41EDEF131003BFA19 /* Peripheral.swift */; };
@@ -16,6 +18,8 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		6058A7C41F0B946500D302E4 /* LICENSE */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = LICENSE; sourceTree = SOURCE_ROOT; };
+		6058A7C51F0B946500D302E4 /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = SOURCE_ROOT; };
 		606ECAB81EDEF101003BFA19 /* ABLE.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = ABLE.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		606ECABB1EDEF101003BFA19 /* ABLE.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ABLE.h; sourceTree = "<group>"; };
 		606ECABC1EDEF101003BFA19 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -56,6 +60,8 @@
 		606ECABA1EDEF101003BFA19 /* ABLE */ = {
 			isa = PBXGroup;
 			children = (
+				6058A7C41F0B946500D302E4 /* LICENSE */,
+				6058A7C51F0B946500D302E4 /* README.md */,
 				606ECABB1EDEF101003BFA19 /* ABLE.h */,
 				606ECABC1EDEF101003BFA19 /* Info.plist */,
 				606ECAC31EDEF131003BFA19 /* CentralManager.swift */,
@@ -140,6 +146,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				6058A7C61F0B946500D302E4 /* LICENSE in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -150,6 +157,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				6058A7C71F0B946500D302E4 /* README.md in Sources */,
 				606ECACE1EDEF275003BFA19 /* Logger.swift in Sources */,
 				606ECAC91EDEF131003BFA19 /* PeripheralManager.swift in Sources */,
 				606ECACA1EDEF131003BFA19 /* Support.swift in Sources */,
