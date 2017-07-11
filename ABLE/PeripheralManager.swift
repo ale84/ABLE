@@ -31,7 +31,7 @@ public class PeripheralManager: NSObject {
     
     // MARK: Nested types.
     
-    fileprivate struct WaitForStateAttempt {
+    private struct WaitForStateAttempt {
         var state: ManagerState
         var completion: WaitForStateCompletion
         var timer: Timer
@@ -44,7 +44,7 @@ public class PeripheralManager: NSObject {
         }
     }
     
-    fileprivate struct AddServiceAttempt: Hashable {
+    private struct AddServiceAttempt: Hashable {
         private (set) var service: CBMutableService
         private (set) var completion: AddServiceCompletion
         
@@ -59,10 +59,10 @@ public class PeripheralManager: NSObject {
 
     // MARK: Aliases.
 
-    public typealias WaitForStateCompletion = ((ManagerState) -> Void)
+    public typealias WaitForStateCompletion = ((ManagerState) -> (Void))
     public typealias AddServiceCompletion = ((Result<CBService>) -> Void)
-    public typealias StartAdvertisingCompletion = ((Result<Void>) -> Void)
-    public typealias ReadyToUpdateSubscribersCallback = ((Void) -> Void)
+    public typealias StartAdvertisingCompletion = ((Result<Void>) -> (Void))
+    public typealias ReadyToUpdateSubscribersCallback = (() -> Void)
     public typealias ReadRequestCallback = ((CBATTRequest) -> Void)
     public typealias WriteRequestsCallback = (([CBATTRequest]) -> Void)
     public typealias StateChangedCallback = ((ManagerState) -> Void)
@@ -71,14 +71,14 @@ public class PeripheralManager: NSObject {
 
     public weak var delegate: PeripheralManagerDelegate?
     
-    fileprivate var waitForStateAttempt: WaitForStateAttempt?
-    fileprivate var addServiceCompletion: AddServiceCompletion?
-    fileprivate var startAdvertisingCompletion: StartAdvertisingCompletion?
-    fileprivate var readyToUpdateCallback: ReadyToUpdateSubscribersCallback?
+    private var waitForStateAttempt: WaitForStateAttempt?
+    private var addServiceCompletion: AddServiceCompletion?
+    private var startAdvertisingCompletion: StartAdvertisingCompletion?
+    private var readyToUpdateCallback: ReadyToUpdateSubscribersCallback?
     
-    fileprivate var addServiceAttempts: Set<AddServiceAttempt> = []
+    private var addServiceAttempts: Set<AddServiceAttempt> = []
     
-    fileprivate (set) var cbPeripheralManager: CBPeripheralManager
+    private (set) var cbPeripheralManager: CBPeripheralManager
     
     public var readRequestCallback: ReadRequestCallback?
     public var writeRequestsCallback: WriteRequestsCallback?
@@ -168,7 +168,7 @@ public class PeripheralManager: NSObject {
 
 // MARK: Timers handling.
 extension PeripheralManager {
-    @objc fileprivate func handleWaitStateTimeoutReached(_ timer: Timer) {
+    @objc private func handleWaitStateTimeoutReached(_ timer: Timer) {
         if let attempt = waitForStateAttempt, attempt.isValid {
             attempt.invalidate()
             attempt.completion(state)
@@ -205,7 +205,7 @@ extension PeripheralManager: CBPeripheralManagerDelegate {
             startAdvertisingCompletion?(.failure(PeripheralManagerError.cbError(error)))
         }
         else {
-            startAdvertisingCompletion?(.success())
+            startAdvertisingCompletion?(.success(()))
         }
     }
     

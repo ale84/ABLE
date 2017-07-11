@@ -25,7 +25,7 @@ public class CentralManager: NSObject {
         case connectionTimeoutReached
     }
     
-    fileprivate enum ManagerNotification: String {
+    private enum ManagerNotification: String {
         case bluetoothStateChanged = "it.able.centralmanager.bluetoothstatechangednotification"
         
         var notificationName: Notification.Name {
@@ -33,16 +33,16 @@ public class CentralManager: NSObject {
         }
     }
     
-    fileprivate enum UserDefaultsKeys: String {
+    private enum UserDefaultsKeys: String {
         case knownPeripheral = "it.able.centralmanager.knownPeripheralKey"
     }
     
     // MARK: Nested types.
     
-    fileprivate struct ConnectionAttempt: Hashable {
+    private struct ConnectionAttempt: Hashable {
         private (set) var peripheral: Peripheral
         private (set) var completion: ConnectionCompletion
-        fileprivate var connectionTimeout: TimeInterval? = nil
+        private (set) var connectionTimeout: TimeInterval? = nil
         
         static func == (lhs: ConnectionAttempt, rhs: ConnectionAttempt) -> Bool {
             return lhs.peripheral.hashValue == rhs.peripheral.hashValue
@@ -53,21 +53,21 @@ public class CentralManager: NSObject {
         }
     }
     
-    fileprivate struct ConnectionInfo: Hashable {
-        fileprivate (set) var peripheral: Peripheral
-        fileprivate (set) var timer: Timer?
-        fileprivate (set) var startDate: Date
+    private struct ConnectionInfo: Hashable {
+        private (set) var peripheral: Peripheral
+        private (set) var timer: Timer?
+        private (set) var startDate: Date
         
         static func == (lhs: ConnectionInfo, rhs: ConnectionInfo) -> Bool {
             return lhs.peripheral.hashValue == rhs.peripheral.hashValue
         }
         
-        fileprivate var hashValue: Int {
+        var hashValue: Int {
             return peripheral.hashValue
         }
     }
     
-    fileprivate struct WaitForStateAttempt {
+    private struct WaitForStateAttempt {
         var state: ManagerState
         var completion: WaitForStateCompletion
         var timer: Timer
@@ -80,7 +80,7 @@ public class CentralManager: NSObject {
         }
     }
     
-    fileprivate struct ScanAttempt {
+    private struct ScanAttempt {
         var completion: ScanCompletion
         var timer: Timer
     }
@@ -93,20 +93,20 @@ public class CentralManager: NSObject {
     
     // MARK: -.
     
-    fileprivate var userDefaults: UserDefaults
+    private var userDefaults: UserDefaults
     
-    fileprivate var connectionAttempts: Set<ConnectionAttempt> = []
-    fileprivate var connectionInfos: Set<ConnectionInfo> = []
+    private var connectionAttempts: Set<ConnectionAttempt> = []
+    private var connectionInfos: Set<ConnectionInfo> = []
     
-    public fileprivate (set) var cbCentralManager: CBCentralManager
-    public fileprivate (set) var centralQueue: DispatchQueue
+    public private (set) var cbCentralManager: CBCentralManager
+    public private (set) var centralQueue: DispatchQueue
     public weak var delegate: CentralManagerDelegate?
     
-    public fileprivate (set) var isScanning: Bool = false
+    public private (set) var isScanning: Bool = false
     
-    public fileprivate (set) var knownPeripherals: Set<UUID> = []
-    public fileprivate (set) var foundPeripherals: Set<Peripheral> = []
-    public fileprivate (set) var cachedPeripherals: Set<Peripheral> = []
+    public private (set) var knownPeripherals: Set<UUID> = []
+    public private (set) var foundPeripherals: Set<Peripheral> = []
+    public private (set) var cachedPeripherals: Set<Peripheral> = []
     public var allPeripherals: Set<Peripheral> {
         return foundPeripherals.union(cachedPeripherals)
     }
@@ -115,8 +115,8 @@ public class CentralManager: NSObject {
         return ManagerNotification.bluetoothStateChanged.notificationName
     }
     
-    fileprivate var waitForStateAttempt: WaitForStateAttempt?
-    fileprivate var scanAttempt: ScanAttempt?
+    private var waitForStateAttempt: WaitForStateAttempt?
+    private var scanAttempt: ScanAttempt?
     
     public init(withDelegate delegate: CentralManagerDelegate? = nil, queue: DispatchQueue?, options: [String : Any]? = nil, userDefaults: UserDefaults = UserDefaults.standard) {
         self.centralQueue = queue ?? DispatchQueue.main
@@ -207,21 +207,21 @@ public class CentralManager: NSObject {
         Logger.debug("ble disconnected from peripheral: \(peripheral.cbPeripheral).")
     }
     
-    fileprivate func disconnectAll() {
+    private func disconnectAll() {
         Logger.debug("ble disconnect from all peripherals.")
         allPeripherals.forEach { disconnect(from: $0) }
     }
     
-    fileprivate func peripheral(for cbPeripheral: CBPeripheral) -> Peripheral? {
+    private func peripheral(for cbPeripheral: CBPeripheral) -> Peripheral? {
         return allPeripherals.filter { $0.cbPeripheral == cbPeripheral }.last
     }
     
-    fileprivate func writeKnownPeripherals() {
+    private func writeKnownPeripherals() {
         let uuidsArray = Array(knownPeripherals).map { $0.uuidString }
         userDefaults.set(uuidsArray, forKey: UserDefaultsKeys.knownPeripheral.rawValue)
     }
     
-    fileprivate func readKnownPeripherals() -> Set<UUID> {
+    private func readKnownPeripherals() -> Set<UUID> {
         let uuidStrings = userDefaults.stringArray(forKey: UserDefaultsKeys.knownPeripheral.rawValue) ?? []
         let uuids = Set(uuidStrings.map { UUID(uuidString: $0)! })
         return uuids
@@ -232,19 +232,19 @@ public class CentralManager: NSObject {
         disconnectAll()
     }
     
-    fileprivate func getConnectionAttempt(for peripheral: Peripheral) -> ConnectionAttempt? {
+    private func getConnectionAttempt(for peripheral: Peripheral) -> ConnectionAttempt? {
         return connectionAttempts.filter { $0.peripheral == peripheral }.last
     }
     
-    fileprivate func getConnectionInfo(for peripheral: Peripheral) -> ConnectionInfo? {
+    private func getConnectionInfo(for peripheral: Peripheral) -> ConnectionInfo? {
         return connectionInfos.filter { $0.peripheral == peripheral }.last
     }
     
-    fileprivate func getConnectionInfo(for timer: Timer) -> ConnectionInfo? {
+    private func getConnectionInfo(for timer: Timer) -> ConnectionInfo? {
         return connectionInfos.filter { $0.timer == timer }.last
     }
     
-    fileprivate func addConnectionInfo(for peripheral: Peripheral, timeout: TimeInterval?) {
+    private func addConnectionInfo(for peripheral: Peripheral, timeout: TimeInterval?) {
         if let existingConnectionInfo = getConnectionInfo(for: peripheral) {
             existingConnectionInfo.timer?.invalidate()
             connectionInfos.remove(existingConnectionInfo)
@@ -260,21 +260,21 @@ public class CentralManager: NSObject {
 
 // MARK: Timers handling.
 extension CentralManager {
-    @objc fileprivate func handleWaitStateTimeoutReached(_ timer: Timer) {
+    @objc private func handleWaitStateTimeoutReached(_ timer: Timer) {
         if let attempt = waitForStateAttempt, attempt.isValid {
             attempt.invalidate()
             attempt.completion(state)
         }
     }
     
-    @objc fileprivate func handleConnectionTimeoutReached(_ timer: Timer) {
+    @objc private func handleConnectionTimeoutReached(_ timer: Timer) {
         let connectionInfo = getConnectionInfo(for: timer)!
         connectionInfo.timer?.invalidate()
         connectionInfos.remove(connectionInfo)
         disconnect(from: connectionInfo.peripheral)
     }
     
-    @objc fileprivate func handleScanTimeoutReached(_ timer: Timer) {
+    @objc private func handleScanTimeoutReached(_ timer: Timer) {
         Logger.debug("ble scan timeout reached.")
         if let attempt = scanAttempt, attempt.timer.isValid {
             attempt.timer.invalidate()

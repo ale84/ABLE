@@ -55,7 +55,7 @@ public class Peripheral: NSObject {
         case cbError(detail: Error)
     }
     
-    fileprivate struct DiscoverServicesAttempt {
+    private struct DiscoverServicesAttempt {
         var uuids: [CBUUID]
         var completion: DiscoverServicesCompletion
         var timer: Timer
@@ -68,7 +68,7 @@ public class Peripheral: NSObject {
         }
     }
     
-    fileprivate struct DiscoverCharacteristicsAttempt {
+    private struct DiscoverCharacteristicsAttempt {
         var uuids: [CBUUID]
         var completion: DiscoverCharacteristicsCompletion
         var timer: Timer
@@ -81,7 +81,7 @@ public class Peripheral: NSObject {
         }
     }
     
-    public fileprivate (set) var cbPeripheral: CBPeripheral
+    public private (set) var cbPeripheral: CBPeripheral
 
     /// Connection name.
     public var name: String? {
@@ -106,25 +106,25 @@ public class Peripheral: NSObject {
     public private(set) var advertisements: PeripheralAdvertisements
     
     public typealias ReadRSSICompletion = ((Result<Int>) -> Void)
-    fileprivate var readRSSICompletion: ReadRSSICompletion?
+    private var readRSSICompletion: ReadRSSICompletion?
     
     public typealias DiscoverServicesCompletion = ((Result<[CBService]>) -> Void)
-    fileprivate var discoverServicesAttempt: DiscoverServicesAttempt?
+    private var discoverServicesAttempt: DiscoverServicesAttempt?
     
     public typealias DiscoverCharacteristicsCompletion = ((Result<[CBCharacteristic]>) -> Void)
-    fileprivate var discoverCharacteristicsAttempt: DiscoverCharacteristicsAttempt?
+    private var discoverCharacteristicsAttempt: DiscoverCharacteristicsAttempt?
     
     public typealias ReadCharacteristicCompletion = ((Result<Data>) -> Void)
-    fileprivate var readCharacteristicCompletion: ReadCharacteristicCompletion?
+    private var readCharacteristicCompletion: ReadCharacteristicCompletion?
     
     public typealias WriteCharacteristicCompletion = ((Result<Void>) -> Void)
-    fileprivate var writeCharacteristicCompletion: WriteCharacteristicCompletion?
+    private var writeCharacteristicCompletion: WriteCharacteristicCompletion?
     
     public typealias SetNotifyUpdateStateCompletion = ((Result<Void>) -> Void)
-    fileprivate var setNotifyUpdateStateCompletion: SetNotifyUpdateStateCompletion?
+    private var setNotifyUpdateStateCompletion: SetNotifyUpdateStateCompletion?
     
     public typealias SetNotifyUpdateValueCallback = ((Result<Data>) -> Void)
-    fileprivate var setNotifyUpdateValueCallback: SetNotifyUpdateValueCallback?
+    private var setNotifyUpdateValueCallback: SetNotifyUpdateValueCallback?
     
     public init(with peripheral: CBPeripheral, advertisements: [String : Any] = [:], RSSI: Int = 0) {
         self.cbPeripheral = peripheral
@@ -182,7 +182,7 @@ public class Peripheral: NSObject {
         cbPeripheral.setNotifyValue(enabled, for: characteristic)
     }
     
-    @objc fileprivate func handleDiscoverServicesTimeoutReached(timer: Timer) {
+    @objc private func handleDiscoverServicesTimeoutReached(timer: Timer) {
         Logger.debug("discover services timeout reached.")
         if let attempt = discoverServicesAttempt, attempt.isValid {
             attempt.completion(.failure(PeripheralError.timeoutReached))
@@ -191,7 +191,7 @@ public class Peripheral: NSObject {
         discoverServicesAttempt = nil
     }
     
-    @objc fileprivate func handleDiscoverCharacteristicsTimeoutReached(timer: Timer) {
+    @objc private func handleDiscoverCharacteristicsTimeoutReached(timer: Timer) {
         Logger.debug("discover characteristics timeout reached.")
         if let attempt = discoverCharacteristicsAttempt, attempt.isValid {
             attempt.completion(.failure(PeripheralError.timeoutReached))
@@ -260,7 +260,7 @@ extension Peripheral: CBPeripheralDelegate {
             writeCharacteristicCompletion?(.failure(PeripheralError.cbError(detail: error)))
         }
         else {
-            writeCharacteristicCompletion?(.success())
+            writeCharacteristicCompletion?(.success(()))
         }
         writeCharacteristicCompletion = nil
     }
@@ -270,7 +270,7 @@ extension Peripheral: CBPeripheralDelegate {
             setNotifyUpdateStateCompletion?(.failure(PeripheralError.cbError(detail: error)))
         }
         else {
-            setNotifyUpdateStateCompletion?(.success())
+            setNotifyUpdateStateCompletion?(.success(()))
             if characteristic.isNotifying == false {
                 setNotifyUpdateValueCallback = nil
             }
