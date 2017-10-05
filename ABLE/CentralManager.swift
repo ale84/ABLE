@@ -39,10 +39,16 @@ public class CentralManager: NSObject {
     
     // MARK: Nested types.
     
-    private struct ConnectionAttempt: Hashable {
+    private class ConnectionAttempt: Hashable {
         private (set) var peripheral: Peripheral
         private (set) var completion: ConnectionCompletion
         private (set) var connectionTimeout: TimeInterval? = nil
+        
+        init(with peripheral: Peripheral, connectionTimeout: TimeInterval? = nil, completion: @escaping ConnectionCompletion) {
+            self.peripheral = peripheral
+            self.completion = completion
+            self.connectionTimeout = connectionTimeout
+        }
         
         static func == (lhs: ConnectionAttempt, rhs: ConnectionAttempt) -> Bool {
             return lhs.peripheral == rhs.peripheral
@@ -194,7 +200,7 @@ public class CentralManager: NSObject {
     }
     
     public func connect(to peripheral: Peripheral, options: [String : Any]? = nil, attemptTimeout: TimeInterval? = nil, connectionTimeout: TimeInterval? = nil, completion: @escaping ConnectionCompletion) {
-        let connectionAttempt = ConnectionAttempt(peripheral: peripheral, completion: completion, connectionTimeout: connectionTimeout)
+        let connectionAttempt = ConnectionAttempt(with: peripheral, connectionTimeout: connectionTimeout, completion: completion)
         connectionAttempts.update(with: connectionAttempt)
         
         if let timeout = attemptTimeout {
@@ -202,7 +208,7 @@ public class CentralManager: NSObject {
                 guard let strongSelf = self else {
                     return
                 }
-                if let attempt = strongSelf.getConnectionAttempt(for: peripheral) {
+                if let attempt = strongSelf.connectionAttempts.filter({ $0 === connectionAttempt }).last {
                     completion(.failure(BLEError.connectionTimeoutReached))
                     strongSelf.connectionAttempts.remove(attempt)
                     strongSelf.disconnect(from: peripheral)
@@ -253,11 +259,11 @@ public class CentralManager: NSObject {
     }
     
     private func getConnectionAttempt(for peripheral: Peripheral) -> ConnectionAttempt? {
-        return connectionAttempts.filter { $0.peripheral == peripheral }.last
+        return connectionAttempts.filter { $0.peripheral === peripheral }.last
     }
     
     private func getDisconnectionRequest(for peripheral: Peripheral) -> DisconnectionRequest? {
-        return disconnectionRequests.filter { $0.peripheral == peripheral }.last
+        return disconnectionRequests.filter { $0.peripheral === peripheral }.last
     }
     
     private func getConnectionInfo(for peripheral: Peripheral) -> ConnectionInfo? {

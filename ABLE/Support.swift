@@ -61,7 +61,7 @@ public enum ManagerState: Int {
 ///   - closure: A closure.
 func delay(_ delay:Double, queue: DispatchQueue = DispatchQueue.main, closure:@escaping ()->()) {
     queue.asyncAfter(
-        deadline: DispatchTime.now() + Double(Int64(delay * Double(NSEC_PER_SEC))) / Double(NSEC_PER_SEC), execute: closure)
+        deadline: .now() + delay, execute: closure)
 }
 
 /**
