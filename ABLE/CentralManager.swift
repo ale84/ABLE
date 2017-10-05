@@ -45,7 +45,20 @@ public class CentralManager: NSObject {
         private (set) var connectionTimeout: TimeInterval? = nil
         
         static func == (lhs: ConnectionAttempt, rhs: ConnectionAttempt) -> Bool {
-            return lhs.peripheral.hashValue == rhs.peripheral.hashValue
+            return lhs.peripheral == rhs.peripheral
+        }
+        
+        var hashValue: Int {
+            return peripheral.hashValue
+        }
+    }
+    
+    private struct DisconnectionRequest: Hashable {
+        private (set) var peripheral: Peripheral
+        private (set) var completion: DisconnectionCompletion
+        
+        static func == (lhs: DisconnectionRequest, rhs: DisconnectionRequest) -> Bool {
+            return lhs.peripheral == rhs.peripheral
         }
         
         var hashValue: Int {
@@ -59,7 +72,7 @@ public class CentralManager: NSObject {
         private (set) var startDate: Date
         
         static func == (lhs: ConnectionInfo, rhs: ConnectionInfo) -> Bool {
-            return lhs.peripheral.hashValue == rhs.peripheral.hashValue
+            return lhs.peripheral == rhs.peripheral
         }
         
         var hashValue: Int {
@@ -90,12 +103,14 @@ public class CentralManager: NSObject {
     public typealias ConnectionCompletion = ((Result<Peripheral>) -> Void)
     public typealias ScanCompletion = ((Result<[Peripheral]>) -> Void)
     public typealias WaitForStateCompletion = ((ManagerState) -> Void)
+    public typealias DisconnectionCompletion = ((Peripheral) -> Void)
     
     // MARK: -.
     
     private var userDefaults: UserDefaults
     
     private var connectionAttempts: Set<ConnectionAttempt> = []
+    private var disconnectionRequests: Set<DisconnectionRequest> = []
     private var connectionInfos: Set<ConnectionInfo> = []
     
     public private (set) var cbCentralManager: CBCentralManager
@@ -198,11 +213,16 @@ public class CentralManager: NSObject {
         cbCentralManager.connect(peripheral.cbPeripheral, options: options)
     }
     
-    public func disconnect(from peripheral: Peripheral) {
+    public func disconnect(from peripheral: Peripheral, completion: DisconnectionCompletion? = nil) {
+        if let completion = completion {
+            let disconnectionRequest = DisconnectionRequest(peripheral: peripheral, completion: completion)
+            disconnectionRequests.update(with: disconnectionRequest)
+        }
         if let connectionInfo = getConnectionInfo(for: peripheral) {
             connectionInfo.timer?.invalidate()
             connectionInfos.remove(connectionInfo)
         }
+        
         cbCentralManager.cancelPeripheralConnection(peripheral.cbPeripheral)
         Logger.debug("ble disconnected from peripheral: \(peripheral.cbPeripheral).")
     }
@@ -234,6 +254,10 @@ public class CentralManager: NSObject {
     
     private func getConnectionAttempt(for peripheral: Peripheral) -> ConnectionAttempt? {
         return connectionAttempts.filter { $0.peripheral == peripheral }.last
+    }
+    
+    private func getDisconnectionRequest(for peripheral: Peripheral) -> DisconnectionRequest? {
+        return disconnectionRequests.filter { $0.peripheral == peripheral }.last
     }
     
     private func getConnectionInfo(for peripheral: Peripheral) -> ConnectionInfo? {
@@ -322,6 +346,14 @@ extension CentralManager: CBCentralManagerDelegate {
             let attempt = getConnectionAttempt(for: peripheral) {
             connectionAttempts.remove(attempt)
             attempt.completion(.failure(BLEError.connectionFailed(error)))
+        }
+    }
+    
+    public func centralManager(_ central: CBCentralManager, didDisconnectPeripheral peripheral: CBPeripheral, error: Error?) {
+        if let peripheral = self.peripheral(for: peripheral),
+            let attempt = getDisconnectionRequest(for: peripheral) {
+            disconnectionRequests.remove(attempt)
+            attempt.completion(peripheral)
         }
     }
 }

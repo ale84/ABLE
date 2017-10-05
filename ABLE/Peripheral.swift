@@ -201,6 +201,21 @@ public class Peripheral: NSObject {
     }
 }
 
+extension Peripheral {
+    override public var hash: Int {
+        return cbPeripheral.identifier.hashValue
+    }
+    
+    override public func isEqual(_ object: Any?) -> Bool {
+        if let otherPeripheral = object as? Peripheral {
+            return cbPeripheral.identifier.uuidString == otherPeripheral.cbPeripheral.identifier.uuidString
+        }
+        else {
+            return false
+        }
+    }
+}
+
 extension Peripheral: CBPeripheralDelegate {
     public func peripheral(_ peripheral: CBPeripheral, didReadRSSI RSSI: NSNumber, error: Error?) {
         if let error = error {
