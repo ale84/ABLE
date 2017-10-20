@@ -182,6 +182,10 @@ public class Peripheral: NSObject {
         cbPeripheral.setNotifyValue(enabled, for: characteristic)
     }
     
+    public func maximumWriteValueLength(for type: CBCharacteristicWriteType) -> Int {
+        return cbPeripheral.maximumWriteValueLength(for: type)
+    }
+    
     @objc private func handleDiscoverServicesTimeoutReached(timer: Timer) {
         Logger.debug("discover services timeout reached.")
         if let attempt = discoverServicesAttempt, attempt.isValid {
