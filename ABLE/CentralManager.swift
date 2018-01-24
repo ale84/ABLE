@@ -86,7 +86,7 @@ public class CentralManager: NSObject {
         }
     }
     
-    private struct WaitForStateAttempt {
+    private struct WaitForStateAttempt: Hashable {
         var state: ManagerState
         var completion: WaitForStateCompletion
         var timer: Timer
@@ -96,6 +96,14 @@ public class CentralManager: NSObject {
         
         func invalidate() {
             timer.invalidate()
+        }
+        
+        static func == (lhs: WaitForStateAttempt, rhs: WaitForStateAttempt) -> Bool {
+            return lhs.timer == rhs.timer
+        }
+        
+        var hashValue: Int {
+            return timer.hashValue
         }
     }
     
@@ -118,6 +126,7 @@ public class CentralManager: NSObject {
     private var connectionAttempts: Set<ConnectionAttempt> = []
     private var disconnectionRequests: Set<DisconnectionRequest> = []
     private var connectionInfos: Set<ConnectionInfo> = []
+    private var waitForStateAttempts: Set<WaitForStateAttempt> = []
     
     public private (set) var cbCentralManager: CBCentralManager
     public private (set) var centralQueue: DispatchQueue
@@ -136,7 +145,6 @@ public class CentralManager: NSObject {
         return ManagerNotification.bluetoothStateChanged.notificationName
     }
     
-    private var waitForStateAttempt: WaitForStateAttempt?
     private var scanAttempt: ScanAttempt?
     
     public init(withDelegate delegate: CentralManagerDelegate? = nil, queue: DispatchQueue?, options: [String : Any]? = nil, userDefaults: UserDefaults = UserDefaults.standard) {
@@ -166,7 +174,8 @@ public class CentralManager: NSObject {
             return
         }
         let timer = Timer.scheduledTimer(timeInterval: timeout, target: self, selector: #selector(handleWaitStateTimeoutReached(_:)), userInfo: nil, repeats: false)
-        waitForStateAttempt = WaitForStateAttempt(state: state, completion: completion, timer: timer)
+        let waitForStateAttempt = WaitForStateAttempt(state: state, completion: completion, timer: timer)
+        waitForStateAttempts.update(with: waitForStateAttempt)
     }
     
     public func scanForPeripherals(withServices services: [CBUUID]? = nil, timeout:(interval: TimeInterval, completion: ScanCompletion)? = nil, options: [String : Any]? = nil) {
@@ -274,6 +283,10 @@ public class CentralManager: NSObject {
         return connectionInfos.filter { $0.timer == timer }.last
     }
     
+    private func getWaitForStateAttempt(for timer: Timer) -> WaitForStateAttempt? {
+        return waitForStateAttempts.filter { $0.timer == timer }.last
+    }
+    
     private func addConnectionInfo(for peripheral: Peripheral, timeout: TimeInterval?) {
         if let existingConnectionInfo = getConnectionInfo(for: peripheral) {
             existingConnectionInfo.timer?.invalidate()
@@ -291,7 +304,7 @@ public class CentralManager: NSObject {
 // MARK: Timers handling.
 extension CentralManager {
     @objc private func handleWaitStateTimeoutReached(_ timer: Timer) {
-        if let attempt = waitForStateAttempt, attempt.isValid {
+        if let attempt = getWaitForStateAttempt(for: timer), attempt.isValid {
             attempt.invalidate()
             attempt.completion(state)
         }
@@ -320,9 +333,9 @@ extension CentralManager: CBCentralManagerDelegate {
         Logger.debug("ble updated state: \(state)")
         delegate?.didUpdateBluetoothState(state, from: self)
         NotificationCenter.default.post(name: ManagerNotification.bluetoothStateChanged.notificationName, object: self, userInfo: ["state": state])
-        if let attempt = waitForStateAttempt, attempt.isValid {
-            attempt.completion(state)
-            attempt.invalidate()
+        waitForStateAttempts.filter({ $0.isValid }).forEach {
+            $0.completion(state)
+            $0.invalidate()
         }
     }
     
