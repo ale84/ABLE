@@ -168,6 +168,10 @@ public class CentralManager: NSObject {
         }
     }
     
+    public func waitForPoweredOn(withTimeout timeout: TimeInterval = 3, completion: @escaping WaitForStateCompletion) {
+        wait(for: .poweredOn, timeout: timeout, completion: completion)
+    }
+    
     public func wait(for state: ManagerState, timeout: TimeInterval = 3, completion: @escaping WaitForStateCompletion) {
         if self.state == state {
             completion(self.state)
@@ -304,9 +308,13 @@ public class CentralManager: NSObject {
 // MARK: Timers handling.
 extension CentralManager {
     @objc private func handleWaitStateTimeoutReached(_ timer: Timer) {
+        Logger.debug("ble wait for state timeout reached.")
         if let attempt = getWaitForStateAttempt(for: timer), attempt.isValid {
             attempt.invalidate()
             attempt.completion(state)
+            waitForStateAttempts.remove(attempt)
+            Logger.debug("Invalidated wait for state attempt: \(attempt).")
+            Logger.debug("Wait for state attempts: \(waitForStateAttempts).")
         }
     }
     
@@ -333,10 +341,17 @@ extension CentralManager: CBCentralManagerDelegate {
         Logger.debug("ble updated state: \(state)")
         delegate?.didUpdateBluetoothState(state, from: self)
         NotificationCenter.default.post(name: ManagerNotification.bluetoothStateChanged.notificationName, object: self, userInfo: ["state": state])
-        waitForStateAttempts.filter({ $0.isValid }).forEach {
+        
+        var toRemove: Set<WaitForStateAttempt> = []
+        waitForStateAttempts.filter({ $0.isValid && $0.state == state }).forEach {
+            Logger.debug("Wait for state attempt success.")
             $0.completion(state)
             $0.invalidate()
+            toRemove.insert($0)
+            Logger.debug("Invalidated wait for state attempt: \($0).")
         }
+        waitForStateAttempts.subtract(toRemove)
+        Logger.debug("Wait for state attempts: \(waitForStateAttempts).")
     }
     
     public func centralManager(_ central: CBCentralManager, didDiscover peripheral: CBPeripheral, advertisementData: [String : Any], rssi RSSI: NSNumber) {

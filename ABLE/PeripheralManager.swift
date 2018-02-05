@@ -31,7 +31,7 @@ public class PeripheralManager: NSObject {
     
     // MARK: Nested types.
     
-    private struct WaitForStateAttempt {
+    struct WaitForStateAttempt: Hashable {
         var state: ManagerState
         var completion: WaitForStateCompletion
         var timer: Timer
@@ -41,6 +41,14 @@ public class PeripheralManager: NSObject {
         
         func invalidate() {
             timer.invalidate()
+        }
+        
+        static func == (lhs: WaitForStateAttempt, rhs: WaitForStateAttempt) -> Bool {
+            return lhs.timer == rhs.timer
+        }
+        
+        var hashValue: Int {
+            return timer.hashValue
         }
     }
     
@@ -71,7 +79,7 @@ public class PeripheralManager: NSObject {
 
     public weak var delegate: PeripheralManagerDelegate?
     
-    private var waitForStateAttempt: WaitForStateAttempt?
+    private var waitForStateAttempts: Set<WaitForStateAttempt> = []
     private var addServiceCompletion: AddServiceCompletion?
     private var startAdvertisingCompletion: StartAdvertisingCompletion?
     private var readyToUpdateCallback: ReadyToUpdateSubscribersCallback?
@@ -104,13 +112,18 @@ public class PeripheralManager: NSObject {
         cbPeripheralManager.delegate = self
     }
     
+    public func waitForPoweredOn(withTimeout timeout: TimeInterval = 3, completion: @escaping WaitForStateCompletion) {
+        wait(for: .poweredOn, timeout: timeout, completion: completion)
+    }
+    
     public func wait(for state: ManagerState, timeout: TimeInterval = 3, completion: @escaping WaitForStateCompletion) {
         if state == self.state {
             completion(state)
             return
         }
         let timer = Timer.scheduledTimer(timeInterval: timeout, target: self, selector: #selector(handleWaitStateTimeoutReached(_:)), userInfo: nil, repeats: false)
-        waitForStateAttempt = WaitForStateAttempt(state: state, completion: completion, timer: timer)
+        let waitForStateAttempt = WaitForStateAttempt(state: state, completion: completion, timer: timer)
+        waitForStateAttempts.update(with: waitForStateAttempt)
     }
     
     public class func authorizationStatus() -> CBPeripheralManagerAuthorizationStatus {
@@ -164,14 +177,24 @@ public class PeripheralManager: NSObject {
     public func setDesiredConnectionLatency(_ latency: CBPeripheralManagerConnectionLatency, for central: CBCentral) {
         cbPeripheralManager.setDesiredConnectionLatency(latency, for: central)
     }
+    
+    // MARK: Utilities
+    
+    private func getWaitForStateAttempt(for timer: Timer) -> WaitForStateAttempt? {
+        return waitForStateAttempts.filter { $0.timer == timer }.last
+    }
 }
 
 // MARK: Timers handling.
 extension PeripheralManager {
     @objc private func handleWaitStateTimeoutReached(_ timer: Timer) {
-        if let attempt = waitForStateAttempt, attempt.isValid {
+        Logger.debug("ble wait for state timeout reached.")
+        if let attempt = getWaitForStateAttempt(for: timer), attempt.isValid {
             attempt.invalidate()
             attempt.completion(state)
+            waitForStateAttempts.remove(attempt)
+            Logger.debug("Invalidated wait for state attempt: \(attempt).")
+            Logger.debug("Wait for state attempts: \(waitForStateAttempts).")
         }
     }
 }
@@ -182,10 +205,17 @@ extension PeripheralManager: CBPeripheralManagerDelegate {
         stateChangedCallback?(state)
         delegate?.didUpdateState(state, from: self)
         NotificationCenter.default.post(name: PeripheralManagerNotification.stateChanged.notificationName, object: self, userInfo: ["state": state])
-        if let attempt = waitForStateAttempt, attempt.isValid {
-            attempt.completion(state)
-            attempt.invalidate()
+        
+        var toRemove: Set<WaitForStateAttempt> = []
+        waitForStateAttempts.filter({ $0.isValid && $0.state == state }).forEach {
+            Logger.debug("Wait for state attempt success.")
+            $0.completion(state)
+            $0.invalidate()
+            toRemove.insert($0)
+            Logger.debug("Invalidated wait for state attempt: \($0).")
         }
+        waitForStateAttempts.subtract(toRemove)
+        Logger.debug("Wait for state attempts: \(waitForStateAttempts).")
     }
     
     public func peripheralManager(_ peripheral: CBPeripheralManager, didAdd service: CBService, error: Error?) {
