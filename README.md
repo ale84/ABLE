@@ -18,7 +18,7 @@ This is an example of how you can use a CentralManager to perform Central role t
 central = CentralManager(queue: DispatchQueue.main)
 
 // Wait for powered on state to begin using the central, specifying the desired timeout. You can also set yourself as delegate to receive all state change notification if you need to.
-central.wait(for: .poweredOn, timeout: 6.0) { (state) in
+central.waitForPoweredOn(withTimeout: 6.0) { (state) in
     guard state == .poweredOn else {
         return
     }
@@ -40,12 +40,12 @@ This is an example of how you can use a PeripheralManager to perform Peripheral 
 ```swift
 let peripheralManager = PeripheralManager(queue: DispatchQueue.main)
 
-peripheralManager.wait(for: .poweredOn, timeout: 6.0) { (state) in
+peripheralManager.waitForPoweredOn(withTimeout: 6.0) { (state) in
     guard state == .poweredOn else {
         return
     }
 
-    let service = CBMutableService(type: CBUUID(string: "My service UUID."), primary: true)
+    let service = CBMutableService(type: CBUUID(string: "DE036077-4293-4768-B9EF-66429B46A3CB"), primary: true)
     peripheralManager.add(service) { (result) in
         switch result {
         case .success(let service):
