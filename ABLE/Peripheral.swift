@@ -132,6 +132,7 @@ public class Peripheral: NSObject {
         self.RSSI = RSSI
         super.init()
         cbPeripheral.delegate = self
+        Logger.debug("peripheral delegate set. \(String(describing: cbPeripheral.delegate))")
     }
     
     public func readRSSI(with completion: @escaping ReadRSSICompletion) {
@@ -295,6 +296,10 @@ extension Peripheral: CBPeripheralDelegate {
             }
         }
         setNotifyUpdateStateCompletion = nil
+    }
+    
+    public func peripheral(_ peripheral: CBPeripheral, didModifyServices invalidatedServices: [CBService]) {
+        Logger.debug("peripheral did modify services. Invalidated services: \(invalidatedServices)")
     }
 }
 

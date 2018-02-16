@@ -153,8 +153,7 @@ public class CentralManager: NSObject {
         self.userDefaults = userDefaults
         self.delegate = delegate
         super.init()
-        knownPeripherals = readKnownPeripherals()
-        cachedPeripherals = Set(cbCentralManager.retrievePeripherals(withIdentifiers: Array(knownPeripherals)).map { Peripheral(with: $0) })
+        retrieveCachedPeripherals()
         cbCentralManager.delegate = self
     }
     
@@ -303,6 +302,22 @@ public class CentralManager: NSObject {
         let connectionInfo = ConnectionInfo(peripheral: peripheral, timer: timer, startDate: Date())
         connectionInfos.insert(connectionInfo)
     }
+    
+    private func clearAllPeripherals() {
+        foundPeripherals = []
+        cachedPeripherals = []
+    }
+    
+    private func retrieveCachedPeripherals() {
+        knownPeripherals = readKnownPeripherals()
+        cachedPeripherals = Set(cbCentralManager.retrievePeripherals(withIdentifiers: Array(knownPeripherals)).map { Peripheral(with: $0) })
+    }
+    
+    private func reset() {
+        Logger.debug("reset central initiated.")
+        clearAllPeripherals()
+        retrieveCachedPeripherals()
+    }
 }
 
 // MARK: Timers handling.
@@ -355,12 +370,19 @@ extension CentralManager: CBCentralManagerDelegate {
     }
     
     public func centralManager(_ central: CBCentralManager, didDiscover peripheral: CBPeripheral, advertisementData: [String : Any], rssi RSSI: NSNumber) {
+        Logger.debug("central discovered peripheral: \(peripheral)")
+        
         let peripheral = Peripheral(with: peripheral, advertisements: advertisementData, RSSI: RSSI.intValue)
+        
         knownPeripherals.insert(peripheral.cbPeripheral.identifier)
         writeKnownPeripherals()
-        if foundPeripherals.insert(peripheral).inserted {
-            delegate?.didDiscoverPeripheral(peripheral, from: self)
-        }
+        
+        let removed = cachedPeripherals.remove(peripheral)
+        Logger.debug("Removed from cached peripherals: \(String(describing: removed))")
+        
+        foundPeripherals.update(with: peripheral)
+        assert(foundPeripherals.isDisjoint(with: cachedPeripherals), "found peripherals and cached peripherals MUST be disjoint.")
+        delegate?.didDiscoverPeripheral(peripheral, from: self)
     }
     
     public func centralManager(_ central: CBCentralManager, didConnect peripheral: CBPeripheral) {
@@ -374,6 +396,7 @@ extension CentralManager: CBCentralManagerDelegate {
     }
     
     public func centralManager(_ central: CBCentralManager, didFailToConnect peripheral: CBPeripheral, error: Error?) {
+        Logger.debug("Failed to connect to peripheral: \(peripheral), error: \(String(describing: error))")
         knownPeripherals.remove(peripheral.identifier)
         writeKnownPeripherals()
         if let peripheral = self.peripheral(for: peripheral),
