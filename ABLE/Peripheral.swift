@@ -223,17 +223,19 @@ extension Peripheral {
 
 extension Peripheral: CBPeripheralDelegate {
     public func peripheral(_ peripheral: CBPeripheral, didReadRSSI RSSI: NSNumber, error: Error?) {
+        let completion = readRSSICompletion
+        readRSSICompletion = nil
         if let error = error {
-            readRSSICompletion?(.failure(error))
+            completion?(.failure(error))
         }
         else {
-            readRSSICompletion?(.success(RSSI.intValue))
+            completion?(.success(RSSI.intValue))
         }
-        readRSSICompletion = nil
     }
     
     public func peripheral(_ peripheral: CBPeripheral, didDiscoverServices error: Error?) {
         if let attempt = discoverServicesAttempt {
+            discoverServicesAttempt = nil
             if let error = error {
                 Logger.debug("discover services failure: \(error)")
                 attempt.completion(.failure(PeripheralError.cbError(detail: error)))
@@ -244,11 +246,11 @@ extension Peripheral: CBPeripheralDelegate {
             }
             attempt.invalidate()
         }
-        discoverServicesAttempt = nil
     }
     
     public func peripheral(_ peripheral: CBPeripheral, didDiscoverCharacteristicsFor service: CBService, error: Error?) {
         if let attempt = discoverCharacteristicsAttempt {
+            discoverCharacteristicsAttempt = nil
             if let error = error {
                 Logger.debug("discover characteristics failure: \(error)")
                 attempt.completion(.failure(PeripheralError.cbError(detail: error)))
@@ -259,43 +261,45 @@ extension Peripheral: CBPeripheralDelegate {
             }
             attempt.invalidate()
         }
-        discoverCharacteristicsAttempt = nil
     }
     
     public func peripheral(_ peripheral: CBPeripheral, didUpdateValueFor characteristic: CBCharacteristic, error: Error?) {
+        let readCompletion = readCharacteristicCompletion
+        readCharacteristicCompletion = nil
         if let error = error {
-            readCharacteristicCompletion?(.failure(PeripheralError.cbError(detail: error)))
+            readCompletion?(.failure(PeripheralError.cbError(detail: error)))
             setNotifyUpdateValueCallback?(.failure(PeripheralError.cbError(detail: error)))
         }
         else {
             Logger.debug("peripheral characteristic update value for: \(characteristic)")
-            readCharacteristicCompletion?(.success(characteristic.value ?? Data()))
+            readCompletion?(.success(characteristic.value ?? Data()))
             setNotifyUpdateValueCallback?(.success(characteristic.value ?? Data()))
         }
-        readCharacteristicCompletion = nil
     }
     
     public func peripheral(_ peripheral: CBPeripheral, didWriteValueFor characteristic: CBCharacteristic, error: Error?) {
+        let completion = writeCharacteristicCompletion
+        writeCharacteristicCompletion = nil
         if let error = error {
-            writeCharacteristicCompletion?(.failure(PeripheralError.cbError(detail: error)))
+            completion?(.failure(PeripheralError.cbError(detail: error)))
         }
         else {
-            writeCharacteristicCompletion?(.success(()))
+            completion?(.success(()))
         }
-        writeCharacteristicCompletion = nil
     }
     
     public func peripheral(_ peripheral: CBPeripheral, didUpdateNotificationStateFor characteristic: CBCharacteristic, error: Error?) {
+        let updateStateCompletion = setNotifyUpdateStateCompletion
+        setNotifyUpdateStateCompletion = nil
         if let error = error {
-            setNotifyUpdateStateCompletion?(.failure(PeripheralError.cbError(detail: error)))
+            updateStateCompletion?(.failure(PeripheralError.cbError(detail: error)))
         }
         else {
-            setNotifyUpdateStateCompletion?(.success(()))
+            updateStateCompletion?(.success(()))
             if characteristic.isNotifying == false {
                 setNotifyUpdateValueCallback = nil
             }
         }
-        setNotifyUpdateStateCompletion = nil
     }
     
     public func peripheral(_ peripheral: CBPeripheral, didModifyServices invalidatedServices: [CBService]) {
