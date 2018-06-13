@@ -69,8 +69,9 @@ public class CBCentralManagerMock: CBCentralManagerType {
         return []
     }
     
-    func retrievePeripherals(withIdentifiers: [UUID]) { }
-    
+    public func retrievePeripherals(withIdentifiers identifiers: [UUID]) -> [CBPeripheralType] {
+        return []
+    }
     public func scanForPeripherals(withServices: [CBUUID]?, options: [String : Any]?) {
         peripherals.forEach { (peripheral) in
             delegateType?.centralManager(self, didDiscover: peripheral.cbPeripheral, advertisementData: [:], rssi: NSNumber(value: 0))
