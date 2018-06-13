@@ -13,12 +13,13 @@ import CoreBluetooth
 class ViewController: UIViewController {
 
     var central: CentralManager!
+    var peripheralManager: PeripheralManager!
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
         central = CentralManager(queue: DispatchQueue.main)
-
+        
         // Wait for powered on state to begin using the central, specifying the desired timeout. You can also set yourself as delegate to receive all state change notification if you need to.
         central.waitForPoweredOn(withTimeout: 6.0) { (state) in
             guard state == .poweredOn else {
@@ -37,7 +38,7 @@ class ViewController: UIViewController {
             }))
         }
 
-        let peripheralManager = PeripheralManager(queue: DispatchQueue.main)
+        peripheralManager = PeripheralManager(queue: DispatchQueue.main)
 
         peripheralManager.waitForPoweredOn(withTimeout: 6.0) { (state) in
             guard state == .poweredOn else {
@@ -45,13 +46,13 @@ class ViewController: UIViewController {
             }
 
             let service = CBMutableService(type: CBUUID(string: "DE036077-4293-4768-B9EF-66429B46A3CB"), primary: true)
-            peripheralManager.add(service) { (result) in
+            self.peripheralManager.add(service) { (result) in
                 switch result {
                 case .success(let service):
                     print("added service: \(service)")
 
                     // Start advertising.
-                    peripheralManager.startAdvertising { (result) in
+                    self.peripheralManager.startAdvertising { (result) in
                         print("advertising result: \(result)")
                     }
                 case .failure(let error):

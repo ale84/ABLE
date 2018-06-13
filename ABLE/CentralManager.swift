@@ -128,7 +128,7 @@ public class CentralManager: NSObject {
     private var connectionInfos: Set<ConnectionInfo> = []
     private var waitForStateAttempts: Set<WaitForStateAttempt> = []
     
-    public private (set) var cbCentralManager: CBCentralManager
+    public private (set) var cbCentralManager: CBCentralManagerType
     public private (set) var centralQueue: DispatchQueue
     public weak var delegate: CentralManagerDelegate?
     
@@ -146,25 +146,27 @@ public class CentralManager: NSObject {
     }
     
     private var scanAttempt: ScanAttempt?
+    private var cbDelegateProxy: CBCentralManagerDelegateProxy?
     
-    public init(withDelegate delegate: CentralManagerDelegate? = nil, queue: DispatchQueue?, options: [String : Any]? = nil, userDefaults: UserDefaults = UserDefaults.standard) {
+    public convenience init(withDelegate delegate: CentralManagerDelegate? = nil, queue: DispatchQueue?, options: [String : Any]? = nil, userDefaults: UserDefaults = UserDefaults.standard) {
+        let manager = CBCentralManager(delegate: nil, queue: queue, options: options)
+        self.init(with: manager, delegate: delegate, queue: queue, options: options, userDefaults: userDefaults)
+        self.cbDelegateProxy = CBCentralManagerDelegateProxy(withTarget: self)
+        manager.delegate = cbDelegateProxy
+    }
+    
+    public init(with centralManager: CBCentralManagerType, delegate: CentralManagerDelegate? = nil, queue: DispatchQueue?, options: [String : Any]? = nil, userDefaults: UserDefaults = UserDefaults.standard) {
         self.centralQueue = queue ?? DispatchQueue.main
-        cbCentralManager = CBCentralManager(delegate: nil, queue: queue, options: options)
+        cbCentralManager = centralManager
         self.userDefaults = userDefaults
         self.delegate = delegate
         super.init()
         retrieveCachedPeripherals()
-        cbCentralManager.delegate = self
+        cbCentralManager.delegateType = self
     }
     
     public var state: ManagerState {
-        if #available(iOS 10.0, *) {
-            return ManagerState(with: cbCentralManager.state)
-        }
-        else {
-            // Fallback on earlier versions
-            return ManagerState(with: cbCentralManager.state.rawValue)
-        }
+        return cbCentralManager.managerState
     }
     
     public func waitForPoweredOn(withTimeout timeout: TimeInterval = 3, completion: @escaping WaitForStateCompletion) {
@@ -186,7 +188,7 @@ public class CentralManager: NSObject {
         scanAttempt = nil
         
         Logger.debug("Attempt to start a new ble scan.")
-        guard cbCentralManager.state == .poweredOn else {
+        guard cbCentralManager.managerState == .poweredOn else {
             timeout?.completion(.failure(BLEError.bluetoothNotAvailable(state)))
             return
         }
@@ -214,7 +216,7 @@ public class CentralManager: NSObject {
     public func connect(to peripheral: Peripheral, options: [String : Any]? = nil, attemptTimeout: TimeInterval? = nil, connectionTimeout: TimeInterval? = nil, completion: @escaping ConnectionCompletion) {
         let connectionAttempt = ConnectionAttempt(with: peripheral, connectionTimeout: connectionTimeout, completion: completion)
         connectionAttempts.update(with: connectionAttempt)
-        
+
         if let timeout = attemptTimeout {
             delay(timeout, queue: centralQueue) { [weak self] in
                 guard let strongSelf = self else {
@@ -227,7 +229,7 @@ public class CentralManager: NSObject {
                 }
             }
         }
-        
+
         cbCentralManager.connect(peripheral.cbPeripheral, options: options)
     }
     
@@ -250,8 +252,8 @@ public class CentralManager: NSObject {
         allPeripherals.forEach { disconnect(from: $0) }
     }
     
-    private func peripheral(for cbPeripheral: CBPeripheral) -> Peripheral? {
-        return allPeripherals.filter { $0.cbPeripheral == cbPeripheral }.last
+    private func peripheral(for cbPeripheral: CBPeripheralType) -> Peripheral? {
+        return allPeripherals.filter { $0.cbPeripheral.identifier == cbPeripheral.identifier }.last
     }
     
     private func writeKnownPeripherals() {
@@ -271,11 +273,11 @@ public class CentralManager: NSObject {
     }
     
     private func getConnectionAttempt(for peripheral: Peripheral) -> ConnectionAttempt? {
-        return connectionAttempts.filter { $0.peripheral === peripheral }.last
+        return connectionAttempts.filter { $0.peripheral == peripheral }.last
     }
     
     private func getDisconnectionRequest(for peripheral: Peripheral) -> DisconnectionRequest? {
-        return disconnectionRequests.filter { $0.peripheral === peripheral }.last
+        return disconnectionRequests.filter { $0.peripheral == peripheral }.last
     }
     
     private func getConnectionInfo(for peripheral: Peripheral) -> ConnectionInfo? {
@@ -351,8 +353,45 @@ extension CentralManager {
     }
 }
 
-extension CentralManager: CBCentralManagerDelegate {
-    public func centralManagerDidUpdateState(_ central: CBCentralManager) {
+extension CentralManager: CBCentralManagerDelegateType {
+    public func centralManager(_ central: CBCentralManagerType, didDiscover peripheral: CBPeripheralType, advertisementData: [String : Any], rssi RSSI: NSNumber) {
+        Logger.debug("central discovered peripheral: \(peripheral)")
+        
+        let peripheral = Peripheral(with: peripheral, advertisements: advertisementData, RSSI: RSSI.intValue)
+        
+        knownPeripherals.insert(peripheral.cbPeripheral.identifier)
+        writeKnownPeripherals()
+        
+        let removed = cachedPeripherals.remove(peripheral)
+        Logger.debug("Removed from cached peripherals: \(String(describing: removed))")
+        
+        foundPeripherals.update(with: peripheral)
+        assert(foundPeripherals.isDisjoint(with: cachedPeripherals), "found peripherals and cached peripherals MUST be disjoint.")
+        delegate?.didDiscoverPeripheral(peripheral, from: self)
+    }
+    
+    public func centralManager(_ central: CBCentralManagerType, willRestoreState dict: [String : Any]) { }
+    
+    public func centralManager(_ central: CBCentralManagerType, didDisconnectPeripheral peripheral: CBPeripheralType, error: Error?) {
+        if let peripheral = self.peripheral(for: peripheral),
+            let attempt = getDisconnectionRequest(for: peripheral) {
+            disconnectionRequests.remove(attempt)
+            attempt.completion(peripheral)
+        }
+    }
+    
+    public func centralManager(_ central: CBCentralManagerType, didFailToConnect peripheral: CBPeripheralType, error: Error?) {
+        Logger.debug("Failed to connect to peripheral: \(peripheral), error: \(String(describing: error))")
+        knownPeripherals.remove(peripheral.identifier)
+        writeKnownPeripherals()
+        if let peripheral = self.peripheral(for: peripheral),
+            let attempt = getConnectionAttempt(for: peripheral) {
+            connectionAttempts.remove(attempt)
+            attempt.completion(.failure(BLEError.connectionFailed(error)))
+        }
+    }
+    
+    public func centralManagerDidUpdateState(_ central: CBCentralManagerType) {
         Logger.debug("ble updated state: \(state)")
         delegate?.didUpdateBluetoothState(state, from: self)
         NotificationCenter.default.post(name: ManagerNotification.bluetoothStateChanged.notificationName, object: self, userInfo: ["state": state])
@@ -369,48 +408,16 @@ extension CentralManager: CBCentralManagerDelegate {
         Logger.debug("Wait for state attempts: \(waitForStateAttempts).")
     }
     
-    public func centralManager(_ central: CBCentralManager, didDiscover peripheral: CBPeripheral, advertisementData: [String : Any], rssi RSSI: NSNumber) {
-        Logger.debug("central discovered peripheral: \(peripheral)")
-        
-        let peripheral = Peripheral(with: peripheral, advertisements: advertisementData, RSSI: RSSI.intValue)
-        
-        knownPeripherals.insert(peripheral.cbPeripheral.identifier)
-        writeKnownPeripherals()
-        
-        let removed = cachedPeripherals.remove(peripheral)
-        Logger.debug("Removed from cached peripherals: \(String(describing: removed))")
-        
-        foundPeripherals.update(with: peripheral)
-        assert(foundPeripherals.isDisjoint(with: cachedPeripherals), "found peripherals and cached peripherals MUST be disjoint.")
-        delegate?.didDiscoverPeripheral(peripheral, from: self)
-    }
-    
-    public func centralManager(_ central: CBCentralManager, didConnect peripheral: CBPeripheral) {
+    public func centralManager(_ central: CBCentralManagerType, didConnect peripheral: CBPeripheralType) {
         Logger.debug("ble did connect to peripheral: \(peripheral).")
+        Logger.debug("peripherals: \(allPeripherals).")
+        Logger.debug("connection attempts: \(connectionAttempts).")
+
         if let peripheral = self.peripheral(for: peripheral),
             let attempt = getConnectionAttempt(for: peripheral) {
             connectionAttempts.remove(attempt)
             addConnectionInfo(for: peripheral, timeout: attempt.connectionTimeout)
             attempt.completion(.success(peripheral))
-        }
-    }
-    
-    public func centralManager(_ central: CBCentralManager, didFailToConnect peripheral: CBPeripheral, error: Error?) {
-        Logger.debug("Failed to connect to peripheral: \(peripheral), error: \(String(describing: error))")
-        knownPeripherals.remove(peripheral.identifier)
-        writeKnownPeripherals()
-        if let peripheral = self.peripheral(for: peripheral),
-            let attempt = getConnectionAttempt(for: peripheral) {
-            connectionAttempts.remove(attempt)
-            attempt.completion(.failure(BLEError.connectionFailed(error)))
-        }
-    }
-    
-    public func centralManager(_ central: CBCentralManager, didDisconnectPeripheral peripheral: CBPeripheral, error: Error?) {
-        if let peripheral = self.peripheral(for: peripheral),
-            let attempt = getDisconnectionRequest(for: peripheral) {
-            disconnectionRequests.remove(attempt)
-            attempt.completion(peripheral)
         }
     }
 }

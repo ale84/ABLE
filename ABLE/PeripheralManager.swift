@@ -86,30 +86,32 @@ public class PeripheralManager: NSObject {
     
     private var addServiceAttempts: Set<AddServiceAttempt> = []
     
-    private (set) var cbPeripheralManager: CBPeripheralManager
+    private (set) var cbPeripheralManager: CBPeripheralManagerType
+    private var cbPeripheralManagerDelegateProxy: CBPeripheralManagerDelegateProxy?
     
     public var readRequestCallback: ReadRequestCallback?
     public var writeRequestsCallback: WriteRequestsCallback?
     public var stateChangedCallback: StateChangedCallback?
     
     public var state: ManagerState {
-        if #available(iOS 10.0, *) {
-            return ManagerState(with: cbPeripheralManager.state)
-        }
-        else {
-            // Fallback on earlier versions
-            return ManagerState(with: cbPeripheralManager.state.rawValue)
-        }
+        return cbPeripheralManager.managerState
     }
     
     public var isAdvertising: Bool {
         return cbPeripheralManager.isAdvertising
     }
     
-    public init(_ delegate: PeripheralManagerDelegate? = nil, queue: DispatchQueue?, options: [String : Any]? = nil) {
-        cbPeripheralManager = CBPeripheralManager(delegate: nil, queue: queue, options: options)
+    public convenience init(_ delegate: PeripheralManagerDelegate? = nil, queue: DispatchQueue?, options: [String : Any]? = nil) {
+        let manager = CBPeripheralManager(delegate: nil, queue: queue, options: options)
+        self.init(with: manager, delegate: delegate, queue: queue, options: options)
+        self.cbPeripheralManagerDelegateProxy = CBPeripheralManagerDelegateProxy(withTarget: self)
+        manager.delegate = cbPeripheralManagerDelegateProxy
+    }
+    
+    public init(with peripheralManager: CBPeripheralManagerType, delegate: PeripheralManagerDelegate? = nil, queue: DispatchQueue?, options: [String : Any]? = nil) {
+        cbPeripheralManager = peripheralManager
         super.init()
-        cbPeripheralManager.delegate = self
+        cbPeripheralManager.delegateType = self
     }
     
     public func waitForPoweredOn(withTimeout timeout: TimeInterval = 3, completion: @escaping WaitForStateCompletion) {
@@ -199,7 +201,7 @@ extension PeripheralManager {
     }
 }
 
-extension PeripheralManager: CBPeripheralManagerDelegate {
+extension PeripheralManager: CBPeripheralManagerDelegateType {
     public func peripheralManagerDidUpdateState(_ peripheral: CBPeripheralManager) {
         Logger.debug("peripheral manager updated state: \(state)")
         stateChangedCallback?(state)
@@ -250,4 +252,17 @@ extension PeripheralManager: CBPeripheralManagerDelegate {
     public func peripheralManager(_ peripheral: CBPeripheralManager, didReceiveWrite requests: [CBATTRequest]) {
         writeRequestsCallback?(requests)
     }
+    
+    public func peripheralManager(_ peripheral: CBPeripheralManager, willRestoreState dict: [String : Any]) { }
+    
+    public func peripheralManager(_ peripheral: CBPeripheralManager, central: CBCentral, didSubscribeTo characteristic: CBCharacteristic) { }
+    
+    public func peripheralManager(_ peripheral: CBPeripheralManager, central: CBCentral, didUnsubscribeFrom characteristic: CBCharacteristic) { }
+    
+    @available(iOS 11.0, *)
+    public func peripheralManager(_ peripheral: CBPeripheralManager, didOpen channel: CBL2CAPChannel?, error: Error?) { }
+    
+    public func peripheralManager(_ peripheral: CBPeripheralManager, didPublishL2CAPChannel PSM: CBL2CAPPSM, error: Error?) { }
+    
+    public func peripheralManager(_ peripheral: CBPeripheralManager, didUnpublishL2CAPChannel PSM: CBL2CAPPSM, error: Error?) { }
 }

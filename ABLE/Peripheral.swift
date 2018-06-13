@@ -81,7 +81,7 @@ public class Peripheral: NSObject {
         }
     }
     
-    public private (set) var cbPeripheral: CBPeripheral
+    public private (set) var cbPeripheral: CBPeripheralType
 
     /// Connection name.
     public var name: String? {
@@ -126,13 +126,22 @@ public class Peripheral: NSObject {
     public typealias SetNotifyUpdateValueCallback = ((Result<Data>) -> Void)
     private var setNotifyUpdateValueCallback: SetNotifyUpdateValueCallback?
     
-    public init(with peripheral: CBPeripheral, advertisements: [String : Any] = [:], RSSI: Int = 0) {
+    private var peripheralDelegateProxy: CBPeripheralDelegateProxy?
+    
+    public convenience init(with peripheral: CBPeripheral, advertisements: [String : Any] = [:], RSSI: Int = 0) {
+        let peripheralType = peripheral as CBPeripheralType
+        self.init(with: peripheralType, advertisements: advertisements, RSSI: RSSI)
+        self.peripheralDelegateProxy = CBPeripheralDelegateProxy(withTarget: self)
+        peripheral.delegate = peripheralDelegateProxy
+        Logger.debug("peripheral delegate set. \(String(describing: peripheral.delegate))")
+    }
+    
+    public init(with peripheral: CBPeripheralType, advertisements: [String : Any] = [:], RSSI: Int = 0) {
         self.cbPeripheral = peripheral
         self.advertisements = PeripheralAdvertisements(advertisements: advertisements)
         self.RSSI = RSSI
         super.init()
-        cbPeripheral.delegate = self
-        Logger.debug("peripheral delegate set. \(String(describing: cbPeripheral.delegate))")
+        peripheral.delegateType = self
     }
     
     public func readRSSI(with completion: @escaping ReadRSSICompletion) {
@@ -221,19 +230,14 @@ extension Peripheral {
     }
 }
 
-extension Peripheral: CBPeripheralDelegate {
-    public func peripheral(_ peripheral: CBPeripheral, didReadRSSI RSSI: NSNumber, error: Error?) {
-        let completion = readRSSICompletion
-        readRSSICompletion = nil
-        if let error = error {
-            completion?(.failure(error))
-        }
-        else {
-            completion?(.success(RSSI.intValue))
-        }
+extension Peripheral {
+    override public var debugDescription: String {
+        return name ?? "-"
     }
-    
-    public func peripheral(_ peripheral: CBPeripheral, didDiscoverServices error: Error?) {
+}
+
+extension Peripheral: CBPeripheralDelegateType {
+    public func peripheral(_ peripheral: CBPeripheralType, didDiscoverServices error: Error?) {
         if let attempt = discoverServicesAttempt {
             discoverServicesAttempt = nil
             if let error = error {
@@ -248,7 +252,9 @@ extension Peripheral: CBPeripheralDelegate {
         }
     }
     
-    public func peripheral(_ peripheral: CBPeripheral, didDiscoverCharacteristicsFor service: CBService, error: Error?) {
+    public func peripheral(_ peripheral: CBPeripheralType, didDiscoverIncludedServicesFor service: CBService, error: Error?) { }
+    
+    public func peripheral(_ peripheral: CBPeripheralType, didDiscoverCharacteristicsFor service: CBService, error: Error?) {
         if let attempt = discoverCharacteristicsAttempt {
             discoverCharacteristicsAttempt = nil
             if let error = error {
@@ -263,7 +269,9 @@ extension Peripheral: CBPeripheralDelegate {
         }
     }
     
-    public func peripheral(_ peripheral: CBPeripheral, didUpdateValueFor characteristic: CBCharacteristic, error: Error?) {
+    public func peripheral(_ peripheral: CBPeripheralType, didDiscoverDescriptorsFor characteristic: CBCharacteristic, error: Error?) { }
+    
+    public func peripheral(_ peripheral: CBPeripheralType, didUpdateValueFor characteristic: CBCharacteristic, error: Error?) {
         let readCompletion = readCharacteristicCompletion
         readCharacteristicCompletion = nil
         if let error = error {
@@ -277,7 +285,9 @@ extension Peripheral: CBPeripheralDelegate {
         }
     }
     
-    public func peripheral(_ peripheral: CBPeripheral, didWriteValueFor characteristic: CBCharacteristic, error: Error?) {
+    public func peripheral(_ peripheral: CBPeripheralType, didUpdateValueFor descriptor: CBDescriptor, error: Error?) { }
+    
+    public func peripheral(_ peripheral: CBPeripheralType, didWriteValueFor characteristic: CBCharacteristic, error: Error?) {
         let completion = writeCharacteristicCompletion
         writeCharacteristicCompletion = nil
         if let error = error {
@@ -288,7 +298,9 @@ extension Peripheral: CBPeripheralDelegate {
         }
     }
     
-    public func peripheral(_ peripheral: CBPeripheral, didUpdateNotificationStateFor characteristic: CBCharacteristic, error: Error?) {
+    public func peripheral(_ peripheral: CBPeripheralType, didWriteValueFor descriptor: CBDescriptor, error: Error?) { }
+    
+    public func peripheral(_ peripheral: CBPeripheralType, didUpdateNotificationStateFor characteristic: CBCharacteristic, error: Error?) {
         let updateStateCompletion = setNotifyUpdateStateCompletion
         setNotifyUpdateStateCompletion = nil
         if let error = error {
@@ -302,13 +314,23 @@ extension Peripheral: CBPeripheralDelegate {
         }
     }
     
-    public func peripheral(_ peripheral: CBPeripheral, didModifyServices invalidatedServices: [CBService]) {
-        Logger.debug("peripheral did modify services. Invalidated services: \(invalidatedServices)")
+    public func peripheral(_ peripheral: CBPeripheralType, didReadRSSI RSSI: NSNumber, error: Error?) {
+        let completion = readRSSICompletion
+        readRSSICompletion = nil
+        if let error = error {
+            completion?(.failure(error))
+        }
+        else {
+            completion?(.success(RSSI.intValue))
+        }
     }
-}
-
-extension Peripheral {
-    override public var debugDescription: String {
-        return name ?? "-"
-    }
+    
+    public func peripheralDidUpdateName(_ peripheral: CBPeripheralType) { }
+    
+    public func peripheral(_ peripheral: CBPeripheralType, didModifyServices invalidatedServices: [CBService]) { }
+    
+    @available(iOS 11.0, *)
+    public func peripheral(_ peripheral: CBPeripheralType, didOpen channel: CBL2CAPChannel?, error: Error?) { }
+    
+    public func peripheralIsReady(toSendWriteWithoutResponse peripheral: CBPeripheralType) { }
 }
