@@ -128,20 +128,18 @@ public class Peripheral: NSObject {
     
     private var peripheralDelegateProxy: CBPeripheralDelegateProxy?
     
-    public convenience init(with peripheral: CBPeripheral, advertisements: [String : Any] = [:], RSSI: Int = 0) {
-        let peripheralType = peripheral as CBPeripheralType
-        self.init(with: peripheralType, advertisements: advertisements, RSSI: RSSI)
-        self.peripheralDelegateProxy = CBPeripheralDelegateProxy(withTarget: self)
-        peripheral.delegate = peripheralDelegateProxy
-        Logger.debug("peripheral delegate set. \(String(describing: peripheral.delegate))")
-    }
-    
     public init(with peripheral: CBPeripheralType, advertisements: [String : Any] = [:], RSSI: Int = 0) {
         self.cbPeripheral = peripheral
         self.advertisements = PeripheralAdvertisements(advertisements: advertisements)
         self.RSSI = RSSI
         super.init()
         peripheral.delegateType = self
+        
+        if let peripheral = peripheral as? CBPeripheral {
+            self.peripheralDelegateProxy = CBPeripheralDelegateProxy(withTarget: self)
+            peripheral.delegate = peripheralDelegateProxy
+            Logger.debug("peripheral delegate set. \(String(describing: peripheral.delegate))")
+        }
     }
     
     public func readRSSI(with completion: @escaping ReadRSSICompletion) {
