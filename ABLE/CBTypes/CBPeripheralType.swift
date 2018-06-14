@@ -12,15 +12,15 @@ import CoreBluetooth
 public protocol CBPeripheralType: class, CBPeerType {
     var name: String? { get }
     func discoverServices(_ serviceUUIDs: [CBUUID]?)
-    func discoverIncludedServices(_ includedServiceUUIDs: [CBUUID]?, for service: CBService)
-    var services: [CBService]? { get }
-    func discoverCharacteristics(_ characteristicUUIDs: [CBUUID]?, for service: CBService)
-    func discoverDescriptors(for characteristic: CBCharacteristic)
-    func readValue(for characteristic: CBCharacteristic)
+    func discoverIncludedServices(_ includedServiceUUIDs: [CBUUID]?, for service: CBServiceType)
+    var cbServices: [CBServiceType]? { get }
+    func discoverCharacteristics(_ characteristicUUIDs: [CBUUID]?, for service: CBServiceType)
+    func discoverDescriptors(for characteristic: CBCharacteristicType)
+    func readValue(for characteristic: CBCharacteristicType)
     func readValue(for descriptor: CBDescriptor)
-    func writeValue(_ data: Data, for characteristic: CBCharacteristic, type: CBCharacteristicWriteType)
+    func writeValue(_ data: Data, for characteristic: CBCharacteristicType, type: CBCharacteristicWriteType)
     func writeValue(_ data: Data, for descriptor: CBDescriptor)
-    func setNotifyValue(_ enabled: Bool, for characteristic: CBCharacteristic)
+    func setNotifyValue(_ enabled: Bool, for characteristic: CBCharacteristicType)
     var state: CBPeripheralState { get }
     func readRSSI()
     var canSendWriteWithoutResponse: Bool { get }
@@ -30,6 +30,34 @@ public protocol CBPeripheralType: class, CBPeerType {
 }
 
 extension CBPeripheral: CBPeripheralType {
+    public var cbServices: [CBServiceType]? {
+        return services
+    }
+    
+    public func discoverDescriptors(for characteristic: CBCharacteristicType) {
+        return discoverDescriptors(for: characteristic as! CBCharacteristic)
+    }
+    
+    public func readValue(for characteristic: CBCharacteristicType) {
+        return readValue(for: characteristic as! CBCharacteristic)
+    }
+    
+    public func writeValue(_ data: Data, for characteristic: CBCharacteristicType, type: CBCharacteristicWriteType) {
+        return writeValue(data, for: characteristic as! CBCharacteristic, type: type)
+    }
+    
+    public func setNotifyValue(_ enabled: Bool, for characteristic: CBCharacteristicType) {
+        return setNotifyValue(enabled, for: characteristic as! CBCharacteristic)
+    }
+    
+    public func discoverIncludedServices(_ includedServiceUUIDs: [CBUUID]?, for service: CBServiceType) {
+        return discoverIncludedServices(includedServiceUUIDs, for: service as! CBService)
+    }
+    
+    public func discoverCharacteristics(_ characteristicUUIDs: [CBUUID]?, for service: CBServiceType) {
+        discoverCharacteristics(characteristicUUIDs, for: service as! CBService)
+    }
+    
     weak public var delegateType: CBPeripheralDelegateType? {
         get {
             return nil

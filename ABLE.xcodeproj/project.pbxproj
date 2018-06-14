@@ -31,6 +31,14 @@
 		60EA021F20C973840081738E /* CBPeripheralDelegateType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 60EA021E20C973840081738E /* CBPeripheralDelegateType.swift */; };
 		60EA022120C973B00081738E /* CBCentralManagerDelegateProxy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 60EA022020C973B00081738E /* CBCentralManagerDelegateProxy.swift */; };
 		60EA022320C973D30081738E /* CBPeripheralDelegateProxy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 60EA022220C973D30081738E /* CBPeripheralDelegateProxy.swift */; };
+		60EA316F20D2594E0072B5CA /* PeripheralTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 60EA316E20D2594E0072B5CA /* PeripheralTests.swift */; };
+		60EA317120D25F7A0072B5CA /* CBServiceType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 60EA317020D25F790072B5CA /* CBServiceType.swift */; };
+		60EA317320D268180072B5CA /* CBCharacteristicType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 60EA317220D268180072B5CA /* CBCharacteristicType.swift */; };
+		60EA317520D268C00072B5CA /* CBAttributeType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 60EA317420D268C00072B5CA /* CBAttributeType.swift */; };
+		60EA317720D269500072B5CA /* CBServiceMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 60EA317620D269500072B5CA /* CBServiceMock.swift */; };
+		60EA317920D26D860072B5CA /* Service.swift in Sources */ = {isa = PBXBuildFile; fileRef = 60EA317820D26D860072B5CA /* Service.swift */; };
+		60EA317B20D278230072B5CA /* Characteristic.swift in Sources */ = {isa = PBXBuildFile; fileRef = 60EA317A20D278230072B5CA /* Characteristic.swift */; };
+		60EA317D20D27D6D0072B5CA /* CBCharacteristicMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 60EA317C20D27D6D0072B5CA /* CBCharacteristicMock.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -71,6 +79,14 @@
 		60EA021E20C973840081738E /* CBPeripheralDelegateType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CBPeripheralDelegateType.swift; sourceTree = "<group>"; };
 		60EA022020C973B00081738E /* CBCentralManagerDelegateProxy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CBCentralManagerDelegateProxy.swift; sourceTree = "<group>"; };
 		60EA022220C973D30081738E /* CBPeripheralDelegateProxy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CBPeripheralDelegateProxy.swift; sourceTree = "<group>"; };
+		60EA316E20D2594E0072B5CA /* PeripheralTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PeripheralTests.swift; sourceTree = "<group>"; };
+		60EA317020D25F790072B5CA /* CBServiceType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CBServiceType.swift; sourceTree = "<group>"; };
+		60EA317220D268180072B5CA /* CBCharacteristicType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CBCharacteristicType.swift; sourceTree = "<group>"; };
+		60EA317420D268C00072B5CA /* CBAttributeType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CBAttributeType.swift; sourceTree = "<group>"; };
+		60EA317620D269500072B5CA /* CBServiceMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CBServiceMock.swift; sourceTree = "<group>"; };
+		60EA317820D26D860072B5CA /* Service.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Service.swift; sourceTree = "<group>"; };
+		60EA317A20D278230072B5CA /* Characteristic.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Characteristic.swift; sourceTree = "<group>"; };
+		60EA317C20D27D6D0072B5CA /* CBCharacteristicMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CBCharacteristicMock.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -118,8 +134,10 @@
 				6058A7C51F0B946500D302E4 /* README.md */,
 				606ECABC1EDEF101003BFA19 /* Info.plist */,
 				606ECAC31EDEF131003BFA19 /* CentralManager.swift */,
+				60EA317A20D278230072B5CA /* Characteristic.swift */,
 				606ECAC41EDEF131003BFA19 /* Peripheral.swift */,
 				606ECAC51EDEF131003BFA19 /* PeripheralManager.swift */,
+				60EA317820D26D860072B5CA /* Service.swift */,
 				60EA021520C9722C0081738E /* CBTypes */,
 				60EA021020C970640081738E /* Mocks */,
 				60EA022420C974070081738E /* Support */,
@@ -130,8 +148,9 @@
 		607A704920C91CD200796BDC /* ABLETests */ = {
 			isa = PBXGroup;
 			children = (
-				607A704A20C91CD200796BDC /* CentralManagerTests.swift */,
 				607A704C20C91CD200796BDC /* Info.plist */,
+				607A704A20C91CD200796BDC /* CentralManagerTests.swift */,
+				60EA316E20D2594E0072B5CA /* PeripheralTests.swift */,
 			);
 			path = ABLETests;
 			sourceTree = "<group>";
@@ -140,8 +159,10 @@
 			isa = PBXGroup;
 			children = (
 				60EA021120C970820081738E /* CBCentralManagerMock.swift */,
-				60EA021320C971740081738E /* CBPeripheralMock.swift */,
+				60EA317C20D27D6D0072B5CA /* CBCharacteristicMock.swift */,
 				6058344820CEB75C00AD216C /* CBPeripheralManagerMock.swift */,
+				60EA021320C971740081738E /* CBPeripheralMock.swift */,
+				60EA317620D269500072B5CA /* CBServiceMock.swift */,
 			);
 			path = Mocks;
 			sourceTree = "<group>";
@@ -149,9 +170,11 @@
 		60EA021520C9722C0081738E /* CBTypes */ = {
 			isa = PBXGroup;
 			children = (
+				60EA317420D268C00072B5CA /* CBAttributeType.swift */,
 				60EA022020C973B00081738E /* CBCentralManagerDelegateProxy.swift */,
 				60EA021C20C9734F0081738E /* CBCentralManagerDelegateType.swift */,
 				60EA021620C972530081738E /* CBCentralManagerType.swift */,
+				60EA317220D268180072B5CA /* CBCharacteristicType.swift */,
 				60EA021A20C973100081738E /* CBManagerType.swift */,
 				60EA021820C972D20081738E /* CBPeerType.swift */,
 				60EA022220C973D30081738E /* CBPeripheralDelegateProxy.swift */,
@@ -160,6 +183,7 @@
 				6058344420CEAB0200AD216C /* CBPeripheralManagerDelegateType.swift */,
 				6058344220CEA97400AD216C /* CBPeripheralManagerType.swift */,
 				60DAF5A120C7D65300349954 /* CBPeripheralType.swift */,
+				60EA317020D25F790072B5CA /* CBServiceType.swift */,
 			);
 			path = CBTypes;
 			sourceTree = "<group>";
@@ -288,6 +312,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				60EA317520D268C00072B5CA /* CBAttributeType.swift in Sources */,
+				60EA317120D25F7A0072B5CA /* CBServiceType.swift in Sources */,
+				60EA317920D26D860072B5CA /* Service.swift in Sources */,
 				60EA021B20C973100081738E /* CBManagerType.swift in Sources */,
 				6058A7C71F0B946500D302E4 /* README.md in Sources */,
 				60EA021220C970820081738E /* CBCentralManagerMock.swift in Sources */,
@@ -295,18 +322,22 @@
 				606ECACE1EDEF275003BFA19 /* Logger.swift in Sources */,
 				6058344720CEAC2200AD216C /* CBPeripheralManagerDelegateProxy.swift in Sources */,
 				60EA021920C972D20081738E /* CBPeerType.swift in Sources */,
+				60EA317B20D278230072B5CA /* Characteristic.swift in Sources */,
 				60DAF5A220C7D65300349954 /* CBPeripheralType.swift in Sources */,
 				60EA021D20C9734F0081738E /* CBCentralManagerDelegateType.swift in Sources */,
 				60EA022320C973D30081738E /* CBPeripheralDelegateProxy.swift in Sources */,
 				606ECAC91EDEF131003BFA19 /* PeripheralManager.swift in Sources */,
 				60EA021F20C973840081738E /* CBPeripheralDelegateType.swift in Sources */,
+				60EA317320D268180072B5CA /* CBCharacteristicType.swift in Sources */,
 				6058344520CEAB0200AD216C /* CBPeripheralManagerDelegateType.swift in Sources */,
 				60EA021720C972530081738E /* CBCentralManagerType.swift in Sources */,
 				606ECACA1EDEF131003BFA19 /* Support.swift in Sources */,
 				6058344320CEA97500AD216C /* CBPeripheralManagerType.swift in Sources */,
+				60EA317D20D27D6D0072B5CA /* CBCharacteristicMock.swift in Sources */,
 				60EA022120C973B00081738E /* CBCentralManagerDelegateProxy.swift in Sources */,
 				606ECAC71EDEF131003BFA19 /* CentralManager.swift in Sources */,
 				6058344920CEB75C00AD216C /* CBPeripheralManagerMock.swift in Sources */,
+				60EA317720D269500072B5CA /* CBServiceMock.swift in Sources */,
 				606ECAC81EDEF131003BFA19 /* Peripheral.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -316,6 +347,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				607A704B20C91CD200796BDC /* CentralManagerTests.swift in Sources */,
+				60EA316F20D2594E0072B5CA /* PeripheralTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
