@@ -1,5 +1,4 @@
 language: objective-c
 osx_image: xcode9.3
-xcode_project: ABLE.xcodeproj
-xcode_scheme: ABLE
-xcode_sdk: iphonesimulator11.3
+script:
+  - xcodebuild test -scheme ABLETests -destination "platform=iOS Simulator,OS=11.4,name=iPhone X" -sdk "iphonesimulator11.4" -configuration Debug ONLY_ACTIVE_ARCH=NO | xcpretty -c;
