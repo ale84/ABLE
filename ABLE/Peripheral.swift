@@ -165,7 +165,6 @@ public class Peripheral: NSObject {
     
     public func service(for uuid: CBUUID) -> Service? {
         return discoveredServices.filter { $0.cbService.uuid == uuid }.first
-        //return cbPeripheral.services?.filter { $0.uuid == uuid }.first
     }
     
     public func characteristic(for uuid: CBUUID, service: Service) -> Characteristic? {

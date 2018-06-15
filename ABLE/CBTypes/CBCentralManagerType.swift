@@ -10,13 +10,13 @@ import Foundation
 import CoreBluetooth
 
 public protocol CBCentralManagerType: CBManagerType {
+    var cbDelegate: CBCentralManagerDelegateType? { get set }
     func connect(_ peripheral: CBPeripheralType, options: [String : Any]?)
     func cancelPeripheralConnection(_ peripheral: CBPeripheralType)
     func retrieveConnectedPeripherals(withServices serviceUUIDs: [CBUUID]) -> [CBPeripheralType]
     func retrievePeripherals(withIdentifiers identifiers: [UUID]) -> [CBPeripheralType]
     func scanForPeripherals(withServices: [CBUUID]?, options: [String : Any]?)
     func stopScan()
-    var cbDelegate: CBCentralManagerDelegateType? { get set }
 }
 
 extension CBCentralManager: CBCentralManagerType {

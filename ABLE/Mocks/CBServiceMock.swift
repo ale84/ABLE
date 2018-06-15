@@ -9,16 +9,16 @@
 import Foundation
 import CoreBluetooth
 
-class CBServiceMock: CBServiceType {
-    var cbCharacteristics: [CBCharacteristicType]?
+public class CBServiceMock: CBServiceType {
+    public var cbCharacteristics: [CBCharacteristicType]?
     
-    var isPrimary: Bool
+    public var isPrimary: Bool
     
-    var characteristics: [CBCharacteristic]?
+    public var characteristics: [CBCharacteristic]?
     
-    var uuid: CBUUID
+    public var uuid: CBUUID
     
-    init(with id: CBUUID = CBUUID(), isPrimary: Bool = true, characteristics: [CBCharacteristic]? = nil) {
+    public init(with id: CBUUID = CBUUID(), isPrimary: Bool = true, characteristics: [CBCharacteristic]? = nil) {
         self.uuid = id
         self.isPrimary = isPrimary
         self.characteristics = characteristics

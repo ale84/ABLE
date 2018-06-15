@@ -23,7 +23,7 @@ class CentralManagerTests: XCTestCase {
     
     override func tearDown() {
         centralMock.waitForPoweredOnBehaviour = .alreadyPoweredOn
-        centralMock.peripheralConnectionBehaviour = .success
+        centralMock.peripheralConnectionBehaviour = .success(after: 0)
         centralMock.disconnectionBehaviour = .success
         super.tearDown()
     }
@@ -41,7 +41,7 @@ class CentralManagerTests: XCTestCase {
     }
     
     func testWaitForPoweredOnSuccessAfterInterval() {
-        centralMock.waitForPoweredOnBehaviour = .poweredOnAfter(seconds: 2)
+        centralMock.waitForPoweredOnBehaviour = .poweredOn(after: 2)
         
         let expectation = XCTestExpectation(description: "state should be powered on in the completion.")
         central.waitForPoweredOn(withTimeout: 3) { (state) in
@@ -53,7 +53,7 @@ class CentralManagerTests: XCTestCase {
     }
     
     func testWaitForPoweredOnFailure() {
-        centralMock.waitForPoweredOnBehaviour = .poweredOnAfter(seconds: 4)
+        centralMock.waitForPoweredOnBehaviour = .poweredOn(after: 4)
         
         let expectation = XCTestExpectation(description: "state should not be powered on in the completion.")
         central.waitForPoweredOn(withTimeout: 3) { (state) in
@@ -84,7 +84,7 @@ class CentralManagerTests: XCTestCase {
         let expectation = XCTestExpectation(description: "Central should connect peripheral with success.")
         
         centralMock.managerState = .poweredOn
-        centralMock.peripheralConnectionBehaviour = .success
+        centralMock.peripheralConnectionBehaviour = .success(after: 0)
         
         let peripheral = Peripheral(with: peripheralMock)
         
@@ -110,7 +110,7 @@ class CentralManagerTests: XCTestCase {
         let expectation = XCTestExpectation(description: "Central should connect peripheral with success.")
         
         centralMock.managerState = .poweredOn
-        centralMock.peripheralConnectionBehaviour = .successAfter(seconds: 2)
+        centralMock.peripheralConnectionBehaviour = .success(after: 2)
         
         let peripheral = Peripheral(with: peripheralMock)
         centralMock.peripherals = [peripheral]
@@ -135,7 +135,7 @@ class CentralManagerTests: XCTestCase {
         let expectation = XCTestExpectation(description: "Connection attempt should time out.")
         
         centralMock.managerState = .poweredOn
-        centralMock.peripheralConnectionBehaviour = .successAfter(seconds: 3)
+        centralMock.peripheralConnectionBehaviour = .success(after: 3)
         
         let peripheral = Peripheral(with: peripheralMock)
         centralMock.peripherals = [peripheral]

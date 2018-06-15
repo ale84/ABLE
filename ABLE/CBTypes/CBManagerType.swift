@@ -13,7 +13,6 @@ public protocol CBManagerType {
     var managerState: ManagerState { get }
 }
 
-@available(iOS 10.0, *)
 extension CBManager: CBManagerType {
     public var managerState: ManagerState {
         return ManagerState.init(with: state)

@@ -13,12 +13,11 @@ public class CBCentralManagerMock: CBCentralManagerType {
     
     public enum WaitForPoweredOnBehaviour {
         case alreadyPoweredOn
-        case poweredOnAfter(seconds: TimeInterval)
+        case poweredOn(after: TimeInterval)
     }
     
     public enum ConnectPeripheralBehaviour {
-        case success
-        case successAfter(seconds: TimeInterval)
+        case success(after: TimeInterval)
         case failure
     }
     
@@ -32,7 +31,7 @@ public class CBCentralManagerMock: CBCentralManagerType {
             switch waitForPoweredOnBehaviour {
             case .alreadyPoweredOn:
                 managerState = .poweredOn
-            case .poweredOnAfter(let seconds):
+            case .poweredOn(let seconds):
                 managerState = .poweredOff
                 delay(seconds) { [weak self] in
                     self?.managerState = .poweredOn
@@ -40,7 +39,7 @@ public class CBCentralManagerMock: CBCentralManagerType {
             }
         }
     }
-    public var peripheralConnectionBehaviour: ConnectPeripheralBehaviour = .success
+    public var peripheralConnectionBehaviour: ConnectPeripheralBehaviour = .success(after: 0)
     public var disconnectionBehaviour: DisconnectPeripheralBehaviour = .success
     
     public init() {}
@@ -82,9 +81,7 @@ public class CBCentralManagerMock: CBCentralManagerType {
     
     public func connect(_ peripheral: CBPeripheralType, options: [String : Any]?) {
         switch peripheralConnectionBehaviour {
-        case .success:
-            cbDelegate?.centralManager(self, didConnect: peripheral)
-        case .successAfter(let seconds):
+        case .success(let seconds):
             delay(seconds) {
                 self.cbDelegate?.centralManager(self, didConnect: peripheral)
             }

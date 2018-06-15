@@ -68,7 +68,7 @@ public class PeripheralManager: NSObject {
     // MARK: Aliases.
 
     public typealias WaitForStateCompletion = ((ManagerState) -> (Void))
-    public typealias AddServiceCompletion = ((Result<CBService>) -> Void)
+    public typealias AddServiceCompletion = ((Result<Service>) -> Void)
     public typealias StartAdvertisingCompletion = ((Result<Void>) -> (Void))
     public typealias ReadyToUpdateSubscribersCallback = (() -> Void)
     public typealias ReadRequestCallback = ((CBATTRequest) -> Void)
@@ -202,7 +202,7 @@ extension PeripheralManager {
 }
 
 extension PeripheralManager: CBPeripheralManagerDelegateType {
-    public func peripheralManagerDidUpdateState(_ peripheral: CBPeripheralManager) {
+    public func peripheralManagerDidUpdateState(_ peripheral: CBPeripheralManagerType) {
         Logger.debug("peripheral manager updated state: \(state)")
         stateChangedCallback?(state)
         delegate?.didUpdateState(state, from: self)
@@ -220,19 +220,20 @@ extension PeripheralManager: CBPeripheralManagerDelegateType {
         Logger.debug("Wait for state attempts: \(waitForStateAttempts).")
     }
     
-    public func peripheralManager(_ peripheral: CBPeripheralManager, didAdd service: CBService, error: Error?) {
+    public func peripheralManager(_ peripheral: CBPeripheralManagerType, didAdd service: CBServiceType, error: Error?) {
         if let attempt = addServiceAttempts.filter({ $0.service.uuid.uuidString == service.uuid.uuidString }).first {
             if let error = error {
                 attempt.completion(.failure(PeripheralManagerError.cbError(error)))
             }
             else {
+                let service = Service(with: service)
                 attempt.completion(.success(service))
             }
             addServiceAttempts.remove(attempt)
         }
     }
     
-    public func peripheralManagerDidStartAdvertising(_ peripheral: CBPeripheralManager, error: Error?) {
+    public func peripheralManagerDidStartAdvertising(_ peripheral: CBPeripheralManagerType, error: Error?) {
         if let error = error {
             startAdvertisingCompletion?(.failure(PeripheralManagerError.cbError(error)))
         }
@@ -241,28 +242,28 @@ extension PeripheralManager: CBPeripheralManagerDelegateType {
         }
     }
     
-    public func peripheralManagerIsReady(toUpdateSubscribers peripheral: CBPeripheralManager) {
+    public func peripheralManagerIsReady(toUpdateSubscribers peripheral: CBPeripheralManagerType) {
         readyToUpdateCallback?()
     }
     
-    public func peripheralManager(_ peripheral: CBPeripheralManager, didReceiveRead request: CBATTRequest) {
+    public func peripheralManager(_ peripheral: CBPeripheralManagerType, didReceiveRead request: CBATTRequest) {
         readRequestCallback?(request)
     }
     
-    public func peripheralManager(_ peripheral: CBPeripheralManager, didReceiveWrite requests: [CBATTRequest]) {
+    public func peripheralManager(_ peripheral: CBPeripheralManagerType, didReceiveWrite requests: [CBATTRequest]) {
         writeRequestsCallback?(requests)
     }
     
-    public func peripheralManager(_ peripheral: CBPeripheralManager, willRestoreState dict: [String : Any]) { }
+    public func peripheralManager(_ peripheral: CBPeripheralManagerType, willRestoreState dict: [String : Any]) { }
     
-    public func peripheralManager(_ peripheral: CBPeripheralManager, central: CBCentral, didSubscribeTo characteristic: CBCharacteristic) { }
+    public func peripheralManager(_ peripheral: CBPeripheralManagerType, central: CBCentral, didSubscribeTo characteristic: CBCharacteristicType) { }
     
-    public func peripheralManager(_ peripheral: CBPeripheralManager, central: CBCentral, didUnsubscribeFrom characteristic: CBCharacteristic) { }
+    public func peripheralManager(_ peripheral: CBPeripheralManagerType, central: CBCentral, didUnsubscribeFrom characteristic: CBCharacteristicType) { }
     
     @available(iOS 11.0, *)
-    public func peripheralManager(_ peripheral: CBPeripheralManager, didOpen channel: CBL2CAPChannel?, error: Error?) { }
+    public func peripheralManager(_ peripheral: CBPeripheralManagerType, didOpen channel: CBL2CAPChannel?, error: Error?) { }
     
-    public func peripheralManager(_ peripheral: CBPeripheralManager, didPublishL2CAPChannel PSM: CBL2CAPPSM, error: Error?) { }
+    public func peripheralManager(_ peripheral: CBPeripheralManagerType, didPublishL2CAPChannel PSM: CBL2CAPPSM, error: Error?) { }
     
-    public func peripheralManager(_ peripheral: CBPeripheralManager, didUnpublishL2CAPChannel PSM: CBL2CAPPSM, error: Error?) { }
+    public func peripheralManager(_ peripheral: CBPeripheralManagerType, didUnpublishL2CAPChannel PSM: CBL2CAPPSM, error: Error?) { }
 }

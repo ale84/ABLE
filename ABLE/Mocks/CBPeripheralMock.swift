@@ -10,62 +10,12 @@ import Foundation
 import CoreBluetooth
 
 public class CBPeripheralMock: CBPeripheralType {
-    
-    enum DiscoverServicesError: Error {
-        case discoveryFailed
-    }
-    enum DiscoverCharacteristicError: Error {
-        case discoveryFailed
-    }
-    enum ReadValueError: Error {
-        case readFailed
-    }
-    enum WriteValueError: Error {
-        case writeFailed
-    }
-    enum NotifyError: Error {
-        case updateStateFailure
-    }
-    enum ReadRSSIError: Error {
-        case readFailed
-    }
-    
-    enum DiscoverServicesBehaviour {
-        case success(with: [CBServiceType], after: TimeInterval)
-        case failure
-    }
-    
-    enum DiscoverCharacteristicsBehaviour {
-        case success(with: CBServiceType, after: TimeInterval)
-        case failure
-    }
-    
-    enum ReadValueBehaviour {
-        case success
-        case failure
-    }
-    
-    enum WriteValueBehaviour {
-        case success
-        case failure
-    }
-    
-    enum NotifyBehaviour {
-        case success
-        case failure
-    }
-    
-    enum ReadRSSIBehaviour {
-        case success
-        case failure
-    }
-    
-    var discoverServicesBehaviour: DiscoverServicesBehaviour = .success(with: [], after: 0)
-    var discoverCharacteristicsBehaviour: DiscoverCharacteristicsBehaviour = .failure
-    var readValueBehaviour: ReadValueBehaviour = .success
-    var writeValueBehaviour: WriteValueBehaviour = .success
-    var notifyBehaviour: NotifyBehaviour = .success
-    var readRSSIBehaviour: ReadRSSIBehaviour = .success
+    public var discoverServicesBehaviour: DiscoverServicesBehaviour = .success(with: [], after: 0)
+    public var discoverCharacteristicsBehaviour: DiscoverCharacteristicsBehaviour = .failure
+    public var readValueBehaviour: ReadValueBehaviour = .success
+    public var writeValueBehaviour: WriteValueBehaviour = .success
+    public var notifyBehaviour: NotifyBehaviour = .success
+    public var readRSSIBehaviour: ReadRSSIBehaviour = .success
 
     public var cbDelegate: CBPeripheralDelegateType?
     
@@ -152,4 +102,61 @@ public class CBPeripheralMock: CBPeripheralType {
     public func readValue(for descriptor: CBDescriptor) { }
     
     public func writeValue(_ data: Data, for descriptor: CBDescriptor) { }
+    
+    public func openL2CAPChannel(_ PSM: CBL2CAPPSM) { }
+}
+
+// MARK: Behaviours.
+extension CBPeripheralMock {
+    public enum DiscoverServicesBehaviour {
+        case success(with: [CBServiceType], after: TimeInterval)
+        case failure
+    }
+    
+    public enum DiscoverCharacteristicsBehaviour {
+        case success(with: CBServiceType, after: TimeInterval)
+        case failure
+    }
+    
+    public enum ReadValueBehaviour {
+        case success
+        case failure
+    }
+    
+    public enum WriteValueBehaviour {
+        case success
+        case failure
+    }
+    
+    public enum NotifyBehaviour {
+        case success
+        case failure
+    }
+    
+    public enum ReadRSSIBehaviour {
+        case success
+        case failure
+    }
+}
+
+// MARK: Errors.
+extension CBPeripheralMock {
+    public enum DiscoverServicesError: Error {
+        case discoveryFailed
+    }
+    public enum DiscoverCharacteristicError: Error {
+        case discoveryFailed
+    }
+    public enum ReadValueError: Error {
+        case readFailed
+    }
+    public enum WriteValueError: Error {
+        case writeFailed
+    }
+    public enum NotifyError: Error {
+        case updateStateFailure
+    }
+    public enum ReadRSSIError: Error {
+        case readFailed
+    }
 }

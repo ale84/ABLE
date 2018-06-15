@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		6005C02F20D3B5FA00428356 /* PeripheralManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6005C02E20D3B5FA00428356 /* PeripheralManagerTests.swift */; };
 		6058344320CEA97500AD216C /* CBPeripheralManagerType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6058344220CEA97400AD216C /* CBPeripheralManagerType.swift */; };
 		6058344520CEAB0200AD216C /* CBPeripheralManagerDelegateType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6058344420CEAB0200AD216C /* CBPeripheralManagerDelegateType.swift */; };
 		6058344720CEAC2200AD216C /* CBPeripheralManagerDelegateProxy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6058344620CEAC2200AD216C /* CBPeripheralManagerDelegateProxy.swift */; };
@@ -52,6 +53,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		6005C02E20D3B5FA00428356 /* PeripheralManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PeripheralManagerTests.swift; sourceTree = "<group>"; };
 		6058344220CEA97400AD216C /* CBPeripheralManagerType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CBPeripheralManagerType.swift; sourceTree = "<group>"; };
 		6058344420CEAB0200AD216C /* CBPeripheralManagerDelegateType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CBPeripheralManagerDelegateType.swift; sourceTree = "<group>"; };
 		6058344620CEAC2200AD216C /* CBPeripheralManagerDelegateProxy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CBPeripheralManagerDelegateProxy.swift; sourceTree = "<group>"; };
@@ -151,6 +153,7 @@
 				607A704C20C91CD200796BDC /* Info.plist */,
 				607A704A20C91CD200796BDC /* CentralManagerTests.swift */,
 				60EA316E20D2594E0072B5CA /* PeripheralTests.swift */,
+				6005C02E20D3B5FA00428356 /* PeripheralManagerTests.swift */,
 			);
 			path = ABLETests;
 			sourceTree = "<group>";
@@ -348,6 +351,7 @@
 			files = (
 				607A704B20C91CD200796BDC /* CentralManagerTests.swift in Sources */,
 				60EA316F20D2594E0072B5CA /* PeripheralTests.swift in Sources */,
+				6005C02F20D3B5FA00428356 /* PeripheralManagerTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

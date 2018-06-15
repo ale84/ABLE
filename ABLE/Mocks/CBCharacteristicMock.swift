@@ -20,7 +20,7 @@ public class CBCharacteristicMock: CBCharacteristicType {
     
     public var uuid: CBUUID
     
-    init(with id: CBUUID = CBUUID(), properties: CBCharacteristicProperties = []) {
+    public init(with id: CBUUID = CBUUID(), properties: CBCharacteristicProperties = []) {
         self.uuid = id
         self.properties = properties
     }
