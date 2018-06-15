@@ -16,7 +16,7 @@ public protocol CBCentralManagerType: CBManagerType {
     func retrievePeripherals(withIdentifiers identifiers: [UUID]) -> [CBPeripheralType]
     func scanForPeripherals(withServices: [CBUUID]?, options: [String : Any]?)
     func stopScan()
-    var delegateType: CBCentralManagerDelegateType? { get set }
+    var cbDelegate: CBCentralManagerDelegateType? { get set }
 }
 
 extension CBCentralManager: CBCentralManagerType {
@@ -29,7 +29,7 @@ extension CBCentralManager: CBCentralManagerType {
         cancelPeripheralConnection(peripheral as! CBPeripheral)
     }
     
-    public var delegateType: CBCentralManagerDelegateType? {
+    public var cbDelegate: CBCentralManagerDelegateType? {
         get {
             return nil
         }

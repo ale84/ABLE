@@ -67,7 +67,7 @@ public class CBPeripheralMock: CBPeripheralType {
     var notifyBehaviour: NotifyBehaviour = .success
     var readRSSIBehaviour: ReadRSSIBehaviour = .success
 
-    public var delegateType: CBPeripheralDelegateType?
+    public var cbDelegate: CBPeripheralDelegateType?
     
     public var name: String?
     
@@ -84,10 +84,10 @@ public class CBPeripheralMock: CBPeripheralType {
         case .success(let services, let interval):
             delay(interval) {
                 self.cbServices = services
-                self.delegateType?.peripheral(self, didDiscoverServices: nil)
+                self.cbDelegate?.peripheral(self, didDiscoverServices: nil)
             }
         case .failure:
-            delegateType?.peripheral(self, didDiscoverServices: DiscoverServicesError.discoveryFailed)
+            cbDelegate?.peripheral(self, didDiscoverServices: DiscoverServicesError.discoveryFailed)
         }
     }
     
@@ -97,10 +97,10 @@ public class CBPeripheralMock: CBPeripheralType {
         switch discoverCharacteristicsBehaviour {
         case .success(let service, let interval):
             delay(interval) {
-                self.delegateType?.peripheral(self, didDiscoverCharacteristicsFor: service, error: nil)
+                self.cbDelegate?.peripheral(self, didDiscoverCharacteristicsFor: service, error: nil)
             }
         case .failure:
-            delegateType?.peripheral(self, didDiscoverCharacteristicsFor: service, error: DiscoverCharacteristicError.discoveryFailed)
+            cbDelegate?.peripheral(self, didDiscoverCharacteristicsFor: service, error: DiscoverCharacteristicError.discoveryFailed)
         }
     }
     
@@ -109,30 +109,30 @@ public class CBPeripheralMock: CBPeripheralType {
     public func readValue(for characteristic: CBCharacteristicType) {
         switch readValueBehaviour {
         case .success:
-            delegateType?.peripheral(self, didUpdateValueFor: characteristic, error: nil)
+            cbDelegate?.peripheral(self, didUpdateValueFor: characteristic, error: nil)
         case .failure:
-            delegateType?.peripheral(self, didUpdateValueFor: characteristic, error: ReadValueError.readFailed)
+            cbDelegate?.peripheral(self, didUpdateValueFor: characteristic, error: ReadValueError.readFailed)
         }
     }
     
     public func writeValue(_ data: Data, for characteristic: CBCharacteristicType, type: CBCharacteristicWriteType) {
         switch writeValueBehaviour {
         case .success:
-            delegateType?.peripheral(self, didWriteValueFor: characteristic, error: nil)
+            cbDelegate?.peripheral(self, didWriteValueFor: characteristic, error: nil)
         case .failure:
-            delegateType?.peripheral(self, didWriteValueFor: characteristic, error: WriteValueError.writeFailed)
+            cbDelegate?.peripheral(self, didWriteValueFor: characteristic, error: WriteValueError.writeFailed)
         }
     }
     
     public func setNotifyValue(_ enabled: Bool, for characteristic: CBCharacteristicType) {
         switch notifyBehaviour {
         case .success:
-            delegateType?.peripheral(self, didUpdateNotificationStateFor: characteristic, error: nil)
+            cbDelegate?.peripheral(self, didUpdateNotificationStateFor: characteristic, error: nil)
             if enabled {
-                delegateType?.peripheral(self, didUpdateValueFor: characteristic, error: nil)
+                cbDelegate?.peripheral(self, didUpdateValueFor: characteristic, error: nil)
             }
         case .failure:
-            delegateType?.peripheral(self, didUpdateNotificationStateFor: characteristic, error: NotifyError.updateStateFailure)
+            cbDelegate?.peripheral(self, didUpdateNotificationStateFor: characteristic, error: NotifyError.updateStateFailure)
         }
     }
     
@@ -143,9 +143,9 @@ public class CBPeripheralMock: CBPeripheralType {
     public func readRSSI() {
         switch readRSSIBehaviour {
         case .success:
-            delegateType?.peripheral(self, didReadRSSI: NSNumber(value: -30), error: nil)
+            cbDelegate?.peripheral(self, didReadRSSI: NSNumber(value: -30), error: nil)
         case .failure:
-            delegateType?.peripheral(self, didReadRSSI: NSNumber(value: 0), error: ReadRSSIError.readFailed)
+            cbDelegate?.peripheral(self, didReadRSSI: NSNumber(value: 0), error: ReadRSSIError.readFailed)
         }
     }
     

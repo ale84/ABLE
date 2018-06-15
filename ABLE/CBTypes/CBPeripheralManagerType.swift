@@ -22,11 +22,11 @@ public protocol CBPeripheralManagerType: class, CBManagerType {
     func setDesiredConnectionLatency(_ latency: CBPeripheralManagerConnectionLatency, for central: CBCentral)
 //    func publishL2CAPChannel(withEncryption encryptionRequired: Bool)
 //    func unpublishL2CAPChannel(_ PSM: CBL2CAPPSM)
-    var delegateType: CBPeripheralManagerDelegateType? { get set }
+    var cbDelegate: CBPeripheralManagerDelegateType? { get set }
 }
 
 extension CBPeripheralManager: CBPeripheralManagerType {
-    weak public var delegateType: CBPeripheralManagerDelegateType? {
+    weak public var cbDelegate: CBPeripheralManagerDelegateType? {
         get {
             return nil
         }

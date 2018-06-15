@@ -10,7 +10,7 @@ import Foundation
 import CoreBluetooth
 
 public class CBPeripheralManagerMock: CBPeripheralManagerType {
-    public var delegateType: CBPeripheralManagerDelegateType?
+    public var cbDelegate: CBPeripheralManagerDelegateType?
     public var managerState: ManagerState = .poweredOn
     public var isAdvertising: Bool = false
     

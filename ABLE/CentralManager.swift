@@ -162,7 +162,7 @@ public class CentralManager: NSObject {
         self.delegate = delegate
         super.init()
         retrieveCachedPeripherals()
-        cbCentralManager.delegateType = self
+        cbCentralManager.cbDelegate = self
     }
     
     public var state: ManagerState {

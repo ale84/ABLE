@@ -111,7 +111,7 @@ public class PeripheralManager: NSObject {
     public init(with peripheralManager: CBPeripheralManagerType, delegate: PeripheralManagerDelegate? = nil, queue: DispatchQueue?, options: [String : Any]? = nil) {
         cbPeripheralManager = peripheralManager
         super.init()
-        cbPeripheralManager.delegateType = self
+        cbPeripheralManager.cbDelegate = self
     }
     
     public func waitForPoweredOn(withTimeout timeout: TimeInterval = 3, completion: @escaping WaitForStateCompletion) {

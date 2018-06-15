@@ -26,7 +26,7 @@ public protocol CBPeripheralType: class, CBPeerType {
     var canSendWriteWithoutResponse: Bool { get }
     func maximumWriteValueLength(for type: CBCharacteristicWriteType) -> Int
     //func openL2CAPChannel(_ PSM: CBL2CAPPSM)
-    var delegateType: CBPeripheralDelegateType? { get set }
+    var cbDelegate: CBPeripheralDelegateType? { get set }
 }
 
 extension CBPeripheral: CBPeripheralType {
@@ -58,7 +58,7 @@ extension CBPeripheral: CBPeripheralType {
         discoverCharacteristics(characteristicUUIDs, for: service as! CBService)
     }
     
-    weak public var delegateType: CBPeripheralDelegateType? {
+    weak public var cbDelegate: CBPeripheralDelegateType? {
         get {
             return nil
         }

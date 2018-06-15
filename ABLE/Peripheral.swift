@@ -133,7 +133,7 @@ public class Peripheral: NSObject {
         self.advertisements = PeripheralAdvertisements(advertisements: advertisements)
         self.RSSI = RSSI
         super.init()
-        peripheral.delegateType = self
+        peripheral.cbDelegate = self
         
         if let peripheral = peripheral as? CBPeripheral {
             self.peripheralDelegateProxy = CBPeripheralDelegateProxy(withTarget: self)

@@ -46,7 +46,7 @@ public class CBCentralManagerMock: CBCentralManagerType {
     public init() {}
     public var peripherals: [Peripheral] = []
     
-    public var delegateType: CBCentralManagerDelegateType?
+    public var cbDelegate: CBCentralManagerDelegateType?
     
     public func retrievePeripherals(withIdentifiers identifiers: [UUID]) -> [CBPeripheral] {
         return []
@@ -57,10 +57,10 @@ public class CBCentralManagerMock: CBCentralManagerType {
     public func cancelPeripheralConnection(_ peripheral: CBPeripheralType) {
         switch disconnectionBehaviour {
         case .success:
-            delegateType?.centralManager(self, didDisconnectPeripheral: peripheral, error: nil)
+            cbDelegate?.centralManager(self, didDisconnectPeripheral: peripheral, error: nil)
         case .successAfter(let seconds):
             delay(seconds) {
-                self.delegateType?.centralManager(self, didDisconnectPeripheral: peripheral, error: nil)
+                self.cbDelegate?.centralManager(self, didDisconnectPeripheral: peripheral, error: nil)
             }
         }
     }
@@ -74,7 +74,7 @@ public class CBCentralManagerMock: CBCentralManagerType {
     }
     public func scanForPeripherals(withServices: [CBUUID]?, options: [String : Any]?) {
         peripherals.forEach { (peripheral) in
-            delegateType?.centralManager(self, didDiscover: peripheral.cbPeripheral, advertisementData: [:], rssi: NSNumber(value: 0))
+            cbDelegate?.centralManager(self, didDiscover: peripheral.cbPeripheral, advertisementData: [:], rssi: NSNumber(value: 0))
         }
     }
     
@@ -83,13 +83,13 @@ public class CBCentralManagerMock: CBCentralManagerType {
     public func connect(_ peripheral: CBPeripheralType, options: [String : Any]?) {
         switch peripheralConnectionBehaviour {
         case .success:
-            delegateType?.centralManager(self, didConnect: peripheral)
+            cbDelegate?.centralManager(self, didConnect: peripheral)
         case .successAfter(let seconds):
             delay(seconds) {
-                self.delegateType?.centralManager(self, didConnect: peripheral)
+                self.cbDelegate?.centralManager(self, didConnect: peripheral)
             }
         case .failure:
-            delegateType?.centralManager(self, didFailToConnect: peripheral, error: CentralManager.BLEError.connectionFailed(nil))
+            cbDelegate?.centralManager(self, didFailToConnect: peripheral, error: CentralManager.BLEError.connectionFailed(nil))
         }
     }
 }
