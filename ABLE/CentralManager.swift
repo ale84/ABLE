@@ -54,8 +54,8 @@ public class CentralManager: NSObject {
             return lhs.peripheral == rhs.peripheral
         }
         
-        var hashValue: Int {
-            return peripheral.hashValue
+        func hash(into hasher: inout Hasher) {
+            hasher.combine(peripheral.hashValue)
         }
     }
     
@@ -67,8 +67,8 @@ public class CentralManager: NSObject {
             return lhs.peripheral == rhs.peripheral
         }
         
-        var hashValue: Int {
-            return peripheral.hashValue
+        func hash(into hasher: inout Hasher) {
+            hasher.combine(peripheral.hashValue)
         }
     }
     
@@ -81,8 +81,8 @@ public class CentralManager: NSObject {
             return lhs.peripheral == rhs.peripheral
         }
         
-        var hashValue: Int {
-            return peripheral.hashValue
+        func hash(into hasher: inout Hasher) {
+            hasher.combine(peripheral.hashValue)
         }
     }
     
@@ -102,8 +102,8 @@ public class CentralManager: NSObject {
             return lhs.timer == rhs.timer
         }
         
-        var hashValue: Int {
-            return timer.hashValue
+        func hash(into hasher: inout Hasher) {
+            hasher.combine(timer.hashValue)
         }
     }
     

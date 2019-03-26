@@ -47,8 +47,8 @@ public class PeripheralManager: NSObject {
             return lhs.timer == rhs.timer
         }
         
-        var hashValue: Int {
-            return timer.hashValue
+        func hash(into hasher: inout Hasher) {
+            hasher.combine(timer.hashValue)
         }
     }
     
@@ -60,8 +60,8 @@ public class PeripheralManager: NSObject {
             return lhs.hashValue == rhs.hashValue
         }
         
-        var hashValue: Int {
-            return service.hashValue
+        func hash(into hasher: inout Hasher) {
+            hasher.combine(service.hashValue)
         }
     }
 

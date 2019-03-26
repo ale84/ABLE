@@ -32,6 +32,8 @@ public enum ManagerState: Int {
             self = .unknown
         case .unsupported:
             self = .unsupported
+        @unknown default:
+            self = .unknown
         }
     }
     
