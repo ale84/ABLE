@@ -23,6 +23,6 @@ Pod::Spec.new do |spec|
   spec.platform     = :ios
   spec.platform     = :ios, "10.3"
   spec.source       = { :git => "https://github.com/ale84/ABLE.git", :tag => "#{spec.version}" }
-  spec.source_files  = "ABLE", "Classes/**/*.swift"
-
+  spec.source_files  = "ABLE", "ABLE/**/*.swift"
+  spec.swift_version = "5.0"
 end
