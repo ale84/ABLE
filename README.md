@@ -75,5 +75,5 @@ github "ale84/ABLE"
 ### CocoaPods
 Add the following entry to your Podfile:
 ```rb
-pod 'Hero'
+pod 'ABLE'
 ```
