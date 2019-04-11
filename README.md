@@ -63,7 +63,15 @@ peripheralManager.waitForPoweredOn(withTimeout: 6.0) { (state) in
 }
 ```
 # Installation
+
+### Carthage
 If you're using [Carthage](https://github.com/Carthage/Carthage) you can add a dependency on ABLE by adding it to your Cartfile:
 ```
 github "ale84/ABLE"
+```
+
+### CocoaPods
+Add the following entry to your Podfile:
+```rb
+pod 'Hero'
 ```
