@@ -1,6 +1,8 @@
 # ABLE
 [![Build Status](https://travis-ci.org/ale84/ABLE.svg?branch=master)](https://travis-ci.org/ale84/ABLE)
 [![Carthage Compatible](https://img.shields.io/badge/Carthage-compatible-4BC51D.svg?style=flat)](https://github.com/Carthage/Carthage)
+![Cocoapods](https://img.shields.io/cocoapods/v/ABLE.svg)
+![Cocoapods platforms](https://img.shields.io/cocoapods/p/ABLE.svg)
 
 BLE library for iOS.
 
