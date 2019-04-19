@@ -68,8 +68,8 @@ public class PeripheralManager: NSObject {
     // MARK: Aliases.
 
     public typealias WaitForStateCompletion = ((ManagerState) -> (Void))
-    public typealias AddServiceCompletion = ((Result<Service>) -> Void)
-    public typealias StartAdvertisingCompletion = ((Result<Void>) -> (Void))
+    public typealias AddServiceCompletion = ((Result<Service, PeripheralManagerError>) -> Void)
+    public typealias StartAdvertisingCompletion = ((Result<Void, PeripheralManagerError>) -> (Void))
     public typealias ReadyToUpdateSubscribersCallback = (() -> Void)
     public typealias ReadRequestCallback = ((CBATTRequest) -> Void)
     public typealias WriteRequestsCallback = (([CBATTRequest]) -> Void)

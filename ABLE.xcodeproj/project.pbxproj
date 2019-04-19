@@ -13,7 +13,6 @@
 		6058344720CEAC2200AD216C /* CBPeripheralManagerDelegateProxy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6058344620CEAC2200AD216C /* CBPeripheralManagerDelegateProxy.swift */; };
 		6058344920CEB75C00AD216C /* CBPeripheralManagerMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6058344820CEB75C00AD216C /* CBPeripheralManagerMock.swift */; };
 		6058A7C61F0B946500D302E4 /* LICENSE in Resources */ = {isa = PBXBuildFile; fileRef = 6058A7C41F0B946500D302E4 /* LICENSE */; };
-		6058A7C71F0B946500D302E4 /* README.md in Sources */ = {isa = PBXBuildFile; fileRef = 6058A7C51F0B946500D302E4 /* README.md */; };
 		606ECABD1EDEF101003BFA19 /* ABLE.h in Headers */ = {isa = PBXBuildFile; fileRef = 606ECABB1EDEF101003BFA19 /* ABLE.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		606ECAC71EDEF131003BFA19 /* CentralManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 606ECAC31EDEF131003BFA19 /* CentralManager.swift */; };
 		606ECAC81EDEF131003BFA19 /* Peripheral.swift in Sources */ = {isa = PBXBuildFile; fileRef = 606ECAC41EDEF131003BFA19 /* Peripheral.swift */; };
@@ -324,7 +323,6 @@
 				60EA317120D25F7A0072B5CA /* CBServiceType.swift in Sources */,
 				60EA317920D26D860072B5CA /* Service.swift in Sources */,
 				60EA021B20C973100081738E /* CBManagerType.swift in Sources */,
-				6058A7C71F0B946500D302E4 /* README.md in Sources */,
 				60EA021220C970820081738E /* CBCentralManagerMock.swift in Sources */,
 				60EA021420C971740081738E /* CBPeripheralMock.swift in Sources */,
 				606ECACE1EDEF275003BFA19 /* Logger.swift in Sources */,

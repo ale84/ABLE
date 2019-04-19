@@ -105,25 +105,25 @@ public class Peripheral: NSObject {
     
     public private(set) var advertisements: PeripheralAdvertisements
     
-    public typealias ReadRSSICompletion = ((Result<Int>) -> Void)
+    public typealias ReadRSSICompletion = ((Result<Int, PeripheralError>) -> Void)
     private var readRSSICompletion: ReadRSSICompletion?
     
-    public typealias DiscoverServicesCompletion = ((Result<[Service]>) -> Void)
+    public typealias DiscoverServicesCompletion = ((Result<[Service], PeripheralError>) -> Void)
     private var discoverServicesAttempt: DiscoverServicesAttempt?
     
-    public typealias DiscoverCharacteristicsCompletion = ((Result<[Characteristic]>) -> Void)
+    public typealias DiscoverCharacteristicsCompletion = ((Result<[Characteristic], PeripheralError>) -> Void)
     private var discoverCharacteristicsAttempt: DiscoverCharacteristicsAttempt?
     
-    public typealias ReadCharacteristicCompletion = ((Result<Data>) -> Void)
+    public typealias ReadCharacteristicCompletion = ((Result<Data, PeripheralError>) -> Void)
     private var readCharacteristicCompletion: ReadCharacteristicCompletion?
     
-    public typealias WriteCharacteristicCompletion = ((Result<Void>) -> Void)
+    public typealias WriteCharacteristicCompletion = ((Result<Void, PeripheralError>) -> Void)
     private var writeCharacteristicCompletion: WriteCharacteristicCompletion?
     
-    public typealias SetNotifyUpdateStateCompletion = ((Result<Void>) -> Void)
+    public typealias SetNotifyUpdateStateCompletion = ((Result<Void, PeripheralError>) -> Void)
     private var setNotifyUpdateStateCompletion: SetNotifyUpdateStateCompletion?
     
-    public typealias SetNotifyUpdateValueCallback = ((Result<Data>) -> Void)
+    public typealias SetNotifyUpdateValueCallback = ((Result<Data, PeripheralError>) -> Void)
     private var setNotifyUpdateValueCallback: SetNotifyUpdateValueCallback?
     
     private var peripheralDelegateProxy: CBPeripheralDelegateProxy?
@@ -318,7 +318,7 @@ extension Peripheral: CBPeripheralDelegateType {
         let completion = readRSSICompletion
         readRSSICompletion = nil
         if let error = error {
-            completion?(.failure(error))
+            completion?(.failure(PeripheralError.cbError(detail: error)))
         }
         else {
             completion?(.success(RSSI.intValue))

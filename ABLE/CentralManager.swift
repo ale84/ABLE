@@ -18,8 +18,7 @@ public protocol CentralManagerDelegate: class {
 
 public class CentralManager: NSObject {
     
-    /// BLE error.
-    public enum BLEError: Error {
+    public enum CentralManagerError: Error {
         case connectionFailed(Error?)
         case bluetoothNotAvailable(ManagerState)
         case connectionTimeoutReached
@@ -114,8 +113,8 @@ public class CentralManager: NSObject {
     
     // MARK: Aliases.
     
-    public typealias ConnectionCompletion = ((Result<Peripheral>) -> Void)
-    public typealias ScanCompletion = ((Result<[Peripheral]>) -> Void)
+    public typealias ConnectionCompletion = ((Result<Peripheral, CentralManagerError>) -> Void)
+    public typealias ScanCompletion = ((Result<[Peripheral], CentralManagerError>) -> Void)
     public typealias WaitForStateCompletion = ((ManagerState) -> Void)
     public typealias DisconnectionCompletion = ((Peripheral) -> Void)
     
@@ -189,7 +188,7 @@ public class CentralManager: NSObject {
         
         Logger.debug("Attempt to start a new ble scan.")
         guard cbCentralManager.managerState == .poweredOn else {
-            timeout?.completion(.failure(BLEError.bluetoothNotAvailable(state)))
+            timeout?.completion(.failure(CentralManagerError.bluetoothNotAvailable(state)))
             return
         }
         
@@ -223,7 +222,7 @@ public class CentralManager: NSObject {
                     return
                 }
                 if let attempt = strongSelf.connectionAttempts.filter({ $0 === connectionAttempt }).last {
-                    completion(.failure(BLEError.connectionTimeoutReached))
+                    completion(.failure(CentralManagerError.connectionTimeoutReached))
                     strongSelf.connectionAttempts.remove(attempt)
                     strongSelf.disconnect(from: peripheral)
                 }
@@ -387,7 +386,7 @@ extension CentralManager: CBCentralManagerDelegateType {
         if let peripheral = self.peripheral(for: peripheral),
             let attempt = getConnectionAttempt(for: peripheral) {
             connectionAttempts.remove(attempt)
-            attempt.completion(.failure(BLEError.connectionFailed(error)))
+            attempt.completion(.failure(CentralManagerError.connectionFailed(error)))
         }
     }
     

@@ -86,7 +86,7 @@ public class CBCentralManagerMock: CBCentralManagerType {
                 self.cbDelegate?.centralManager(self, didConnect: peripheral)
             }
         case .failure:
-            cbDelegate?.centralManager(self, didFailToConnect: peripheral, error: CentralManager.BLEError.connectionFailed(nil))
+            cbDelegate?.centralManager(self, didFailToConnect: peripheral, error: CentralManager.CentralManagerError.connectionFailed(nil))
         }
     }
 }
