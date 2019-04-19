@@ -9,7 +9,7 @@
 Pod::Spec.new do |spec|
 
   spec.name         = "ABLE"
-  spec.version      = "0.5.1"
+  spec.version      = "0.6.0"
   spec.summary      = "A lightweight Bluetooth library for iOS."
   spec.description  = <<-DESC
   Bluetooth library for iOS.
