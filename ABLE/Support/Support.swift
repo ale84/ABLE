@@ -1,9 +1,9 @@
 //
 //  Support.swift
-//  Cinello
+//  ABLE
 //
 //  Created by Alessio Orlando on 15/05/17.
-//  Copyright © 2017 Cinello. All rights reserved.
+//  Copyright © 2019 Alessio Orlando. All rights reserved.
 //
 
 import Foundation

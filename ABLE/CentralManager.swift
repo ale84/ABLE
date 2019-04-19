@@ -1,9 +1,9 @@
 //
 //  CentralManager.swift
-//  aBLE
+//  ABLE
 //
 //  Created by Alessio Orlando on 09/01/17.
-//  Copyright © 2017 aBLE. All rights reserved.
+//  Copyright © 2019 Alessio Orlando. All rights reserved.
 //
 
 import Foundation
