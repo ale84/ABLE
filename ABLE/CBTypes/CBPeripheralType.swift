@@ -14,7 +14,9 @@ public protocol CBPeripheralType: class, CBPeerType {
     var cbDelegate: CBPeripheralDelegateType? { get set }
     var cbServices: [CBServiceType]? { get }
     var state: CBPeripheralState { get }
+    @available(iOS 11, *)
     var canSendWriteWithoutResponse: Bool { get }
+    
     func discoverServices(_ serviceUUIDs: [CBUUID]?)
     func discoverIncludedServices(_ includedServiceUUIDs: [CBUUID]?, for service: CBServiceType)
     func discoverCharacteristics(_ characteristicUUIDs: [CBUUID]?, for service: CBServiceType)
