@@ -29,6 +29,8 @@ public class CBPeripheralMock: CBPeripheralType {
     
     public var cbServices: [CBServiceType]? = []
     
+    public var ancsAuthorized: Bool = false
+    
     public func discoverServices(_ serviceUUIDs: [CBUUID]?) {
         switch discoverServicesBehaviour {
         case .success(let services, let interval):

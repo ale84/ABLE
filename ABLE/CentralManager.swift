@@ -116,6 +116,7 @@ public class CentralManager: NSObject {
     public typealias DisconnectionCompletion = ((Peripheral) -> Void)
     public typealias ConnectionEventCallback = ((ConnectionEvent) -> Void)
     public typealias ConnectionEvent = (event: CBConnectionEvent, peripheral: Peripheral)
+    public typealias AncsAuthUpdateCallback = ((Peripheral) -> Void)
     
     // MARK: -.
     
@@ -126,6 +127,7 @@ public class CentralManager: NSObject {
     private var connectionInfos: Set<ConnectionInfo> = []
     private var waitForStateAttempts: Set<WaitForStateAttempt> = []
     private var connectionEventCallback: ConnectionEventCallback?
+    private var ancsUpdateCallback: AncsAuthUpdateCallback?
     
     public private (set) var cbCentralManager: CBCentralManagerType
     public private (set) var centralQueue: DispatchQueue
@@ -215,7 +217,12 @@ public class CentralManager: NSObject {
         Logger.debug("ble scan stopped.")
     }
     
-    public func connect(to peripheral: Peripheral, options: [String : Any]? = nil, attemptTimeout: TimeInterval? = nil, connectionTimeout: TimeInterval? = nil, completion: @escaping ConnectionCompletion) {
+    public func connect(to peripheral: Peripheral,
+                        options: [String : Any]? = nil,
+                        attemptTimeout: TimeInterval? = nil,
+                        connectionTimeout: TimeInterval? = nil,
+                        completion: @escaping ConnectionCompletion)
+    {
         let connectionAttempt = ConnectionAttempt(with: peripheral, connectionTimeout: connectionTimeout, completion: completion)
         connectionAttempts.update(with: connectionAttempt)
 
@@ -255,6 +262,11 @@ public class CentralManager: NSObject {
         connectionEventCallback = callback
         cbCentralManager.registerForConnectionEvents(options: options)
         Logger.debug("registered for connection events with options: \(String(describing: options))")
+    }
+    
+    @available(iOS 13.0, *)
+    public func startReceivingAncsAuthUpdates(update: @escaping AncsAuthUpdateCallback) {
+        self.ancsUpdateCallback = update
     }
     
     private func disconnectAll() {

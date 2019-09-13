@@ -103,6 +103,11 @@ public class Peripheral: NSObject {
         return cbPeripheral.state
     }
     
+    @available(iOS 13.0, *)
+    public var ancsAuthorized: Bool {
+        return cbPeripheral.ancsAuthorized
+    }
+    
     public private(set) var advertisements: PeripheralAdvertisements
     
     public typealias ReadRSSICompletion = ((Result<Int, PeripheralError>) -> Void)
