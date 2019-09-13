@@ -56,6 +56,32 @@ public enum ManagerState: Int {
     }
 }
 
+@available (iOS 13.0, *)
+public enum ManagerAuthorization: Int {
+    case allowedAlways
+    case denied
+    case notDetermined
+    case restricted
+}
+
+@available (iOS 13.0, *)
+public extension ManagerAuthorization {
+    init(authorization: CBManagerAuthorization) {
+        switch authorization {
+        case .allowedAlways:
+            self = .allowedAlways
+        case .denied:
+            self = .denied
+        case .notDetermined:
+            self = .notDetermined
+        case .restricted:
+            self = .restricted
+        @unknown default:
+            fatalError("Unhandled enum case: \(authorization)")
+        }
+    }
+}
+
 /// Delays the execution of a given closure.
 ///
 /// - Parameters:

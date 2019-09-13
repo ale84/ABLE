@@ -97,6 +97,11 @@ public class PeripheralManager: NSObject {
         return cbPeripheralManager.managerState
     }
     
+    @available(iOS 13.0, *)
+    public var authorization: ManagerAuthorization {
+        return cbPeripheralManager.managerAuthorization
+    }
+    
     public var isAdvertising: Bool {
         return cbPeripheralManager.isAdvertising
     }
@@ -128,6 +133,7 @@ public class PeripheralManager: NSObject {
         waitForStateAttempts.update(with: waitForStateAttempt)
     }
     
+    @available(iOS, deprecated: 13.0)
     public class func authorizationStatus() -> CBPeripheralManagerAuthorizationStatus {
         return CBPeripheralManager.authorizationStatus()
     }

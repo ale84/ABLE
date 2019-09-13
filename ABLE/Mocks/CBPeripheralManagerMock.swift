@@ -12,10 +12,16 @@ import CoreBluetooth
 public class CBPeripheralManagerMock: CBPeripheralManagerType {
     
     public var cbDelegate: CBPeripheralManagerDelegateType?
+    
     public var managerState: ManagerState = .poweredOn
+    
+    @available(iOS 13.0, *)
+    public lazy var managerAuthorization: ManagerAuthorization = .allowedAlways
+    
     public var isAdvertising: Bool = false
     
     public var addServiceBehaviour: AddServiceBehaviour = .success
+    
     public var startAdvertiseBehaviour: StartAdvertiseBehaviour = .success
     
     public init() { }
