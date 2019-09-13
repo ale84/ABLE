@@ -1,7 +1,4 @@
 //
-//  CentralManager.swift
-//  ABLE
-//
 //  Created by Alessio Orlando on 09/01/17.
 //  Copyright © 2019 Alessio Orlando. All rights reserved.
 //
@@ -117,6 +114,8 @@ public class CentralManager: NSObject {
     public typealias ScanCompletion = ((Result<[Peripheral], CentralManagerError>) -> Void)
     public typealias WaitForStateCompletion = ((ManagerState) -> Void)
     public typealias DisconnectionCompletion = ((Peripheral) -> Void)
+    public typealias ConnectionEventCallback = ((ConnectionEvent) -> Void)
+    public typealias ConnectionEvent = (event: CBConnectionEvent, peripheral: Peripheral)
     
     // MARK: -.
     
@@ -126,6 +125,7 @@ public class CentralManager: NSObject {
     private var disconnectionRequests: Set<DisconnectionRequest> = []
     private var connectionInfos: Set<ConnectionInfo> = []
     private var waitForStateAttempts: Set<WaitForStateAttempt> = []
+    private var connectionEventCallback: ConnectionEventCallback?
     
     public private (set) var cbCentralManager: CBCentralManagerType
     public private (set) var centralQueue: DispatchQueue
@@ -147,7 +147,10 @@ public class CentralManager: NSObject {
     private var scanAttempt: ScanAttempt?
     private var cbDelegateProxy: CBCentralManagerDelegateProxy?
     
-    public convenience init(withDelegate delegate: CentralManagerDelegate? = nil, queue: DispatchQueue?, options: [String : Any]? = nil, userDefaults: UserDefaults = UserDefaults.standard) {
+    public convenience init(withDelegate delegate: CentralManagerDelegate? = nil,
+                            queue: DispatchQueue?,
+                            options: [String : Any]? = nil,
+                            userDefaults: UserDefaults = UserDefaults.standard) {
         let manager = CBCentralManager(delegate: nil, queue: queue, options: options)
         self.init(with: manager, delegate: delegate, queue: queue, options: options, userDefaults: userDefaults)
         self.cbDelegateProxy = CBCentralManagerDelegateProxy(withTarget: self)
@@ -244,6 +247,14 @@ public class CentralManager: NSObject {
         
         cbCentralManager.cancelPeripheralConnection(peripheral.cbPeripheral)
         Logger.debug("ble disconnected from peripheral: \(peripheral.cbPeripheral).")
+    }
+    
+    @available(iOS 13.0, *)
+    public func registerForConnectionEvents(options: [CBConnectionEventMatchingOption : Any]? = nil,
+                                            callback: @escaping ConnectionEventCallback) {
+        connectionEventCallback = callback
+        cbCentralManager.registerForConnectionEvents(options: options)
+        Logger.debug("registered for connection events with options: \(String(describing: options))")
     }
     
     private func disconnectAll() {
@@ -418,5 +429,15 @@ extension CentralManager: CBCentralManagerDelegateType {
             addConnectionInfo(for: peripheral, timeout: attempt.connectionTimeout)
             attempt.completion(.success(peripheral))
         }
+    }
+    
+    public func centralManager(_ central: CBCentralManagerType,
+                               connectionEventDidOccur event: CBConnectionEvent,
+                               for peripheral: CBPeripheralType) {
+        
+        let peripheral = Peripheral(with: peripheral)
+        connectionEventCallback?(ConnectionEvent(event: event, peripheral: peripheral))
+        
+        Logger.debug("connection event did occur: \(event), peripheral: \(peripheral)")
     }
 }

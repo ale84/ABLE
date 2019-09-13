@@ -89,4 +89,8 @@ public class CBCentralManagerMock: CBCentralManagerType {
             cbDelegate?.centralManager(self, didFailToConnect: peripheral, error: CentralManager.CentralManagerError.connectionFailed(nil))
         }
     }
+    
+    public func registerForConnectionEvents(options: [CBConnectionEventMatchingOption : Any]?) {
+        // TODO: Implement mocked behavior.
+    }
 }

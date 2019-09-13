@@ -1,7 +1,4 @@
 //
-//  CBCentralManagerType.swift
-//  ABLE
-//
 //  Created by Alessio Orlando on 07/06/18.
 //  Copyright © 2019 Alessio Orlando. All rights reserved.
 //
@@ -17,6 +14,8 @@ public protocol CBCentralManagerType: CBManagerType {
     func retrievePeripherals(withIdentifiers identifiers: [UUID]) -> [CBPeripheralType]
     func scanForPeripherals(withServices: [CBUUID]?, options: [String : Any]?)
     func stopScan()
+    @available(iOS 13.0, *)
+    func registerForConnectionEvents(options: [CBConnectionEventMatchingOption : Any]?)
 }
 
 extension CBCentralManager: CBCentralManagerType {
