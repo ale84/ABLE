@@ -1,7 +1,4 @@
 //
-//  CentralManagerMock.swift
-//  ABLE
-//
 //  Created by Alessio Orlando on 07/06/18.
 //  Copyright © 2019 Alessio Orlando. All rights reserved.
 //
@@ -26,6 +23,11 @@ public class CBCentralManagerMock: CBCentralManagerType {
         case successAfter(seconds: TimeInterval)
     }
     
+    public enum ConnectionEventBehaviour {
+        case generateEvent(event: CBConnectionEvent, after: TimeInterval)
+        case idle
+    }
+    
     public var waitForPoweredOnBehaviour: WaitForPoweredOnBehaviour = .alreadyPoweredOn {
         didSet {
             switch waitForPoweredOnBehaviour {
@@ -41,8 +43,10 @@ public class CBCentralManagerMock: CBCentralManagerType {
     }
     public var peripheralConnectionBehaviour: ConnectPeripheralBehaviour = .success(after: 0)
     public var disconnectionBehaviour: DisconnectPeripheralBehaviour = .success
+    public var connectionEventBehaviour: ConnectionEventBehaviour = .generateEvent(event: .peerConnected, after: 2.0)
     
     public init() {}
+    
     public var peripherals: [Peripheral] = []
     
     public var cbDelegate: CBCentralManagerDelegateType?
@@ -93,7 +97,20 @@ public class CBCentralManagerMock: CBCentralManagerType {
         }
     }
     
+    @available(iOS 13.0, *)
     public func registerForConnectionEvents(options: [CBConnectionEventMatchingOption : Any]?) {
-        // TODO: Implement mocked behavior.
+        switch connectionEventBehaviour {
+        case .generateEvent(let event, let after):
+            
+            let peripheralMock = CBPeripheralMock()
+            peripheralMock.name = "ConnectionEventTest"
+            
+            delay(after) {
+                self.cbDelegate?.centralManager(self, connectionEventDidOccur: event, for: peripheralMock)
+            }
+        case .idle:
+            break
+        }
+        
     }
 }

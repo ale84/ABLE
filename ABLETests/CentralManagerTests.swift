@@ -1,7 +1,4 @@
 //
-//  CentralManagerTests.swift
-//  CentralManagerTests
-//
 //  Created by Alessio Orlando on 07/06/18.
 //  Copyright © 2019 Alessio Orlando. All rights reserved.
 //
@@ -197,5 +194,19 @@ class CentralManagerTests: XCTestCase {
         }
         
         wait(for: [expectation], timeout: 2)
+    }
+    
+    @available(iOS 13.0, *)
+    func testRegisterForConnectionEvents() {
+        centralMock.connectionEventBehaviour = .generateEvent(event: .peerConnected, after: 2)
+        
+        let expectation = XCTestExpectation(description: "Central should produce a connection event after the specified time interval has passed.")
+        
+        central.registerForConnectionEvents { (event) in
+            XCTAssert(event.event == .peerConnected, "state should be powered on.")
+            expectation.fulfill()
+        }
+        
+        wait(for: [expectation], timeout: 2.5)
     }
 }
