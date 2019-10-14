@@ -66,9 +66,9 @@ class CentralManagerTests: XCTestCase {
 
         centralMock.managerState = .poweredOn
         
-        central.scanForPeripherals(withServices: nil, timeout: (interval: 3.0, completion: { result in
+        central.scanForPeripherals(withServices: nil, timeoutInterval: 3.0) { result in
             expectation.fulfill()
-        }), options: nil)
+        }
         
         wait(for: [expectation], timeout: 3.0)
 

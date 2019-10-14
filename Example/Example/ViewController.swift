@@ -18,27 +18,33 @@ class ViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        central = CentralManager(queue: DispatchQueue.main)
+        central = CentralManager(queue: DispatchQueue.main) { state in
+            print("Updated bluetooth state: \(state)")
+        }
         
         // Wait for powered on state to begin using the central, specifying the desired timeout. You can also set yourself as delegate to receive all state change notification if you need to.
         central.waitForPoweredOn(withTimeout: 6.0) { (state) in
             guard state == .poweredOn else {
                 return
             }
-
-            self.central.scanForPeripherals(withServices: nil, timeout: (interval: 6.0, completion: { result in
-                switch result {
-                case .success(let peripherals):
-                    print("found peripherals: \(peripherals)")
-                    // Connect to peripheral...
-                case .failure(let error):
-                    print("scan error: \(error)")
-                    // Handle error.
-                }
-            }))
+            
+            self.central.scanForPeripherals(withServices: nil,
+                                            update: ({ print("found peripheral: \($0)") }),
+                                            timeoutInterval: 6.0) { result in
+                                                switch result {
+                                                case .success(let peripherals):
+                                                    print("timeout reached: \(peripherals)")
+                                                // Connect to peripheral...
+                                                case .failure(let error):
+                                                    print("scan error: \(error)")
+                                                    // Handle error.
+                                                }
+            }
         }
 
-        peripheralManager = PeripheralManager(queue: DispatchQueue.main)
+        peripheralManager = PeripheralManager(queue: DispatchQueue.main) { state in
+            print("Updated bluetooth state: \(state)")
+        }
 
         peripheralManager.waitForPoweredOn(withTimeout: 6.0) { (state) in
             guard state == .poweredOn else {

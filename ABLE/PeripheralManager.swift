@@ -6,10 +6,6 @@
 import Foundation
 import CoreBluetooth
 
-public protocol PeripheralManagerDelegate: class {
-    func didUpdateState(_ state: ManagerState, from peripheralManager: PeripheralManager)
-}
-
 public class PeripheralManager: NSObject {
     
     // MARK: Enums.
@@ -64,6 +60,7 @@ public class PeripheralManager: NSObject {
 
     // MARK: Aliases.
 
+    public typealias BluetoothStateUpdate = ((ManagerState) -> Void)
     public typealias WaitForStateCompletion = ((ManagerState) -> (Void))
     public typealias AddServiceCompletion = ((Result<Service, PeripheralManagerError>) -> Void)
     public typealias StartAdvertisingCompletion = ((Result<Void, PeripheralManagerError>) -> (Void))
@@ -73,14 +70,12 @@ public class PeripheralManager: NSObject {
     public typealias StateChangedCallback = ((ManagerState) -> Void)
 
     // MARK: -.
-
-    public weak var delegate: PeripheralManagerDelegate?
     
+    private var bluetoothStateUpdate: BluetoothStateUpdate?
     private var waitForStateAttempts: Set<WaitForStateAttempt> = []
     private var addServiceCompletion: AddServiceCompletion?
     private var startAdvertisingCompletion: StartAdvertisingCompletion?
     private var readyToUpdateCallback: ReadyToUpdateSubscribersCallback?
-    
     private var addServiceAttempts: Set<AddServiceAttempt> = []
     
     private (set) var cbPeripheralManager: CBPeripheralManagerType
@@ -103,17 +98,25 @@ public class PeripheralManager: NSObject {
         return cbPeripheralManager.isAdvertising
     }
     
-    public convenience init(_ delegate: PeripheralManagerDelegate? = nil, queue: DispatchQueue?, options: [String : Any]? = nil) {
-        let manager = CBPeripheralManager(delegate: nil, queue: queue, options: options)
-        self.init(with: manager, delegate: delegate, queue: queue, options: options)
-        self.cbPeripheralManagerDelegateProxy = CBPeripheralManagerDelegateProxy(withTarget: self)
-        manager.delegate = cbPeripheralManagerDelegateProxy
+    public init(with peripheralManager: CBPeripheralManagerType,
+                queue: DispatchQueue?,
+                options: [String : Any]? = nil,
+                stateUpdate: BluetoothStateUpdate? = nil) {
+        cbPeripheralManager = peripheralManager
+        bluetoothStateUpdate = stateUpdate
+        
+        super.init()
+        
+        cbPeripheralManager.cbDelegate = self
     }
     
-    public init(with peripheralManager: CBPeripheralManagerType, delegate: PeripheralManagerDelegate? = nil, queue: DispatchQueue?, options: [String : Any]? = nil) {
-        cbPeripheralManager = peripheralManager
-        super.init()
-        cbPeripheralManager.cbDelegate = self
+    public convenience init(queue: DispatchQueue?,
+                            options: [String : Any]? = nil,
+                            stateUpdate: BluetoothStateUpdate? = nil) {
+        let manager = CBPeripheralManager(delegate: nil, queue: queue, options: options)
+        self.init(with: manager, queue: queue, options: options)
+        self.cbPeripheralManagerDelegateProxy = CBPeripheralManagerDelegateProxy(withTarget: self)
+        manager.delegate = cbPeripheralManagerDelegateProxy
     }
     
     public func waitForPoweredOn(withTimeout timeout: TimeInterval = 3, completion: @escaping WaitForStateCompletion) {
@@ -207,9 +210,8 @@ extension PeripheralManager {
 extension PeripheralManager: CBPeripheralManagerDelegateType {
     public func peripheralManagerDidUpdateState(_ peripheral: CBPeripheralManagerType) {
         Logger.debug("peripheral manager updated state: \(state)")
+
         stateChangedCallback?(state)
-        delegate?.didUpdateState(state, from: self)
-        NotificationCenter.default.post(name: PeripheralManagerNotification.stateChanged.notificationName, object: self, userInfo: ["state": state])
         
         var toRemove: Set<WaitForStateAttempt> = []
         waitForStateAttempts.filter({ $0.isValid && $0.state == state }).forEach {
@@ -220,6 +222,13 @@ extension PeripheralManager: CBPeripheralManagerDelegateType {
             Logger.debug("Invalidated wait for state attempt: \($0).")
         }
         waitForStateAttempts.subtract(toRemove)
+        
+        bluetoothStateUpdate?(state)
+        
+        NotificationCenter.default.post(name: PeripheralManagerNotification.stateChanged.notificationName,
+                                        object: self,
+                                        userInfo: ["state": state])
+        
         Logger.debug("Wait for state attempts: \(waitForStateAttempts).")
     }
     

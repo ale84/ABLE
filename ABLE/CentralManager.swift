@@ -7,12 +7,6 @@ import Foundation
 import UIKit
 import CoreBluetooth
 
-/// BLE Manager delegate.
-public protocol CentralManagerDelegate: class {
-    func didUpdateBluetoothState(_ state: ManagerState, from central: CentralManager)
-    func didDiscoverPeripheral(_ peripheral: Peripheral, from central: CentralManager)
-}
-
 public class CentralManager: NSObject {
     
     public enum CentralManagerError: Error {
@@ -104,35 +98,38 @@ public class CentralManager: NSObject {
     }
     
     private struct ScanAttempt {
-        var completion: ScanCompletion
+        var completion: ScanTimeout
         var timer: Timer
     }
     
     // MARK: Aliases.
     
-    public typealias ConnectionCompletion = ((Result<Peripheral, CentralManagerError>) -> Void)
-    public typealias ScanCompletion = ((Result<[Peripheral], CentralManagerError>) -> Void)
+    public typealias BluetoothStateUpdate = ((ManagerState) -> Void)
     public typealias WaitForStateCompletion = ((ManagerState) -> Void)
+    public typealias ScanUpdate = ((Peripheral) -> Void)
+    public typealias ScanTimeout = ((Result<[Peripheral], CentralManagerError>) -> Void)
+    public typealias ConnectionCompletion = ((Result<Peripheral, CentralManagerError>) -> Void)
     public typealias DisconnectionCompletion = ((Peripheral) -> Void)
-    public typealias ConnectionEventCallback = ((ConnectionEvent) -> Void)
     public typealias ConnectionEvent = (event: CBConnectionEvent, peripheral: Peripheral)
+    public typealias ConnectionEventCallback = ((ConnectionEvent) -> Void)
     public typealias AncsAuthUpdateCallback = ((Peripheral) -> Void)
     
     // MARK: -.
     
     private var userDefaults: UserDefaults
     
-    private var connectionAttempts: Set<ConnectionAttempt> = []
-    private var disconnectionRequests: Set<DisconnectionRequest> = []
-    private var connectionInfos: Set<ConnectionInfo> = []
+    private var bluetoothStateUpdate: BluetoothStateUpdate?
     private var waitForStateAttempts: Set<WaitForStateAttempt> = []
+    private var scanUpdate: ScanUpdate?
+    private var scanAttempt: ScanAttempt?
+    private var connectionAttempts: Set<ConnectionAttempt> = []
+    private var connectionInfos: Set<ConnectionInfo> = []
+    private var disconnectionRequests: Set<DisconnectionRequest> = []
     private var connectionEventCallback: ConnectionEventCallback?
     private var ancsUpdateCallback: AncsAuthUpdateCallback?
     
     public private (set) var cbCentralManager: CBCentralManagerType
     public private (set) var centralQueue: DispatchQueue
-    public weak var delegate: CentralManagerDelegate?
-    
     public private (set) var isScanning: Bool = false
     
     public private (set) var knownPeripherals: Set<UUID> = []
@@ -146,27 +143,32 @@ public class CentralManager: NSObject {
         return ManagerNotification.bluetoothStateChanged.notificationName
     }
     
-    private var scanAttempt: ScanAttempt?
     private var cbDelegateProxy: CBCentralManagerDelegateProxy?
     
-    public convenience init(withDelegate delegate: CentralManagerDelegate? = nil,
-                            queue: DispatchQueue?,
-                            options: [String : Any]? = nil,
-                            userDefaults: UserDefaults = UserDefaults.standard) {
-        let manager = CBCentralManager(delegate: nil, queue: queue, options: options)
-        self.init(with: manager, delegate: delegate, queue: queue, options: options, userDefaults: userDefaults)
-        self.cbDelegateProxy = CBCentralManagerDelegateProxy(withTarget: self)
-        manager.delegate = cbDelegateProxy
-    }
-    
-    public init(with centralManager: CBCentralManagerType, delegate: CentralManagerDelegate? = nil, queue: DispatchQueue?, options: [String : Any]? = nil, userDefaults: UserDefaults = UserDefaults.standard) {
+    public init(with centralManager: CBCentralManagerType,
+                queue: DispatchQueue?,
+                options: [String : Any]? = nil,
+                userDefaults: UserDefaults = UserDefaults.standard,
+                stateUpdate: BluetoothStateUpdate? = nil) {
         self.centralQueue = queue ?? DispatchQueue.main
-        cbCentralManager = centralManager
+        self.cbCentralManager = centralManager
         self.userDefaults = userDefaults
-        self.delegate = delegate
+        self.bluetoothStateUpdate = stateUpdate
+        
         super.init()
+        
         retrieveCachedPeripherals()
         cbCentralManager.cbDelegate = self
+    }
+    
+    public convenience init(queue: DispatchQueue?,
+                            options: [String : Any]? = nil,
+                            userDefaults: UserDefaults = UserDefaults.standard,
+                            stateUpdate: BluetoothStateUpdate? = nil) {
+        let manager = CBCentralManager(delegate: nil, queue: queue, options: options)
+        self.init(with: manager, queue: queue, options: options, userDefaults: userDefaults)
+        self.cbDelegateProxy = CBCentralManagerDelegateProxy(withTarget: self)
+        manager.delegate = cbDelegateProxy
     }
     
     public var state: ManagerState {
@@ -192,19 +194,30 @@ public class CentralManager: NSObject {
         waitForStateAttempts.update(with: waitForStateAttempt)
     }
     
-    public func scanForPeripherals(withServices services: [CBUUID]? = nil, timeout:(interval: TimeInterval, completion: ScanCompletion)? = nil, options: [String : Any]? = nil) {
+    public func scanForPeripherals(withServices services: [CBUUID]? = nil,
+                                   options: [String : Any]? = nil,
+                                   update: ScanUpdate? = nil,
+                                   timeoutInterval: TimeInterval? = nil,
+                                   timeoutCompletion: ScanTimeout? = nil) {
         scanAttempt?.timer.invalidate()
         scanAttempt = nil
         
+        scanUpdate = update
+        
         Logger.debug("Attempt to start a new ble scan.")
         guard cbCentralManager.managerState == .poweredOn else {
-            timeout?.completion(.failure(CentralManagerError.bluetoothNotAvailable(state)))
+            //timeoutCompletion?(.failure(CentralManagerError.bluetoothNotAvailable(state)))
             return
         }
         
-        if let timeout = timeout {
-            let timer = Timer.scheduledTimer(timeInterval: timeout.interval, target: self, selector: #selector(handleScanTimeoutReached(_:)), userInfo: nil, repeats: false)
-            let scanAttempt = ScanAttempt(completion: timeout.completion, timer: timer)
+        if let timeoutInterval = timeoutInterval,
+            let timeoutCompletion = timeoutCompletion {
+            let timer = Timer.scheduledTimer(timeInterval: timeoutInterval,
+                                             target: self,
+                                             selector: #selector(handleScanTimeoutReached(_:)),
+                                             userInfo: nil,
+                                             repeats: false)
+            let scanAttempt = ScanAttempt(completion: timeoutCompletion, timer: timer)
             self.scanAttempt = scanAttempt
         }
         
@@ -381,7 +394,10 @@ extension CentralManager {
 }
 
 extension CentralManager: CBCentralManagerDelegateType {
-    public func centralManager(_ central: CBCentralManagerType, didDiscover peripheral: CBPeripheralType, advertisementData: [String : Any], rssi RSSI: NSNumber) {
+    public func centralManager(_ central: CBCentralManagerType,
+                               didDiscover peripheral: CBPeripheralType,
+                               advertisementData: [String : Any],
+                               rssi RSSI: NSNumber) {
         Logger.debug("central discovered peripheral: \(peripheral)")
         
         let peripheral = Peripheral(with: peripheral, advertisements: advertisementData, RSSI: RSSI.intValue)
@@ -394,7 +410,8 @@ extension CentralManager: CBCentralManagerDelegateType {
         
         foundPeripherals.update(with: peripheral)
         assert(foundPeripherals.isDisjoint(with: cachedPeripherals), "found peripherals and cached peripherals MUST be disjoint.")
-        delegate?.didDiscoverPeripheral(peripheral, from: self)
+        
+        scanUpdate?(peripheral)
     }
     
     public func centralManager(_ central: CBCentralManagerType, willRestoreState dict: [String : Any]) { }
@@ -420,8 +437,6 @@ extension CentralManager: CBCentralManagerDelegateType {
     
     public func centralManagerDidUpdateState(_ central: CBCentralManagerType) {
         Logger.debug("ble updated state: \(state)")
-        delegate?.didUpdateBluetoothState(state, from: self)
-        NotificationCenter.default.post(name: ManagerNotification.bluetoothStateChanged.notificationName, object: self, userInfo: ["state": state])
         
         var toRemove: Set<WaitForStateAttempt> = []
         waitForStateAttempts.filter({ $0.isValid && $0.state == state }).forEach {
@@ -432,6 +447,11 @@ extension CentralManager: CBCentralManagerDelegateType {
             Logger.debug("Invalidated wait for state attempt: \($0).")
         }
         waitForStateAttempts.subtract(toRemove)
+        
+        bluetoothStateUpdate?(state)
+        
+        NotificationCenter.default.post(name: ManagerNotification.bluetoothStateChanged.notificationName, object: self, userInfo: ["state": state])
+        
         Logger.debug("Wait for state attempts: \(waitForStateAttempts).")
     }
     
