@@ -114,7 +114,7 @@ public class PeripheralManager: NSObject {
                             options: [String : Any]? = nil,
                             stateUpdate: BluetoothStateUpdate? = nil) {
         let manager = CBPeripheralManager(delegate: nil, queue: queue, options: options)
-        self.init(with: manager, queue: queue, options: options)
+        self.init(with: manager, queue: queue, options: options, stateUpdate: stateUpdate)
         self.cbPeripheralManagerDelegateProxy = CBPeripheralManagerDelegateProxy(withTarget: self)
         manager.delegate = cbPeripheralManagerDelegateProxy
     }

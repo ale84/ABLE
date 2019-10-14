@@ -166,7 +166,7 @@ public class CentralManager: NSObject {
                             userDefaults: UserDefaults = UserDefaults.standard,
                             stateUpdate: BluetoothStateUpdate? = nil) {
         let manager = CBCentralManager(delegate: nil, queue: queue, options: options)
-        self.init(with: manager, queue: queue, options: options, userDefaults: userDefaults)
+        self.init(with: manager, queue: queue, options: options, userDefaults: userDefaults, stateUpdate: stateUpdate)
         self.cbDelegateProxy = CBCentralManagerDelegateProxy(withTarget: self)
         manager.delegate = cbDelegateProxy
     }
