@@ -28,20 +28,18 @@ class ViewController: UIViewController {
                 return
             }
             
-            self.central.scanForPeripherals(withServices: nil,
-                                            update: ({ print("found peripheral: \($0)") }),
-                                            timeoutInterval: 6.0) { result in
-                                                switch result {
-                                                case .success(let peripherals):
-                                                    print("timeout reached: \(peripherals)")
-                                                // Connect to peripheral...
-                                                case .failure(let error):
-                                                    print("scan error: \(error)")
-                                                    // Handle error.
-                                                }
+            self.central.scanForPeripherals(withServices: nil, timeoutInterval: 6.0) { result in
+                switch result {
+                case .success(let peripherals):
+                    print("timeout reached: \(peripherals)")
+                // Connect to peripheral...
+                case .failure(let error):
+                    print("scan error: \(error)")
+                    // Handle error.
+                }
             }
         }
-
+        
         peripheralManager = PeripheralManager(queue: DispatchQueue.main) { state in
             print("Updated bluetooth state: \(state)")
         }
