@@ -20,23 +20,23 @@ This is an example of how you can use a CentralManager to perform Central role t
 ```swift
 central = CentralManager(queue: DispatchQueue.main)
 
-// Wait for powered on state to begin using the central, specifying the desired timeout. You can also set yourself as delegate to receive all state change notification if you need to.
-        central.waitForPoweredOn(withTimeout: 6.0) { (state) in
-            guard state == .poweredOn else {
-                return
-            }
+// Wait for powered on state to begin using the central, specifying the desired timeout.
+central.waitForPoweredOn(withTimeout: 6.0) { (state) in
+    guard state == .poweredOn else {
+        return
+    }
 
-            self.central.scanForPeripherals(withServices: nil, timeoutInterval: 6.0) { result in
-                switch result {
-                case .success(let peripherals):
-                    print("timeout reached: \(peripherals)")
-                // Connect to peripheral...
-                case .failure(let error):
-                    print("scan error: \(error)")
-                    // Handle error.
-                }
-            }
+    self.central.scanForPeripherals(withServices: nil, timeoutInterval: 6.0) { result in
+        switch result {
+        case .success(let peripherals):
+            print("timeout reached: \(peripherals)")
+        // Connect to peripheral...
+        case .failure(let error):
+            print("scan error: \(error)")
+            // Handle error.
         }
+    }
+}
 ```
 # PeripheralManager
 This is an example of how you can use a PeripheralManager to perform Peripheral role tasks:
