@@ -1,7 +1,4 @@
 //
-//  Peripheral.swift
-//  ABLE
-//
 //  Created by Alessio Orlando on 05/04/17.
 //  Copyright © 2019 Alessio Orlando. All rights reserved.
 //
@@ -10,7 +7,6 @@ import Foundation
 import CoreBluetooth
 
 // MARK: - PeripheralAdvertisements -
-
 public struct PeripheralAdvertisements {
     
     let advertisements: [String : Any]
@@ -48,38 +44,8 @@ public struct PeripheralAdvertisements {
     }
 }
 
+// MARK: - Peripheral -
 public class Peripheral: NSObject {
-    
-    public enum PeripheralError: Error {
-        case timeoutReached
-        case cbError(detail: Error)
-    }
-    
-    private struct DiscoverServicesAttempt {
-        var uuids: [CBUUID]
-        var completion: DiscoverServicesCompletion
-        var timer: Timer
-        var isValid: Bool {
-            return timer.isValid
-        }
-        
-        func invalidate() {
-            timer.invalidate()
-        }
-    }
-    
-    private struct DiscoverCharacteristicsAttempt {
-        var uuids: [CBUUID]
-        var completion: DiscoverCharacteristicsCompletion
-        var timer: Timer
-        var isValid: Bool {
-            return timer.isValid
-        }
-        
-        func invalidate() {
-            timer.invalidate()
-        }
-    }
     
     public private (set) var cbPeripheral: CBPeripheralType
 
@@ -110,27 +76,13 @@ public class Peripheral: NSObject {
     
     public private(set) var advertisements: PeripheralAdvertisements
     
-    public typealias ReadRSSICompletion = ((Result<Int, PeripheralError>) -> Void)
     private var readRSSICompletion: ReadRSSICompletion?
-    
-    public typealias DiscoverServicesCompletion = ((Result<[Service], PeripheralError>) -> Void)
     private var discoverServicesAttempt: DiscoverServicesAttempt?
-    
-    public typealias DiscoverCharacteristicsCompletion = ((Result<[Characteristic], PeripheralError>) -> Void)
     private var discoverCharacteristicsAttempt: DiscoverCharacteristicsAttempt?
-    
-    public typealias ReadCharacteristicCompletion = ((Result<Data, PeripheralError>) -> Void)
     private var readCharacteristicCompletion: ReadCharacteristicCompletion?
-    
-    public typealias WriteCharacteristicCompletion = ((Result<Void, PeripheralError>) -> Void)
     private var writeCharacteristicCompletion: WriteCharacteristicCompletion?
-    
-    public typealias SetNotifyUpdateStateCompletion = ((Result<Void, PeripheralError>) -> Void)
     private var setNotifyUpdateStateCompletion: SetNotifyUpdateStateCompletion?
-    
-    public typealias SetNotifyUpdateValueCallback = ((Result<Data, PeripheralError>) -> Void)
     private var setNotifyUpdateValueCallback: SetNotifyUpdateValueCallback?
-    
     private var peripheralDelegateProxy: CBPeripheralDelegateProxy?
     
     public init(with peripheral: CBPeripheralType, advertisements: [String : Any] = [:], RSSI: Int = 0) {
@@ -218,6 +170,44 @@ public class Peripheral: NSObject {
     }
 }
 
+// MARK: Public support.
+public extension Peripheral {
+    enum PeripheralError: Error {
+        case timeoutReached
+        case cbError(detail: Error)
+    }
+}
+
+// MARK: Private support.
+private extension Peripheral {
+    struct DiscoverServicesAttempt {
+        var uuids: [CBUUID]
+        var completion: DiscoverServicesCompletion
+        var timer: Timer
+        var isValid: Bool {
+            return timer.isValid
+        }
+        
+        func invalidate() {
+            timer.invalidate()
+        }
+    }
+    
+    struct DiscoverCharacteristicsAttempt {
+        var uuids: [CBUUID]
+        var completion: DiscoverCharacteristicsCompletion
+        var timer: Timer
+        var isValid: Bool {
+            return timer.isValid
+        }
+        
+        func invalidate() {
+            timer.invalidate()
+        }
+    }
+}
+
+// MARK: Equality.
 extension Peripheral {
     override public var hash: Int {
         return cbPeripheral.identifier.hashValue
@@ -233,12 +223,7 @@ extension Peripheral {
     }
 }
 
-extension Peripheral {
-    override public var debugDescription: String {
-        return name ?? "-"
-    }
-}
-
+// MARK: CBPeripheral delegate.
 extension Peripheral: CBPeripheralDelegateType {
     public func peripheral(_ peripheral: CBPeripheralType, didDiscoverServices error: Error?) {
         if let attempt = discoverServicesAttempt {
@@ -338,4 +323,22 @@ extension Peripheral: CBPeripheralDelegateType {
     public func peripheral(_ peripheral: CBPeripheralType, didOpen channel: CBL2CAPChannel?, error: Error?) { }
     
     public func peripheralIsReady(toSendWriteWithoutResponse peripheral: CBPeripheralType) { }
+}
+
+// MARK: Aliases.
+public extension Peripheral {
+    typealias ReadRSSICompletion = ((Result<Int, PeripheralError>) -> Void)
+    typealias DiscoverServicesCompletion = ((Result<[Service], PeripheralError>) -> Void)
+    typealias DiscoverCharacteristicsCompletion = ((Result<[Characteristic], PeripheralError>) -> Void)
+    typealias ReadCharacteristicCompletion = ((Result<Data, PeripheralError>) -> Void)
+    typealias WriteCharacteristicCompletion = ((Result<Void, PeripheralError>) -> Void)
+    typealias SetNotifyUpdateStateCompletion = ((Result<Void, PeripheralError>) -> Void)
+    typealias SetNotifyUpdateValueCallback = ((Result<Data, PeripheralError>) -> Void)
+}
+
+// MARK: Debug.
+extension Peripheral {
+    override public var debugDescription: String {
+        return name ?? "-"
+    }
 }

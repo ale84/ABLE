@@ -8,114 +8,7 @@ import UIKit
 import CoreBluetooth
 
 public class CentralManager: NSObject {
-    
-    public enum CentralManagerError: Error {
-        case connectionFailed(Error?)
-        case bluetoothNotAvailable(ManagerState)
-        case connectionTimeoutReached
-    }
-    
-    private enum ManagerNotification: String {
-        case bluetoothStateChanged = "it.able.centralmanager.bluetoothstatechangednotification"
-        
-        var notificationName: Notification.Name {
-            return Notification.Name(rawValue)
-        }
-    }
-    
-    private enum UserDefaultsKeys: String {
-        case knownPeripheral = "it.able.centralmanager.knownPeripheralKey"
-    }
-    
-    // MARK: Nested types.
-    
-    private class ConnectionAttempt: Hashable {
-        private (set) var peripheral: Peripheral
-        private (set) var completion: ConnectionCompletion
-        private (set) var connectionTimeout: TimeInterval? = nil
-        
-        init(with peripheral: Peripheral, connectionTimeout: TimeInterval? = nil, completion: @escaping ConnectionCompletion) {
-            self.peripheral = peripheral
-            self.completion = completion
-            self.connectionTimeout = connectionTimeout
-        }
-        
-        static func == (lhs: ConnectionAttempt, rhs: ConnectionAttempt) -> Bool {
-            return lhs.peripheral == rhs.peripheral
-        }
-        
-        func hash(into hasher: inout Hasher) {
-            hasher.combine(peripheral.hashValue)
-        }
-    }
-    
-    private struct DisconnectionRequest: Hashable {
-        private (set) var peripheral: Peripheral
-        private (set) var completion: DisconnectionCompletion
-        
-        static func == (lhs: DisconnectionRequest, rhs: DisconnectionRequest) -> Bool {
-            return lhs.peripheral == rhs.peripheral
-        }
-        
-        func hash(into hasher: inout Hasher) {
-            hasher.combine(peripheral.hashValue)
-        }
-    }
-    
-    private struct ConnectionInfo: Hashable {
-        private (set) var peripheral: Peripheral
-        private (set) var timer: Timer?
-        private (set) var startDate: Date
-        
-        static func == (lhs: ConnectionInfo, rhs: ConnectionInfo) -> Bool {
-            return lhs.peripheral == rhs.peripheral
-        }
-        
-        func hash(into hasher: inout Hasher) {
-            hasher.combine(peripheral.hashValue)
-        }
-    }
-    
-    private struct WaitForStateAttempt: Hashable {
-        var state: ManagerState
-        var completion: WaitForStateCompletion
-        var timer: Timer
-        var isValid: Bool {
-            return timer.isValid
-        }
-        
-        func invalidate() {
-            timer.invalidate()
-        }
-        
-        static func == (lhs: WaitForStateAttempt, rhs: WaitForStateAttempt) -> Bool {
-            return lhs.timer == rhs.timer
-        }
-        
-        func hash(into hasher: inout Hasher) {
-            hasher.combine(timer.hashValue)
-        }
-    }
-    
-    private struct ScanAttempt {
-        var completion: ScanTimeout
-        var timer: Timer
-    }
-    
-    // MARK: Aliases.
-    
-    public typealias BluetoothStateUpdate = ((ManagerState) -> Void)
-    public typealias WaitForStateCompletion = ((ManagerState) -> Void)
-    public typealias ScanUpdate = ((Peripheral) -> Void)
-    public typealias ScanTimeout = ((Result<[Peripheral], CentralManagerError>) -> Void)
-    public typealias ConnectionCompletion = ((Result<Peripheral, CentralManagerError>) -> Void)
-    public typealias DisconnectionCompletion = ((Peripheral) -> Void)
-    public typealias ConnectionEvent = (event: CBConnectionEvent, peripheral: Peripheral)
-    public typealias ConnectionEventCallback = ((ConnectionEvent) -> Void)
-    public typealias AncsAuthUpdateCallback = ((Peripheral) -> Void)
-    
-    // MARK: -.
-    
+
     private var userDefaults: UserDefaults
     
     private var bluetoothStateUpdate: BluetoothStateUpdate?
@@ -363,8 +256,8 @@ public class CentralManager: NSObject {
 }
 
 // MARK: Timers handling.
-extension CentralManager {
-    @objc private func handleWaitStateTimeoutReached(_ timer: Timer) {
+private extension CentralManager {
+    @objc func handleWaitStateTimeoutReached(_ timer: Timer) {
         Logger.debug("ble wait for state timeout reached.")
         if let attempt = getWaitForStateAttempt(for: timer), attempt.isValid {
             attempt.invalidate()
@@ -375,14 +268,14 @@ extension CentralManager {
         }
     }
     
-    @objc private func handleConnectionTimeoutReached(_ timer: Timer) {
+    @objc func handleConnectionTimeoutReached(_ timer: Timer) {
         let connectionInfo = getConnectionInfo(for: timer)!
         connectionInfo.timer?.invalidate()
         connectionInfos.remove(connectionInfo)
         disconnect(from: connectionInfo.peripheral)
     }
     
-    @objc private func handleScanTimeoutReached(_ timer: Timer) {
+    @objc func handleScanTimeoutReached(_ timer: Timer) {
         Logger.debug("ble scan timeout reached.")
         if let attempt = scanAttempt, attempt.timer.isValid {
             attempt.timer.invalidate()
@@ -393,6 +286,7 @@ extension CentralManager {
     }
 }
 
+// MARK: CBCentralManager delegate.
 extension CentralManager: CBCentralManagerDelegateType {
     public func centralManager(_ central: CBCentralManagerType,
                                didDiscover peripheral: CBPeripheralType,
@@ -477,4 +371,115 @@ extension CentralManager: CBCentralManagerDelegateType {
         
         Logger.debug("connection event did occur: \(event), peripheral: \(peripheral)")
     }
+}
+
+// MARK: Private Support.
+private extension CentralManager {
+    
+    enum UserDefaultsKeys: String {
+        case knownPeripheral = "it.able.centralmanager.knownPeripheralKey"
+    }
+        
+    class ConnectionAttempt: Hashable {
+        private (set) var peripheral: Peripheral
+        private (set) var completion: ConnectionCompletion
+        private (set) var connectionTimeout: TimeInterval? = nil
+        
+        init(with peripheral: Peripheral, connectionTimeout: TimeInterval? = nil, completion: @escaping ConnectionCompletion) {
+            self.peripheral = peripheral
+            self.completion = completion
+            self.connectionTimeout = connectionTimeout
+        }
+        
+        static func == (lhs: ConnectionAttempt, rhs: ConnectionAttempt) -> Bool {
+            return lhs.peripheral == rhs.peripheral
+        }
+        
+        func hash(into hasher: inout Hasher) {
+            hasher.combine(peripheral.hashValue)
+        }
+    }
+    
+    struct DisconnectionRequest: Hashable {
+        private (set) var peripheral: Peripheral
+        private (set) var completion: DisconnectionCompletion
+        
+        static func == (lhs: DisconnectionRequest, rhs: DisconnectionRequest) -> Bool {
+            return lhs.peripheral == rhs.peripheral
+        }
+        
+        func hash(into hasher: inout Hasher) {
+            hasher.combine(peripheral.hashValue)
+        }
+    }
+    
+    struct ConnectionInfo: Hashable {
+        private (set) var peripheral: Peripheral
+        private (set) var timer: Timer?
+        private (set) var startDate: Date
+        
+        static func == (lhs: ConnectionInfo, rhs: ConnectionInfo) -> Bool {
+            return lhs.peripheral == rhs.peripheral
+        }
+        
+        func hash(into hasher: inout Hasher) {
+            hasher.combine(peripheral.hashValue)
+        }
+    }
+    
+    struct WaitForStateAttempt: Hashable {
+        var state: ManagerState
+        var completion: WaitForStateCompletion
+        var timer: Timer
+        var isValid: Bool {
+            return timer.isValid
+        }
+        
+        func invalidate() {
+            timer.invalidate()
+        }
+        
+        static func == (lhs: WaitForStateAttempt, rhs: WaitForStateAttempt) -> Bool {
+            return lhs.timer == rhs.timer
+        }
+        
+        func hash(into hasher: inout Hasher) {
+            hasher.combine(timer.hashValue)
+        }
+    }
+    
+    struct ScanAttempt {
+        var completion: ScanTimeout
+        var timer: Timer
+    }
+}
+
+// MARK: Public Support.
+public extension CentralManager {
+    enum CentralManagerError: Error {
+        case connectionFailed(Error?)
+        case bluetoothNotAvailable(ManagerState)
+        case connectionTimeoutReached
+    }
+    
+    enum ManagerNotification: String {
+        case bluetoothStateChanged = "it.able.centralmanager.bluetoothstatechangednotification"
+        
+        var notificationName: Notification.Name {
+            return Notification.Name(rawValue)
+        }
+    }
+}
+
+// MARK: Aliases.
+public extension CentralManager {
+    typealias BluetoothStateUpdate = ((ManagerState) -> Void)
+    typealias WaitForStateCompletion = ((ManagerState) -> Void)
+    typealias ScanUpdate = ((Peripheral) -> Void)
+    typealias ScanTimeout = ((Result<[Peripheral], CentralManagerError>) -> Void)
+    typealias ConnectionCompletion = ((Result<Peripheral, CentralManagerError>) -> Void)
+    typealias DisconnectionCompletion = ((Peripheral) -> Void)
+    typealias ConnectionEvent = (event: CBConnectionEvent, peripheral: Peripheral)
+    typealias ConnectionEventCallback = ((ConnectionEvent) -> Void)
+    typealias AncsAuthUpdateCallback = ((Peripheral) -> Void)
 }

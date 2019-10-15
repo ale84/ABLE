@@ -1,9 +1,6 @@
 //
-//  Logger.swift
-//  BlueCap
-//
-//  Created by Troy Stribling on 6/8/14.
-//  Copyright (c) 2014 Troy Stribling. The MIT License (MIT).
+//  Created by Alessio Orlando on 14/06/18.
+//  Copyright (c) 2018 Alessio Orlando. All rights reserved.
 //
 
 import Foundation

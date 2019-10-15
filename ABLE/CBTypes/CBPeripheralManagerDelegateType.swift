@@ -1,7 +1,4 @@
 //
-//  CBPeripheralManagerDelegateType.swift
-//  ABLE
-//
 //  Created by Alessio Orlando on 11/06/18.
 //  Copyright © 2019 Alessio Orlando. All rights reserved.
 //

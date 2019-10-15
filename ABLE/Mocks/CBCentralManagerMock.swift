@@ -8,26 +8,6 @@ import CoreBluetooth
 
 public class CBCentralManagerMock: CBCentralManagerType {
     
-    public enum WaitForPoweredOnBehaviour {
-        case alreadyPoweredOn
-        case poweredOn(after: TimeInterval)
-    }
-    
-    public enum ConnectPeripheralBehaviour {
-        case success(after: TimeInterval)
-        case failure
-    }
-    
-    public enum DisconnectPeripheralBehaviour {
-        case success
-        case successAfter(seconds: TimeInterval)
-    }
-    
-    public enum ConnectionEventBehaviour {
-        case generateEvent(event: CBConnectionEvent, after: TimeInterval)
-        case idle
-    }
-    
     public var waitForPoweredOnBehaviour: WaitForPoweredOnBehaviour = .alreadyPoweredOn {
         didSet {
             switch waitForPoweredOnBehaviour {
@@ -111,6 +91,28 @@ public class CBCentralManagerMock: CBCentralManagerType {
         case .idle:
             break
         }
-        
+    }
+}
+
+// MARK: Behaviours.
+public extension CBCentralManagerMock {
+    enum WaitForPoweredOnBehaviour {
+        case alreadyPoweredOn
+        case poweredOn(after: TimeInterval)
+    }
+    
+    enum ConnectPeripheralBehaviour {
+        case success(after: TimeInterval)
+        case failure
+    }
+    
+    enum DisconnectPeripheralBehaviour {
+        case success
+        case successAfter(seconds: TimeInterval)
+    }
+    
+    enum ConnectionEventBehaviour {
+        case generateEvent(event: CBConnectionEvent, after: TimeInterval)
+        case idle
     }
 }

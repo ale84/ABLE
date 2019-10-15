@@ -35,7 +35,6 @@ extension CBCentralManager: CBCentralManagerType {
         set { }
     }
 
-    
     public func retrieveConnectedPeripherals(withServices serviceUUIDs: [CBUUID]) -> [CBPeripheralType] {
         let cbPeripherals: [CBPeripheral] = retrieveConnectedPeripherals(withServices: serviceUUIDs)
         return cbPeripherals

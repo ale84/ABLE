@@ -8,69 +8,6 @@ import CoreBluetooth
 
 public class PeripheralManager: NSObject {
     
-    // MARK: Enums.
-    
-    public enum PeripheralManagerError: Error {
-        case cbError(Error)
-    }
-    
-    public enum PeripheralManagerNotification: String {
-        case stateChanged = "it.able.peripheralmanager.statechangednotification"
-        
-        var notificationName: Notification.Name {
-            return Notification.Name(rawValue)
-        }
-    }
-    
-    // MARK: Nested types.
-    
-    struct WaitForStateAttempt: Hashable {
-        var state: ManagerState
-        var completion: WaitForStateCompletion
-        var timer: Timer
-        var isValid: Bool {
-            return timer.isValid
-        }
-        
-        func invalidate() {
-            timer.invalidate()
-        }
-        
-        static func == (lhs: WaitForStateAttempt, rhs: WaitForStateAttempt) -> Bool {
-            return lhs.timer == rhs.timer
-        }
-        
-        func hash(into hasher: inout Hasher) {
-            hasher.combine(timer.hashValue)
-        }
-    }
-    
-    private struct AddServiceAttempt: Hashable {
-        private (set) var service: CBMutableService
-        private (set) var completion: AddServiceCompletion
-        
-        static func == (lhs: AddServiceAttempt, rhs: AddServiceAttempt) -> Bool {
-            return lhs.hashValue == rhs.hashValue
-        }
-        
-        func hash(into hasher: inout Hasher) {
-            hasher.combine(service.hashValue)
-        }
-    }
-
-    // MARK: Aliases.
-
-    public typealias BluetoothStateUpdate = ((ManagerState) -> Void)
-    public typealias WaitForStateCompletion = ((ManagerState) -> (Void))
-    public typealias AddServiceCompletion = ((Result<Service, PeripheralManagerError>) -> Void)
-    public typealias StartAdvertisingCompletion = ((Result<Void, PeripheralManagerError>) -> (Void))
-    public typealias ReadyToUpdateSubscribersCallback = (() -> Void)
-    public typealias ReadRequestCallback = ((CBATTRequest) -> Void)
-    public typealias WriteRequestsCallback = (([CBATTRequest]) -> Void)
-    public typealias StateChangedCallback = ((ManagerState) -> Void)
-
-    // MARK: -.
-    
     private var bluetoothStateUpdate: BluetoothStateUpdate?
     private var waitForStateAttempts: Set<WaitForStateAttempt> = []
     private var addServiceCompletion: AddServiceCompletion?
@@ -207,6 +144,7 @@ extension PeripheralManager {
     }
 }
 
+// MARK: CBPeripheralManager delegate.
 extension PeripheralManager: CBPeripheralManagerDelegateType {
     public func peripheralManagerDidUpdateState(_ peripheral: CBPeripheralManagerType) {
         Logger.debug("peripheral manager updated state: \(state)")
@@ -278,4 +216,78 @@ extension PeripheralManager: CBPeripheralManagerDelegateType {
     public func peripheralManager(_ peripheral: CBPeripheralManagerType, didPublishL2CAPChannel PSM: CBL2CAPPSM, error: Error?) { }
     
     public func peripheralManager(_ peripheral: CBPeripheralManagerType, didUnpublishL2CAPChannel PSM: CBL2CAPPSM, error: Error?) { }
+}
+
+// MARK: Public Support.
+public extension PeripheralManager {
+    
+    enum PeripheralManagerError: Error {
+        case cbError(Error)
+    }
+    
+    enum PeripheralManagerNotification: String {
+        case stateChanged = "it.able.peripheralmanager.statechangednotification"
+        
+        var notificationName: Notification.Name {
+            return Notification.Name(rawValue)
+        }
+    }
+
+    enum ManagerNotification: String {
+        case bluetoothStateChanged = "it.able.centralmanager.bluetoothstatechangednotification"
+        
+        var notificationName: Notification.Name {
+            return Notification.Name(rawValue)
+        }
+    }
+}
+
+// MARK: Private Support.
+private extension PeripheralManager {
+    
+    struct WaitForStateAttempt: Hashable {
+        var state: ManagerState
+        var completion: WaitForStateCompletion
+        var timer: Timer
+        var isValid: Bool {
+            return timer.isValid
+        }
+        
+        func invalidate() {
+            timer.invalidate()
+        }
+        
+        static func == (lhs: WaitForStateAttempt, rhs: WaitForStateAttempt) -> Bool {
+            return lhs.timer == rhs.timer
+        }
+        
+        func hash(into hasher: inout Hasher) {
+            hasher.combine(timer.hashValue)
+        }
+    }
+    
+    struct AddServiceAttempt: Hashable {
+        private (set) var service: CBMutableService
+        private (set) var completion: AddServiceCompletion
+        
+        static func == (lhs: AddServiceAttempt, rhs: AddServiceAttempt) -> Bool {
+            return lhs.hashValue == rhs.hashValue
+        }
+        
+        func hash(into hasher: inout Hasher) {
+            hasher.combine(service.hashValue)
+        }
+    }
+}
+
+// MARK: Aliases.
+public extension PeripheralManager {
+    typealias BluetoothStateUpdate = ((ManagerState) -> Void)
+    typealias WaitForStateCompletion = ((ManagerState) -> (Void))
+    typealias AddServiceCompletion = ((Result<Service, PeripheralManagerError>) -> Void)
+    typealias StartAdvertisingCompletion = ((Result<Void, PeripheralManagerError>) -> (Void))
+    typealias ReadyToUpdateSubscribersCallback = (() -> Void)
+    typealias ReadRequestCallback = ((CBATTRequest) -> Void)
+    typealias WriteRequestsCallback = (([CBATTRequest]) -> Void)
+    typealias StateChangedCallback = ((ManagerState) -> Void)
 }

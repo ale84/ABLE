@@ -1,7 +1,4 @@
 //
-//  Support.swift
-//  ABLE
-//
 //  Created by Alessio Orlando on 15/05/17.
 //  Copyright © 2019 Alessio Orlando. All rights reserved.
 //
