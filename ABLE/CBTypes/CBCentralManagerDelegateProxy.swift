@@ -32,4 +32,14 @@ class CBCentralManagerDelegateProxy: NSObject, CBCentralManagerDelegate {
     public func centralManager(_ central: CBCentralManager, didDisconnectPeripheral peripheral: CBPeripheral, error: Error?) {
         target?.centralManager(central, didDisconnectPeripheral: peripheral, error: error)
     }
+    
+    @available(iOS 13.0, *)
+    public func centralManager(_ central: CBCentralManager, connectionEventDidOccur event: CBConnectionEvent, for peripheral: CBPeripheral) {
+        target?.centralManager(central, connectionEventDidOccur: event, for: peripheral as CBPeripheralType)
+    }
+    
+    @available(iOS 13.0, *)
+    public func centralManager(_ central: CBCentralManager, didUpdateANCSAuthorizationFor peripheral: CBPeripheral) {
+        target?.centralManager(central, didUpdateANCSAuthorizationFor: peripheral as CBPeripheralType)
+    }
 }

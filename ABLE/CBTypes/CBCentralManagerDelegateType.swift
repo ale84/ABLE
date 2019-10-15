@@ -16,4 +16,7 @@ public protocol CBCentralManagerDelegateType: class {
     
     @available(iOS 13.0, *)
     func centralManager(_ central: CBCentralManagerType, connectionEventDidOccur event: CBConnectionEvent, for peripheral: CBPeripheralType)
+    
+    @available(iOS 13.0, *)
+    func centralManager(_ central: CBCentralManagerType, didUpdateANCSAuthorizationFor peripheral: CBPeripheralType)
 }

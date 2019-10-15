@@ -3,13 +3,13 @@
 //  Copyright © 2019 Alessio Orlando. All rights reserved.
 //
 
-import Foundation
 import UIKit
 import CoreBluetooth
 
 public class CentralManager: NSObject {
 
     public var bluetoothStateUpdate: BluetoothStateUpdate?
+    public var ancsUpdateCallback: AncsAuthUpdateCallback?
 
     public var allPeripherals: Set<Peripheral> {
         return foundPeripherals.union(cachedPeripherals)
@@ -36,7 +36,6 @@ public class CentralManager: NSObject {
     private var connectionInfos: Set<ConnectionInfo> = []
     private var disconnectionRequests: Set<DisconnectionRequest> = []
     private var connectionEventCallback: ConnectionEventCallback?
-    private var ancsUpdateCallback: AncsAuthUpdateCallback?
     
     private var cbDelegateProxy: CBCentralManagerDelegateProxy?
     
@@ -102,7 +101,6 @@ public class CentralManager: NSObject {
         
         Logger.debug("Attempt to start a new ble scan.")
         guard cbCentralManager.managerState == .poweredOn else {
-            //timeoutCompletion?(.failure(CentralManagerError.bluetoothNotAvailable(state)))
             return
         }
         
@@ -178,9 +176,15 @@ public class CentralManager: NSObject {
         Logger.debug("registered for connection events with options: \(String(describing: options))")
     }
     
-    @available(iOS 13.0, *)
-    public func startReceivingAncsAuthUpdates(update: @escaping AncsAuthUpdateCallback) {
-        self.ancsUpdateCallback = update
+    private func addPeripheral(_ peripheral: Peripheral) {
+        knownPeripherals.insert(peripheral.cbPeripheral.identifier)
+        writeKnownPeripherals()
+        
+        let removed = cachedPeripherals.remove(peripheral)
+        Logger.debug("Removed from cached peripherals: \(String(describing: removed))")
+        
+        foundPeripherals.update(with: peripheral)
+        assert(foundPeripherals.isDisjoint(with: cachedPeripherals), "found peripherals and cached peripherals MUST be disjoint.")
     }
     
     private func disconnectAll() {
@@ -299,14 +303,7 @@ extension CentralManager: CBCentralManagerDelegateType {
         
         let peripheral = Peripheral(with: peripheral, advertisements: advertisementData, RSSI: RSSI.intValue)
         
-        knownPeripherals.insert(peripheral.cbPeripheral.identifier)
-        writeKnownPeripherals()
-        
-        let removed = cachedPeripherals.remove(peripheral)
-        Logger.debug("Removed from cached peripherals: \(String(describing: removed))")
-        
-        foundPeripherals.update(with: peripheral)
-        assert(foundPeripherals.isDisjoint(with: cachedPeripherals), "found peripherals and cached peripherals MUST be disjoint.")
+        addPeripheral(peripheral)
         
         scanUpdate?(peripheral)
     }
@@ -371,10 +368,28 @@ extension CentralManager: CBCentralManagerDelegateType {
                                connectionEventDidOccur event: CBConnectionEvent,
                                for peripheral: CBPeripheralType) {
         
-        let peripheral = Peripheral(with: peripheral)
-        connectionEventCallback?(ConnectionEvent(event: event, peripheral: peripheral))
-        
         Logger.debug("connection event did occur: \(event), peripheral: \(peripheral)")
+
+        if let peripheral = self.peripheral(for: peripheral) {
+            connectionEventCallback?(ConnectionEvent(event: event, peripheral: peripheral))
+        }
+        else {
+            let peripheral = Peripheral(with: peripheral)
+            
+            addPeripheral(peripheral)
+            
+            connectionEventCallback?(ConnectionEvent(event: event, peripheral: peripheral))
+        }
+    }
+    
+    public func centralManager(_ central: CBCentralManagerType, didUpdateANCSAuthorizationFor peripheral: CBPeripheralType) {
+        Logger.debug("did update ANCS authorization for peripheral: \(peripheral)")
+
+        guard let peripheral = self.peripheral(for: peripheral) else {
+            return
+        }
+        
+        ancsUpdateCallback?(peripheral)
     }
 }
 
