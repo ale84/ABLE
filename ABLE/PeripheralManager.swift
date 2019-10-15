@@ -8,19 +8,9 @@ import CoreBluetooth
 
 public class PeripheralManager: NSObject {
     
-    private var bluetoothStateUpdate: BluetoothStateUpdate?
-    private var waitForStateAttempts: Set<WaitForStateAttempt> = []
-    private var addServiceCompletion: AddServiceCompletion?
-    private var startAdvertisingCompletion: StartAdvertisingCompletion?
-    private var readyToUpdateCallback: ReadyToUpdateSubscribersCallback?
-    private var addServiceAttempts: Set<AddServiceAttempt> = []
-    
-    private (set) var cbPeripheralManager: CBPeripheralManagerType
-    private var cbPeripheralManagerDelegateProxy: CBPeripheralManagerDelegateProxy?
-    
+    public var bluetoothStateUpdate: BluetoothStateUpdate?
     public var readRequestCallback: ReadRequestCallback?
     public var writeRequestsCallback: WriteRequestsCallback?
-    public var stateChangedCallback: StateChangedCallback?
     
     public var state: ManagerState {
         return cbPeripheralManager.managerState
@@ -34,6 +24,16 @@ public class PeripheralManager: NSObject {
     public var isAdvertising: Bool {
         return cbPeripheralManager.isAdvertising
     }
+    
+    private (set) var cbPeripheralManager: CBPeripheralManagerType
+    
+    private var waitForStateAttempts: Set<WaitForStateAttempt> = []
+    private var addServiceCompletion: AddServiceCompletion?
+    private var startAdvertisingCompletion: StartAdvertisingCompletion?
+    private var readyToUpdateCallback: ReadyToUpdateSubscribersCallback?
+    private var addServiceAttempts: Set<AddServiceAttempt> = []
+    
+    private var cbPeripheralManagerDelegateProxy: CBPeripheralManagerDelegateProxy?
     
     public init(with peripheralManager: CBPeripheralManagerType,
                 queue: DispatchQueue?,
@@ -148,8 +148,6 @@ extension PeripheralManager {
 extension PeripheralManager: CBPeripheralManagerDelegateType {
     public func peripheralManagerDidUpdateState(_ peripheral: CBPeripheralManagerType) {
         Logger.debug("peripheral manager updated state: \(state)")
-
-        stateChangedCallback?(state)
         
         var toRemove: Set<WaitForStateAttempt> = []
         waitForStateAttempts.filter({ $0.isValid && $0.state == state }).forEach {
@@ -289,5 +287,4 @@ public extension PeripheralManager {
     typealias ReadyToUpdateSubscribersCallback = (() -> Void)
     typealias ReadRequestCallback = ((CBATTRequest) -> Void)
     typealias WriteRequestsCallback = (([CBATTRequest]) -> Void)
-    typealias StateChangedCallback = ((ManagerState) -> Void)
 }

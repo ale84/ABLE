@@ -9,17 +9,15 @@ import CoreBluetooth
 
 public class CentralManager: NSObject {
 
-    private var userDefaults: UserDefaults
+    public var bluetoothStateUpdate: BluetoothStateUpdate?
+
+    public var allPeripherals: Set<Peripheral> {
+        return foundPeripherals.union(cachedPeripherals)
+    }
     
-    private var bluetoothStateUpdate: BluetoothStateUpdate?
-    private var waitForStateAttempts: Set<WaitForStateAttempt> = []
-    private var scanUpdate: ScanUpdate?
-    private var scanAttempt: ScanAttempt?
-    private var connectionAttempts: Set<ConnectionAttempt> = []
-    private var connectionInfos: Set<ConnectionInfo> = []
-    private var disconnectionRequests: Set<DisconnectionRequest> = []
-    private var connectionEventCallback: ConnectionEventCallback?
-    private var ancsUpdateCallback: AncsAuthUpdateCallback?
+    public static var bluetoothChangedNotification: Notification.Name {
+        return ManagerNotification.bluetoothStateChanged.notificationName
+    }
     
     public private (set) var cbCentralManager: CBCentralManagerType
     public private (set) var centralQueue: DispatchQueue
@@ -28,13 +26,17 @@ public class CentralManager: NSObject {
     public private (set) var knownPeripherals: Set<UUID> = []
     public private (set) var foundPeripherals: Set<Peripheral> = []
     public private (set) var cachedPeripherals: Set<Peripheral> = []
-    public var allPeripherals: Set<Peripheral> {
-        return foundPeripherals.union(cachedPeripherals)
-    }
     
-    public static var bluetoothChangedNotification: Notification.Name {
-        return ManagerNotification.bluetoothStateChanged.notificationName
-    }
+    private var userDefaults: UserDefaults
+    
+    private var waitForStateAttempts: Set<WaitForStateAttempt> = []
+    private var scanUpdate: ScanUpdate?
+    private var scanAttempt: ScanAttempt?
+    private var connectionAttempts: Set<ConnectionAttempt> = []
+    private var connectionInfos: Set<ConnectionInfo> = []
+    private var disconnectionRequests: Set<DisconnectionRequest> = []
+    private var connectionEventCallback: ConnectionEventCallback?
+    private var ancsUpdateCallback: AncsAuthUpdateCallback?
     
     private var cbDelegateProxy: CBCentralManagerDelegateProxy?
     
@@ -82,6 +84,7 @@ public class CentralManager: NSObject {
             completion(self.state)
             return
         }
+        
         let timer = Timer.scheduledTimer(timeInterval: timeout, target: self, selector: #selector(handleWaitStateTimeoutReached(_:)), userInfo: nil, repeats: false)
         let waitForStateAttempt = WaitForStateAttempt(state: state, completion: completion, timer: timer)
         waitForStateAttempts.update(with: waitForStateAttempt)
@@ -344,7 +347,9 @@ extension CentralManager: CBCentralManagerDelegateType {
         
         bluetoothStateUpdate?(state)
         
-        NotificationCenter.default.post(name: ManagerNotification.bluetoothStateChanged.notificationName, object: self, userInfo: ["state": state])
+        NotificationCenter.default.post(name: ManagerNotification.bluetoothStateChanged.notificationName,
+                                        object: self,
+                                        userInfo: ["state": state])
         
         Logger.debug("Wait for state attempts: \(waitForStateAttempts).")
     }
