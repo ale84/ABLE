@@ -77,3 +77,8 @@ Add the following entry to your Podfile:
 ```rb
 pod 'ABLE'
 ```
+
+# Tests
+A full set of unit tests for the library is implemented by mocking the main CoreBluetooth classes.
+
+You can use the mocks provided with the library for your own logic tests, or you can write your own mocks if you need further customization.
