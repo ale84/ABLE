@@ -37,8 +37,7 @@ public class CBCentralManagerMock: CBCentralManagerType {
     
     public var managerState: ManagerState = .poweredOff
     
-    @available(iOS 13.0, *)
-       public lazy var managerAuthorization: ManagerAuthorization = .allowedAlways
+    public lazy var managerAuthorization: ManagerAuthorization = .allowedAlways
     
     public func cancelPeripheralConnection(_ peripheral: CBPeripheralType) {
         switch disconnectionBehaviour {

@@ -12,7 +12,6 @@ public class CBPeripheralManagerMock: CBPeripheralManagerType {
     
     public var managerState: ManagerState = .poweredOn
     
-    @available(iOS 13.0, *)
     public lazy var managerAuthorization: ManagerAuthorization = .allowedAlways
     
     public var isAdvertising: Bool = false
