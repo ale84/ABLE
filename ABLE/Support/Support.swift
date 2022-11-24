@@ -14,7 +14,6 @@ public enum ManagerState: Int {
     case unknown
     case unsupported
     
-    @available(iOS 10.0, *)
     public init(with state: CBManagerState) {
         switch state {
         case .poweredOff:
@@ -33,27 +32,8 @@ public enum ManagerState: Int {
             self = .unknown
         }
     }
-    
-    // For iOS < 10 support.
-    public init(with rawValue: Int) {
-        switch rawValue {
-        case 1:
-            self = .resetting
-        case 2:
-            self = .unsupported
-        case 3: // CBCentralManagerState.unauthorized :
-            self = .unauthorized
-        case 4: // CBCentralManagerState.poweredOff:
-            self = .poweredOff
-        case 5: //CBCentralManagerState.poweredOn:
-            self = .poweredOn
-        default:
-            self = .unknown
-        }
-    }
 }
 
-@available (iOS 13.0, *)
 public enum ManagerAuthorization: Int {
     case allowedAlways
     case denied
@@ -61,7 +41,6 @@ public enum ManagerAuthorization: Int {
     case restricted
 }
 
-@available (iOS 13.0, *)
 public extension ManagerAuthorization {
     init(authorization: CBManagerAuthorization) {
         switch authorization {

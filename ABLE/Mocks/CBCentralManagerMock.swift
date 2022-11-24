@@ -76,7 +76,6 @@ public class CBCentralManagerMock: CBCentralManagerType {
         }
     }
     
-    @available(iOS 13.0, *)
     public func registerForConnectionEvents(options: [CBConnectionEventMatchingOption : Any]?) {
         switch connectionEventBehaviour {
         case .generateEvent(let event, let after):

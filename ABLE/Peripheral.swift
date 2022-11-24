@@ -69,7 +69,6 @@ public class Peripheral: NSObject {
         return cbPeripheral.state
     }
     
-    @available(iOS 13.0, *)
     public var ancsAuthorized: Bool {
         return cbPeripheral.ancsAuthorized
     }
@@ -319,7 +318,6 @@ extension Peripheral: CBPeripheralDelegateType {
     
     public func peripheral(_ peripheral: CBPeripheralType, didModifyServices invalidatedServices: [CBServiceType]) { }
     
-    @available(iOS 11.0, *)
     public func peripheral(_ peripheral: CBPeripheralType, didOpen channel: CBL2CAPChannel?, error: Error?) { }
     
     public func peripheralIsReady(toSendWriteWithoutResponse peripheral: CBPeripheralType) { }

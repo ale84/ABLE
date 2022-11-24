@@ -16,11 +16,6 @@ public class PeripheralManager: NSObject {
         return cbPeripheralManager.managerState
     }
     
-    @available(iOS 13.0, *)
-    public var authorization: ManagerAuthorization {
-        return cbPeripheralManager.managerAuthorization
-    }
-    
     public var isAdvertising: Bool {
         return cbPeripheralManager.isAdvertising
     }
@@ -68,11 +63,6 @@ public class PeripheralManager: NSObject {
         let timer = Timer.scheduledTimer(timeInterval: timeout, target: self, selector: #selector(handleWaitStateTimeoutReached(_:)), userInfo: nil, repeats: false)
         let waitForStateAttempt = WaitForStateAttempt(state: state, completion: completion, timer: timer)
         waitForStateAttempts.update(with: waitForStateAttempt)
-    }
-    
-    @available(iOS, deprecated: 13.0)
-    public class func authorizationStatus() -> CBPeripheralManagerAuthorizationStatus {
-        return CBPeripheralManager.authorizationStatus()
     }
     
     public func add(_ service: CBMutableService, completion: @escaping AddServiceCompletion) {
@@ -208,7 +198,6 @@ extension PeripheralManager: CBPeripheralManagerDelegateType {
     
     public func peripheralManager(_ peripheral: CBPeripheralManagerType, central: CBCentral, didUnsubscribeFrom characteristic: CBCharacteristicType) { }
     
-    @available(iOS 11.0, *)
     public func peripheralManager(_ peripheral: CBPeripheralManagerType, didOpen channel: CBL2CAPChannel?, error: Error?) { }
     
     public func peripheralManager(_ peripheral: CBPeripheralManagerType, didPublishL2CAPChannel PSM: CBL2CAPPSM, error: Error?) { }

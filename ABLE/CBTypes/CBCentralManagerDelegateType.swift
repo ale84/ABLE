@@ -6,17 +6,13 @@
 import Foundation
 import CoreBluetooth
 
-public protocol CBCentralManagerDelegateType: class {
+public protocol CBCentralManagerDelegateType: AnyObject {
     func centralManager(_ central: CBCentralManagerType, didConnect peripheral: CBPeripheralType)
     func centralManager(_ central: CBCentralManagerType, didDisconnectPeripheral peripheral: CBPeripheralType, error: Error?)
     func centralManager(_ central: CBCentralManagerType, didFailToConnect: CBPeripheralType, error: Error?)
     func centralManager(_ central: CBCentralManagerType, didDiscover peripheral: CBPeripheralType, advertisementData: [String : Any], rssi RSSI: NSNumber)
     func centralManagerDidUpdateState(_ central: CBCentralManagerType)
     func centralManager(_ central: CBCentralManagerType, willRestoreState dict: [String : Any])
-    
-    @available(iOS 13.0, *)
     func centralManager(_ central: CBCentralManagerType, connectionEventDidOccur event: CBConnectionEvent, for peripheral: CBPeripheralType)
-    
-    @available(iOS 13.0, *)
     func centralManager(_ central: CBCentralManagerType, didUpdateANCSAuthorizationFor peripheral: CBPeripheralType)
 }

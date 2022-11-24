@@ -196,7 +196,6 @@ class CentralManagerTests: XCTestCase {
         wait(for: [expectation], timeout: 2)
     }
     
-    @available(iOS 13.0, *)
     func testRegisterForConnectionEvents() {
         centralMock.connectionEventBehaviour = .generateEvent(event: .peerConnected, after: 2)
         

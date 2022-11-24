@@ -6,14 +6,12 @@
 import Foundation
 import CoreBluetooth
 
-public protocol CBPeripheralType: class, CBPeerType {
+public protocol CBPeripheralType: AnyObject, CBPeerType {
     var name: String? { get }
     var cbDelegate: CBPeripheralDelegateType? { get set }
     var cbServices: [CBServiceType]? { get }
     var state: CBPeripheralState { get }
-    @available(iOS 11, *)
     var canSendWriteWithoutResponse: Bool { get }
-    @available(iOS 13, *)
     var ancsAuthorized: Bool { get }
     
     func discoverServices(_ serviceUUIDs: [CBUUID]?)
@@ -27,7 +25,6 @@ public protocol CBPeripheralType: class, CBPeerType {
     func setNotifyValue(_ enabled: Bool, for characteristic: CBCharacteristicType)
     func readRSSI()
     func maximumWriteValueLength(for type: CBCharacteristicWriteType) -> Int
-    @available(iOS 11.0, *)
     func openL2CAPChannel(_ PSM: CBL2CAPPSM)
 }
 

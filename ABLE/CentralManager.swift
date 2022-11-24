@@ -69,11 +69,6 @@ public class CentralManager: NSObject {
         return cbCentralManager.managerState
     }
     
-    @available(iOS 13.0, *)
-    public var authorization: ManagerAuthorization {
-        return cbCentralManager.managerAuthorization
-    }
-    
     public func waitForPoweredOn(withTimeout timeout: TimeInterval = 3, completion: @escaping WaitForStateCompletion) {
         wait(for: .poweredOn, timeout: timeout, completion: completion)
     }
@@ -168,7 +163,6 @@ public class CentralManager: NSObject {
         Logger.debug("ble disconnected from peripheral: \(peripheral.cbPeripheral).")
     }
     
-    @available(iOS 13.0, *)
     public func registerForConnectionEvents(options: [CBConnectionEventMatchingOption : Any]? = nil,
                                             callback: @escaping ConnectionEventCallback) {
         connectionEventCallback = callback

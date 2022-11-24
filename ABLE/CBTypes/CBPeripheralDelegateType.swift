@@ -6,7 +6,7 @@
 import Foundation
 import CoreBluetooth
 
-public protocol CBPeripheralDelegateType: class {
+public protocol CBPeripheralDelegateType: AnyObject {
     func peripheral(_ peripheral: CBPeripheralType, didDiscoverServices error: Error?)
     func peripheral(_ peripheral: CBPeripheralType, didDiscoverIncludedServicesFor service: CBServiceType, error: Error?)
     func peripheral(_ peripheral: CBPeripheralType, didDiscoverCharacteristicsFor service: CBServiceType, error: Error?)
@@ -19,7 +19,6 @@ public protocol CBPeripheralDelegateType: class {
     func peripheral(_ peripheral: CBPeripheralType, didReadRSSI RSSI: NSNumber, error: Error?)
     func peripheralDidUpdateName(_ peripheral: CBPeripheralType)
     func peripheral(_ peripheral: CBPeripheralType, didModifyServices invalidatedServices: [CBServiceType])
-    @available(iOS 11.0, *)
     func peripheral(_ peripheral: CBPeripheralType, didOpen channel: CBL2CAPChannel?, error: Error?)
     func peripheralIsReady(toSendWriteWithoutResponse peripheral: CBPeripheralType)
 }

@@ -22,9 +22,9 @@ public class CBPeripheralManagerMock: CBPeripheralManagerType {
     
     public init() { }
     
-    public static func authorizationStatus() -> CBPeripheralManagerAuthorizationStatus {
-        return CBPeripheralManager.authorizationStatus()
-    }
+//    public static func authorizationStatus() -> CBPeripheralManagerAuthorizationStatus {
+//        return CBPeripheralManager.authorizationStatus()
+//    }
     
     public func add(_ service: CBMutableService) {
         switch addServiceBehaviour {

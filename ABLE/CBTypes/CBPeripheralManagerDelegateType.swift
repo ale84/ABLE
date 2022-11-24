@@ -6,7 +6,7 @@
 import Foundation
 import CoreBluetooth
 
-public protocol CBPeripheralManagerDelegateType: class {
+public protocol CBPeripheralManagerDelegateType: AnyObject {
     func peripheralManagerDidUpdateState(_ peripheral: CBPeripheralManagerType)
     func peripheralManager(_ peripheral: CBPeripheralManagerType, willRestoreState dict: [String : Any])
     func peripheralManager(_ peripheral: CBPeripheralManagerType, didAdd service: CBServiceType, error: Error?)
@@ -16,7 +16,6 @@ public protocol CBPeripheralManagerDelegateType: class {
     func peripheralManagerIsReady(toUpdateSubscribers peripheral: CBPeripheralManagerType)
     func peripheralManager(_ peripheral: CBPeripheralManagerType, didReceiveRead request: CBATTRequest)
     func peripheralManager(_ peripheral: CBPeripheralManagerType, didReceiveWrite requests: [CBATTRequest])
-    @available(iOS 11.0, *)
     func peripheralManager(_ peripheral: CBPeripheralManagerType, didOpen channel: CBL2CAPChannel?, error: Error?)
     func peripheralManager(_ peripheral: CBPeripheralManagerType, didPublishL2CAPChannel PSM: CBL2CAPPSM, error: Error?)
     func peripheralManager(_ peripheral: CBPeripheralManagerType, didUnpublishL2CAPChannel PSM: CBL2CAPPSM, error: Error?)
