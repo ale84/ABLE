@@ -66,6 +66,12 @@ peripheralManager.waitForPoweredOn(withTimeout: 6.0) { (state) in
 ```
 # Installation
 
+### Swift Package Manager
+For Swift Package Manager, add the following package to your Package.swift file.
+```
+.package(url: "https://github.com/ale84/ABLE", .upToNextMajor(from: "0.8.2")),
+```
+
 ### Carthage
 If you're using [Carthage](https://github.com/Carthage/Carthage) you can add a dependency on ABLE by adding it to your Cartfile:
 ```

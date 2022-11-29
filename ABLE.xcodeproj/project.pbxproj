@@ -57,6 +57,7 @@
 		CACF3A3329360E0700534324 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		CACF3A3429360F5D00534324 /* Package.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Package.swift; sourceTree = "<group>"; };
 		CACF3A3529360F6400534324 /* ABLE.podspec */ = {isa = PBXFileReference; lastKnownFileType = text; path = ABLE.podspec; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.ruby; };
+		CACF3A7C29361A1700534324 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		CAF0873129360BB700EBB20B /* CBCentralManagerMock.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CBCentralManagerMock.swift; sourceTree = "<group>"; };
 		CAF0873229360BB700EBB20B /* CBCharacteristicMock.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CBCharacteristicMock.swift; sourceTree = "<group>"; };
 		CAF0873329360BB700EBB20B /* CBPeripheralMock.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CBPeripheralMock.swift; sourceTree = "<group>"; };
@@ -111,6 +112,7 @@
 		606ECAAE1EDEF101003BFA19 = {
 			isa = PBXGroup;
 			children = (
+				CACF3A7C29361A1700534324 /* README.md */,
 				CACF3A3529360F6400534324 /* ABLE.podspec */,
 				CACF3A3429360F5D00534324 /* Package.swift */,
 				CAF0872F29360BB700EBB20B /* ABLE */,
