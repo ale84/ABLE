@@ -1,0 +1,4 @@
+module ABLE {
+    header "/Users/alessio/Developer/iOS_Projects/ABLE/.build/arm64-apple-macosx/debug/ABLE.build/ABLE-Swift.h"
+    requires objc
+}

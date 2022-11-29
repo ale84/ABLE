@@ -1,0 +1,161 @@
+{
+  "": {
+    "swift-dependencies": "/Users/alessio/Developer/iOS_Projects/ABLE/.build/arm64-apple-macosx/debug/ABLE.build/master.swiftdeps"
+  },
+  "/Users/alessio/Developer/iOS_Projects/ABLE/Sources/ABLE/CBTypes/CBAttributeType.swift": {
+    "dependencies": "/Users/alessio/Developer/iOS_Projects/ABLE/.build/arm64-apple-macosx/debug/ABLE.build/CBTypes/CBAttributeType.d",
+    "object": "/Users/alessio/Developer/iOS_Projects/ABLE/.build/arm64-apple-macosx/debug/ABLE.build/CBTypes/CBAttributeType.swift.o",
+    "swiftmodule": "/Users/alessio/Developer/iOS_Projects/ABLE/.build/arm64-apple-macosx/debug/ABLE.build/CBTypes/CBAttributeType~partial.swiftmodule",
+    "swift-dependencies": "/Users/alessio/Developer/iOS_Projects/ABLE/.build/arm64-apple-macosx/debug/ABLE.build/CBTypes/CBAttributeType.swiftdeps"
+  },
+  "/Users/alessio/Developer/iOS_Projects/ABLE/Sources/ABLE/CBTypes/CBCentralManagerDelegateProxy.swift": {
+    "dependencies": "/Users/alessio/Developer/iOS_Projects/ABLE/.build/arm64-apple-macosx/debug/ABLE.build/CBTypes/CBCentralManagerDelegateProxy.d",
+    "object": "/Users/alessio/Developer/iOS_Projects/ABLE/.build/arm64-apple-macosx/debug/ABLE.build/CBTypes/CBCentralManagerDelegateProxy.swift.o",
+    "swiftmodule": "/Users/alessio/Developer/iOS_Projects/ABLE/.build/arm64-apple-macosx/debug/ABLE.build/CBTypes/CBCentralManagerDelegateProxy~partial.swiftmodule",
+    "swift-dependencies": "/Users/alessio/Developer/iOS_Projects/ABLE/.build/arm64-apple-macosx/debug/ABLE.build/CBTypes/CBCentralManagerDelegateProxy.swiftdeps"
+  },
+  "/Users/alessio/Developer/iOS_Projects/ABLE/Sources/ABLE/CBTypes/CBCentralManagerDelegateType.swift": {
+    "dependencies": "/Users/alessio/Developer/iOS_Projects/ABLE/.build/arm64-apple-macosx/debug/ABLE.build/CBTypes/CBCentralManagerDelegateType.d",
+    "object": "/Users/alessio/Developer/iOS_Projects/ABLE/.build/arm64-apple-macosx/debug/ABLE.build/CBTypes/CBCentralManagerDelegateType.swift.o",
+    "swiftmodule": "/Users/alessio/Developer/iOS_Projects/ABLE/.build/arm64-apple-macosx/debug/ABLE.build/CBTypes/CBCentralManagerDelegateType~partial.swiftmodule",
+    "swift-dependencies": "/Users/alessio/Developer/iOS_Projects/ABLE/.build/arm64-apple-macosx/debug/ABLE.build/CBTypes/CBCentralManagerDelegateType.swiftdeps"
+  },
+  "/Users/alessio/Developer/iOS_Projects/ABLE/Sources/ABLE/CBTypes/CBCentralManagerType.swift": {
+    "dependencies": "/Users/alessio/Developer/iOS_Projects/ABLE/.build/arm64-apple-macosx/debug/ABLE.build/CBTypes/CBCentralManagerType.d",
+    "object": "/Users/alessio/Developer/iOS_Projects/ABLE/.build/arm64-apple-macosx/debug/ABLE.build/CBTypes/CBCentralManagerType.swift.o",
+    "swiftmodule": "/Users/alessio/Developer/iOS_Projects/ABLE/.build/arm64-apple-macosx/debug/ABLE.build/CBTypes/CBCentralManagerType~partial.swiftmodule",
+    "swift-dependencies": "/Users/alessio/Developer/iOS_Projects/ABLE/.build/arm64-apple-macosx/debug/ABLE.build/CBTypes/CBCentralManagerType.swiftdeps"
+  },
+  "/Users/alessio/Developer/iOS_Projects/ABLE/Sources/ABLE/CBTypes/CBCharacteristicType.swift": {
+    "dependencies": "/Users/alessio/Developer/iOS_Projects/ABLE/.build/arm64-apple-macosx/debug/ABLE.build/CBTypes/CBCharacteristicType.d",
+    "object": "/Users/alessio/Developer/iOS_Projects/ABLE/.build/arm64-apple-macosx/debug/ABLE.build/CBTypes/CBCharacteristicType.swift.o",
+    "swiftmodule": "/Users/alessio/Developer/iOS_Projects/ABLE/.build/arm64-apple-macosx/debug/ABLE.build/CBTypes/CBCharacteristicType~partial.swiftmodule",
+    "swift-dependencies": "/Users/alessio/Developer/iOS_Projects/ABLE/.build/arm64-apple-macosx/debug/ABLE.build/CBTypes/CBCharacteristicType.swiftdeps"
+  },
+  "/Users/alessio/Developer/iOS_Projects/ABLE/Sources/ABLE/CBTypes/CBManagerType.swift": {
+    "dependencies": "/Users/alessio/Developer/iOS_Projects/ABLE/.build/arm64-apple-macosx/debug/ABLE.build/CBTypes/CBManagerType.d",
+    "object": "/Users/alessio/Developer/iOS_Projects/ABLE/.build/arm64-apple-macosx/debug/ABLE.build/CBTypes/CBManagerType.swift.o",
+    "swiftmodule": "/Users/alessio/Developer/iOS_Projects/ABLE/.build/arm64-apple-macosx/debug/ABLE.build/CBTypes/CBManagerType~partial.swiftmodule",
+    "swift-dependencies": "/Users/alessio/Developer/iOS_Projects/ABLE/.build/arm64-apple-macosx/debug/ABLE.build/CBTypes/CBManagerType.swiftdeps"
+  },
+  "/Users/alessio/Developer/iOS_Projects/ABLE/Sources/ABLE/CBTypes/CBPeerType.swift": {
+    "dependencies": "/Users/alessio/Developer/iOS_Projects/ABLE/.build/arm64-apple-macosx/debug/ABLE.build/CBTypes/CBPeerType.d",
+    "object": "/Users/alessio/Developer/iOS_Projects/ABLE/.build/arm64-apple-macosx/debug/ABLE.build/CBTypes/CBPeerType.swift.o",
+    "swiftmodule": "/Users/alessio/Developer/iOS_Projects/ABLE/.build/arm64-apple-macosx/debug/ABLE.build/CBTypes/CBPeerType~partial.swiftmodule",
+    "swift-dependencies": "/Users/alessio/Developer/iOS_Projects/ABLE/.build/arm64-apple-macosx/debug/ABLE.build/CBTypes/CBPeerType.swiftdeps"
+  },
+  "/Users/alessio/Developer/iOS_Projects/ABLE/Sources/ABLE/CBTypes/CBPeripheralDelegateProxy.swift": {
+    "dependencies": "/Users/alessio/Developer/iOS_Projects/ABLE/.build/arm64-apple-macosx/debug/ABLE.build/CBTypes/CBPeripheralDelegateProxy.d",
+    "object": "/Users/alessio/Developer/iOS_Projects/ABLE/.build/arm64-apple-macosx/debug/ABLE.build/CBTypes/CBPeripheralDelegateProxy.swift.o",
+    "swiftmodule": "/Users/alessio/Developer/iOS_Projects/ABLE/.build/arm64-apple-macosx/debug/ABLE.build/CBTypes/CBPeripheralDelegateProxy~partial.swiftmodule",
+    "swift-dependencies": "/Users/alessio/Developer/iOS_Projects/ABLE/.build/arm64-apple-macosx/debug/ABLE.build/CBTypes/CBPeripheralDelegateProxy.swiftdeps"
+  },
+  "/Users/alessio/Developer/iOS_Projects/ABLE/Sources/ABLE/CBTypes/CBPeripheralDelegateType.swift": {
+    "dependencies": "/Users/alessio/Developer/iOS_Projects/ABLE/.build/arm64-apple-macosx/debug/ABLE.build/CBTypes/CBPeripheralDelegateType.d",
+    "object": "/Users/alessio/Developer/iOS_Projects/ABLE/.build/arm64-apple-macosx/debug/ABLE.build/CBTypes/CBPeripheralDelegateType.swift.o",
+    "swiftmodule": "/Users/alessio/Developer/iOS_Projects/ABLE/.build/arm64-apple-macosx/debug/ABLE.build/CBTypes/CBPeripheralDelegateType~partial.swiftmodule",
+    "swift-dependencies": "/Users/alessio/Developer/iOS_Projects/ABLE/.build/arm64-apple-macosx/debug/ABLE.build/CBTypes/CBPeripheralDelegateType.swiftdeps"
+  },
+  "/Users/alessio/Developer/iOS_Projects/ABLE/Sources/ABLE/CBTypes/CBPeripheralManagerDelegateProxy.swift": {
+    "dependencies": "/Users/alessio/Developer/iOS_Projects/ABLE/.build/arm64-apple-macosx/debug/ABLE.build/CBTypes/CBPeripheralManagerDelegateProxy.d",
+    "object": "/Users/alessio/Developer/iOS_Projects/ABLE/.build/arm64-apple-macosx/debug/ABLE.build/CBTypes/CBPeripheralManagerDelegateProxy.swift.o",
+    "swiftmodule": "/Users/alessio/Developer/iOS_Projects/ABLE/.build/arm64-apple-macosx/debug/ABLE.build/CBTypes/CBPeripheralManagerDelegateProxy~partial.swiftmodule",
+    "swift-dependencies": "/Users/alessio/Developer/iOS_Projects/ABLE/.build/arm64-apple-macosx/debug/ABLE.build/CBTypes/CBPeripheralManagerDelegateProxy.swiftdeps"
+  },
+  "/Users/alessio/Developer/iOS_Projects/ABLE/Sources/ABLE/CBTypes/CBPeripheralManagerDelegateType.swift": {
+    "dependencies": "/Users/alessio/Developer/iOS_Projects/ABLE/.build/arm64-apple-macosx/debug/ABLE.build/CBTypes/CBPeripheralManagerDelegateType.d",
+    "object": "/Users/alessio/Developer/iOS_Projects/ABLE/.build/arm64-apple-macosx/debug/ABLE.build/CBTypes/CBPeripheralManagerDelegateType.swift.o",
+    "swiftmodule": "/Users/alessio/Developer/iOS_Projects/ABLE/.build/arm64-apple-macosx/debug/ABLE.build/CBTypes/CBPeripheralManagerDelegateType~partial.swiftmodule",
+    "swift-dependencies": "/Users/alessio/Developer/iOS_Projects/ABLE/.build/arm64-apple-macosx/debug/ABLE.build/CBTypes/CBPeripheralManagerDelegateType.swiftdeps"
+  },
+  "/Users/alessio/Developer/iOS_Projects/ABLE/Sources/ABLE/CBTypes/CBPeripheralManagerType.swift": {
+    "dependencies": "/Users/alessio/Developer/iOS_Projects/ABLE/.build/arm64-apple-macosx/debug/ABLE.build/CBTypes/CBPeripheralManagerType.d",
+    "object": "/Users/alessio/Developer/iOS_Projects/ABLE/.build/arm64-apple-macosx/debug/ABLE.build/CBTypes/CBPeripheralManagerType.swift.o",
+    "swiftmodule": "/Users/alessio/Developer/iOS_Projects/ABLE/.build/arm64-apple-macosx/debug/ABLE.build/CBTypes/CBPeripheralManagerType~partial.swiftmodule",
+    "swift-dependencies": "/Users/alessio/Developer/iOS_Projects/ABLE/.build/arm64-apple-macosx/debug/ABLE.build/CBTypes/CBPeripheralManagerType.swiftdeps"
+  },
+  "/Users/alessio/Developer/iOS_Projects/ABLE/Sources/ABLE/CBTypes/CBPeripheralType.swift": {
+    "dependencies": "/Users/alessio/Developer/iOS_Projects/ABLE/.build/arm64-apple-macosx/debug/ABLE.build/CBTypes/CBPeripheralType.d",
+    "object": "/Users/alessio/Developer/iOS_Projects/ABLE/.build/arm64-apple-macosx/debug/ABLE.build/CBTypes/CBPeripheralType.swift.o",
+    "swiftmodule": "/Users/alessio/Developer/iOS_Projects/ABLE/.build/arm64-apple-macosx/debug/ABLE.build/CBTypes/CBPeripheralType~partial.swiftmodule",
+    "swift-dependencies": "/Users/alessio/Developer/iOS_Projects/ABLE/.build/arm64-apple-macosx/debug/ABLE.build/CBTypes/CBPeripheralType.swiftdeps"
+  },
+  "/Users/alessio/Developer/iOS_Projects/ABLE/Sources/ABLE/CBTypes/CBServiceType.swift": {
+    "dependencies": "/Users/alessio/Developer/iOS_Projects/ABLE/.build/arm64-apple-macosx/debug/ABLE.build/CBTypes/CBServiceType.d",
+    "object": "/Users/alessio/Developer/iOS_Projects/ABLE/.build/arm64-apple-macosx/debug/ABLE.build/CBTypes/CBServiceType.swift.o",
+    "swiftmodule": "/Users/alessio/Developer/iOS_Projects/ABLE/.build/arm64-apple-macosx/debug/ABLE.build/CBTypes/CBServiceType~partial.swiftmodule",
+    "swift-dependencies": "/Users/alessio/Developer/iOS_Projects/ABLE/.build/arm64-apple-macosx/debug/ABLE.build/CBTypes/CBServiceType.swiftdeps"
+  },
+  "/Users/alessio/Developer/iOS_Projects/ABLE/Sources/ABLE/CentralManager.swift": {
+    "dependencies": "/Users/alessio/Developer/iOS_Projects/ABLE/.build/arm64-apple-macosx/debug/ABLE.build/CentralManager.d",
+    "object": "/Users/alessio/Developer/iOS_Projects/ABLE/.build/arm64-apple-macosx/debug/ABLE.build/CentralManager.swift.o",
+    "swiftmodule": "/Users/alessio/Developer/iOS_Projects/ABLE/.build/arm64-apple-macosx/debug/ABLE.build/CentralManager~partial.swiftmodule",
+    "swift-dependencies": "/Users/alessio/Developer/iOS_Projects/ABLE/.build/arm64-apple-macosx/debug/ABLE.build/CentralManager.swiftdeps"
+  },
+  "/Users/alessio/Developer/iOS_Projects/ABLE/Sources/ABLE/Characteristic.swift": {
+    "dependencies": "/Users/alessio/Developer/iOS_Projects/ABLE/.build/arm64-apple-macosx/debug/ABLE.build/Characteristic.d",
+    "object": "/Users/alessio/Developer/iOS_Projects/ABLE/.build/arm64-apple-macosx/debug/ABLE.build/Characteristic.swift.o",
+    "swiftmodule": "/Users/alessio/Developer/iOS_Projects/ABLE/.build/arm64-apple-macosx/debug/ABLE.build/Characteristic~partial.swiftmodule",
+    "swift-dependencies": "/Users/alessio/Developer/iOS_Projects/ABLE/.build/arm64-apple-macosx/debug/ABLE.build/Characteristic.swiftdeps"
+  },
+  "/Users/alessio/Developer/iOS_Projects/ABLE/Sources/ABLE/Mocks/CBCentralManagerMock.swift": {
+    "dependencies": "/Users/alessio/Developer/iOS_Projects/ABLE/.build/arm64-apple-macosx/debug/ABLE.build/Mocks/CBCentralManagerMock.d",
+    "object": "/Users/alessio/Developer/iOS_Projects/ABLE/.build/arm64-apple-macosx/debug/ABLE.build/Mocks/CBCentralManagerMock.swift.o",
+    "swiftmodule": "/Users/alessio/Developer/iOS_Projects/ABLE/.build/arm64-apple-macosx/debug/ABLE.build/Mocks/CBCentralManagerMock~partial.swiftmodule",
+    "swift-dependencies": "/Users/alessio/Developer/iOS_Projects/ABLE/.build/arm64-apple-macosx/debug/ABLE.build/Mocks/CBCentralManagerMock.swiftdeps"
+  },
+  "/Users/alessio/Developer/iOS_Projects/ABLE/Sources/ABLE/Mocks/CBCharacteristicMock.swift": {
+    "dependencies": "/Users/alessio/Developer/iOS_Projects/ABLE/.build/arm64-apple-macosx/debug/ABLE.build/Mocks/CBCharacteristicMock.d",
+    "object": "/Users/alessio/Developer/iOS_Projects/ABLE/.build/arm64-apple-macosx/debug/ABLE.build/Mocks/CBCharacteristicMock.swift.o",
+    "swiftmodule": "/Users/alessio/Developer/iOS_Projects/ABLE/.build/arm64-apple-macosx/debug/ABLE.build/Mocks/CBCharacteristicMock~partial.swiftmodule",
+    "swift-dependencies": "/Users/alessio/Developer/iOS_Projects/ABLE/.build/arm64-apple-macosx/debug/ABLE.build/Mocks/CBCharacteristicMock.swiftdeps"
+  },
+  "/Users/alessio/Developer/iOS_Projects/ABLE/Sources/ABLE/Mocks/CBPeripheralManagerMock.swift": {
+    "dependencies": "/Users/alessio/Developer/iOS_Projects/ABLE/.build/arm64-apple-macosx/debug/ABLE.build/Mocks/CBPeripheralManagerMock.d",
+    "object": "/Users/alessio/Developer/iOS_Projects/ABLE/.build/arm64-apple-macosx/debug/ABLE.build/Mocks/CBPeripheralManagerMock.swift.o",
+    "swiftmodule": "/Users/alessio/Developer/iOS_Projects/ABLE/.build/arm64-apple-macosx/debug/ABLE.build/Mocks/CBPeripheralManagerMock~partial.swiftmodule",
+    "swift-dependencies": "/Users/alessio/Developer/iOS_Projects/ABLE/.build/arm64-apple-macosx/debug/ABLE.build/Mocks/CBPeripheralManagerMock.swiftdeps"
+  },
+  "/Users/alessio/Developer/iOS_Projects/ABLE/Sources/ABLE/Mocks/CBPeripheralMock.swift": {
+    "dependencies": "/Users/alessio/Developer/iOS_Projects/ABLE/.build/arm64-apple-macosx/debug/ABLE.build/Mocks/CBPeripheralMock.d",
+    "object": "/Users/alessio/Developer/iOS_Projects/ABLE/.build/arm64-apple-macosx/debug/ABLE.build/Mocks/CBPeripheralMock.swift.o",
+    "swiftmodule": "/Users/alessio/Developer/iOS_Projects/ABLE/.build/arm64-apple-macosx/debug/ABLE.build/Mocks/CBPeripheralMock~partial.swiftmodule",
+    "swift-dependencies": "/Users/alessio/Developer/iOS_Projects/ABLE/.build/arm64-apple-macosx/debug/ABLE.build/Mocks/CBPeripheralMock.swiftdeps"
+  },
+  "/Users/alessio/Developer/iOS_Projects/ABLE/Sources/ABLE/Mocks/CBServiceMock.swift": {
+    "dependencies": "/Users/alessio/Developer/iOS_Projects/ABLE/.build/arm64-apple-macosx/debug/ABLE.build/Mocks/CBServiceMock.d",
+    "object": "/Users/alessio/Developer/iOS_Projects/ABLE/.build/arm64-apple-macosx/debug/ABLE.build/Mocks/CBServiceMock.swift.o",
+    "swiftmodule": "/Users/alessio/Developer/iOS_Projects/ABLE/.build/arm64-apple-macosx/debug/ABLE.build/Mocks/CBServiceMock~partial.swiftmodule",
+    "swift-dependencies": "/Users/alessio/Developer/iOS_Projects/ABLE/.build/arm64-apple-macosx/debug/ABLE.build/Mocks/CBServiceMock.swiftdeps"
+  },
+  "/Users/alessio/Developer/iOS_Projects/ABLE/Sources/ABLE/Peripheral.swift": {
+    "dependencies": "/Users/alessio/Developer/iOS_Projects/ABLE/.build/arm64-apple-macosx/debug/ABLE.build/Peripheral.d",
+    "object": "/Users/alessio/Developer/iOS_Projects/ABLE/.build/arm64-apple-macosx/debug/ABLE.build/Peripheral.swift.o",
+    "swiftmodule": "/Users/alessio/Developer/iOS_Projects/ABLE/.build/arm64-apple-macosx/debug/ABLE.build/Peripheral~partial.swiftmodule",
+    "swift-dependencies": "/Users/alessio/Developer/iOS_Projects/ABLE/.build/arm64-apple-macosx/debug/ABLE.build/Peripheral.swiftdeps"
+  },
+  "/Users/alessio/Developer/iOS_Projects/ABLE/Sources/ABLE/PeripheralManager.swift": {
+    "dependencies": "/Users/alessio/Developer/iOS_Projects/ABLE/.build/arm64-apple-macosx/debug/ABLE.build/PeripheralManager.d",
+    "object": "/Users/alessio/Developer/iOS_Projects/ABLE/.build/arm64-apple-macosx/debug/ABLE.build/PeripheralManager.swift.o",
+    "swiftmodule": "/Users/alessio/Developer/iOS_Projects/ABLE/.build/arm64-apple-macosx/debug/ABLE.build/PeripheralManager~partial.swiftmodule",
+    "swift-dependencies": "/Users/alessio/Developer/iOS_Projects/ABLE/.build/arm64-apple-macosx/debug/ABLE.build/PeripheralManager.swiftdeps"
+  },
+  "/Users/alessio/Developer/iOS_Projects/ABLE/Sources/ABLE/Service.swift": {
+    "dependencies": "/Users/alessio/Developer/iOS_Projects/ABLE/.build/arm64-apple-macosx/debug/ABLE.build/Service.d",
+    "object": "/Users/alessio/Developer/iOS_Projects/ABLE/.build/arm64-apple-macosx/debug/ABLE.build/Service.swift.o",
+    "swiftmodule": "/Users/alessio/Developer/iOS_Projects/ABLE/.build/arm64-apple-macosx/debug/ABLE.build/Service~partial.swiftmodule",
+    "swift-dependencies": "/Users/alessio/Developer/iOS_Projects/ABLE/.build/arm64-apple-macosx/debug/ABLE.build/Service.swiftdeps"
+  },
+  "/Users/alessio/Developer/iOS_Projects/ABLE/Sources/ABLE/Support/Logger.swift": {
+    "dependencies": "/Users/alessio/Developer/iOS_Projects/ABLE/.build/arm64-apple-macosx/debug/ABLE.build/Support/Logger.d",
+    "object": "/Users/alessio/Developer/iOS_Projects/ABLE/.build/arm64-apple-macosx/debug/ABLE.build/Support/Logger.swift.o",
+    "swiftmodule": "/Users/alessio/Developer/iOS_Projects/ABLE/.build/arm64-apple-macosx/debug/ABLE.build/Support/Logger~partial.swiftmodule",
+    "swift-dependencies": "/Users/alessio/Developer/iOS_Projects/ABLE/.build/arm64-apple-macosx/debug/ABLE.build/Support/Logger.swiftdeps"
+  },
+  "/Users/alessio/Developer/iOS_Projects/ABLE/Sources/ABLE/Support/Support.swift": {
+    "dependencies": "/Users/alessio/Developer/iOS_Projects/ABLE/.build/arm64-apple-macosx/debug/ABLE.build/Support/Support.d",
+    "object": "/Users/alessio/Developer/iOS_Projects/ABLE/.build/arm64-apple-macosx/debug/ABLE.build/Support/Support.swift.o",
+    "swiftmodule": "/Users/alessio/Developer/iOS_Projects/ABLE/.build/arm64-apple-macosx/debug/ABLE.build/Support/Support~partial.swiftmodule",
+    "swift-dependencies": "/Users/alessio/Developer/iOS_Projects/ABLE/.build/arm64-apple-macosx/debug/ABLE.build/Support/Support.swiftdeps"
+  }
+}

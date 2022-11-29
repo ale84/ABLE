@@ -1,7 +1,7 @@
 Pod::Spec.new do |spec|
 
   spec.name         = "ABLE"
-  spec.version      = "0.8.0"
+  spec.version      = "0.8.2"
   spec.summary      = "A lightweight Bluetooth library for iOS."
   spec.description  = <<-DESC
   Bluetooth library for iOS.
@@ -13,8 +13,8 @@ Pod::Spec.new do |spec|
   spec.license      = "MIT"
   spec.author             = { "Alessio Orlando" => "alessioorlando@icloud.com" }
   spec.platform     = :ios
-  spec.platform     = :ios, "10.3"
+  spec.platform     = :ios, "13.6"
   spec.source       = { :git => "https://github.com/ale84/ABLE.git", :tag => "#{spec.version}" }
-  spec.source_files  = "ABLE", "ABLE/**/*.swift"
+  spec.source_files  = "ABLE", "Sources/ABLE/**/*.swift"
   spec.swift_version = "5.0"
 end

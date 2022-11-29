@@ -7,39 +7,37 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		6005C02F20D3B5FA00428356 /* PeripheralManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6005C02E20D3B5FA00428356 /* PeripheralManagerTests.swift */; };
-		6058344320CEA97500AD216C /* CBPeripheralManagerType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6058344220CEA97400AD216C /* CBPeripheralManagerType.swift */; };
-		6058344520CEAB0200AD216C /* CBPeripheralManagerDelegateType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6058344420CEAB0200AD216C /* CBPeripheralManagerDelegateType.swift */; };
-		6058344720CEAC2200AD216C /* CBPeripheralManagerDelegateProxy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6058344620CEAC2200AD216C /* CBPeripheralManagerDelegateProxy.swift */; };
-		6058344920CEB75C00AD216C /* CBPeripheralManagerMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6058344820CEB75C00AD216C /* CBPeripheralManagerMock.swift */; };
-		6058A7C61F0B946500D302E4 /* LICENSE in Resources */ = {isa = PBXBuildFile; fileRef = 6058A7C41F0B946500D302E4 /* LICENSE */; };
-		606ECABD1EDEF101003BFA19 /* ABLE.h in Headers */ = {isa = PBXBuildFile; fileRef = 606ECABB1EDEF101003BFA19 /* ABLE.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		606ECAC71EDEF131003BFA19 /* CentralManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 606ECAC31EDEF131003BFA19 /* CentralManager.swift */; };
-		606ECAC81EDEF131003BFA19 /* Peripheral.swift in Sources */ = {isa = PBXBuildFile; fileRef = 606ECAC41EDEF131003BFA19 /* Peripheral.swift */; };
-		606ECAC91EDEF131003BFA19 /* PeripheralManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 606ECAC51EDEF131003BFA19 /* PeripheralManager.swift */; };
-		606ECACA1EDEF131003BFA19 /* Support.swift in Sources */ = {isa = PBXBuildFile; fileRef = 606ECAC61EDEF131003BFA19 /* Support.swift */; };
-		606ECACE1EDEF275003BFA19 /* Logger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 606ECACD1EDEF275003BFA19 /* Logger.swift */; };
-		607A704B20C91CD200796BDC /* CentralManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 607A704A20C91CD200796BDC /* CentralManagerTests.swift */; };
 		607A704D20C91CD200796BDC /* ABLE.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 606ECAB81EDEF101003BFA19 /* ABLE.framework */; };
-		60DAF5A220C7D65300349954 /* CBPeripheralType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 60DAF5A120C7D65300349954 /* CBPeripheralType.swift */; };
-		60EA021220C970820081738E /* CBCentralManagerMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 60EA021120C970820081738E /* CBCentralManagerMock.swift */; };
-		60EA021420C971740081738E /* CBPeripheralMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 60EA021320C971740081738E /* CBPeripheralMock.swift */; };
-		60EA021720C972530081738E /* CBCentralManagerType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 60EA021620C972530081738E /* CBCentralManagerType.swift */; };
-		60EA021920C972D20081738E /* CBPeerType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 60EA021820C972D20081738E /* CBPeerType.swift */; };
-		60EA021B20C973100081738E /* CBManagerType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 60EA021A20C973100081738E /* CBManagerType.swift */; };
-		60EA021D20C9734F0081738E /* CBCentralManagerDelegateType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 60EA021C20C9734F0081738E /* CBCentralManagerDelegateType.swift */; };
-		60EA021F20C973840081738E /* CBPeripheralDelegateType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 60EA021E20C973840081738E /* CBPeripheralDelegateType.swift */; };
-		60EA022120C973B00081738E /* CBCentralManagerDelegateProxy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 60EA022020C973B00081738E /* CBCentralManagerDelegateProxy.swift */; };
-		60EA022320C973D30081738E /* CBPeripheralDelegateProxy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 60EA022220C973D30081738E /* CBPeripheralDelegateProxy.swift */; };
-		60EA316F20D2594E0072B5CA /* PeripheralTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 60EA316E20D2594E0072B5CA /* PeripheralTests.swift */; };
-		60EA317120D25F7A0072B5CA /* CBServiceType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 60EA317020D25F790072B5CA /* CBServiceType.swift */; };
-		60EA317320D268180072B5CA /* CBCharacteristicType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 60EA317220D268180072B5CA /* CBCharacteristicType.swift */; };
-		60EA317520D268C00072B5CA /* CBAttributeType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 60EA317420D268C00072B5CA /* CBAttributeType.swift */; };
-		60EA317720D269500072B5CA /* CBServiceMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 60EA317620D269500072B5CA /* CBServiceMock.swift */; };
-		60EA317920D26D860072B5CA /* Service.swift in Sources */ = {isa = PBXBuildFile; fileRef = 60EA317820D26D860072B5CA /* Service.swift */; };
-		60EA317B20D278230072B5CA /* Characteristic.swift in Sources */ = {isa = PBXBuildFile; fileRef = 60EA317A20D278230072B5CA /* Characteristic.swift */; };
-		60EA317D20D27D6D0072B5CA /* CBCharacteristicMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 60EA317C20D27D6D0072B5CA /* CBCharacteristicMock.swift */; };
-		60EF8C10225F73060069FB1B /* ABLE.podspec in Resources */ = {isa = PBXBuildFile; fileRef = 60EF8C0F225F73060069FB1B /* ABLE.podspec */; };
+		CAF0874F29360BB700EBB20B /* CBCentralManagerMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAF0873129360BB700EBB20B /* CBCentralManagerMock.swift */; };
+		CAF0875029360BB700EBB20B /* CBCharacteristicMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAF0873229360BB700EBB20B /* CBCharacteristicMock.swift */; };
+		CAF0875129360BB700EBB20B /* CBPeripheralMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAF0873329360BB700EBB20B /* CBPeripheralMock.swift */; };
+		CAF0875229360BB700EBB20B /* CBPeripheralManagerMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAF0873429360BB700EBB20B /* CBPeripheralManagerMock.swift */; };
+		CAF0875329360BB700EBB20B /* CBServiceMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAF0873529360BB700EBB20B /* CBServiceMock.swift */; };
+		CAF0875429360BB700EBB20B /* Peripheral.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAF0873629360BB700EBB20B /* Peripheral.swift */; };
+		CAF0875529360BB700EBB20B /* Service.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAF0873729360BB700EBB20B /* Service.swift */; };
+		CAF0875629360BB700EBB20B /* CBCentralManagerType.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAF0873929360BB700EBB20B /* CBCentralManagerType.swift */; };
+		CAF0875729360BB700EBB20B /* CBPeripheralManagerDelegateProxy.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAF0873A29360BB700EBB20B /* CBPeripheralManagerDelegateProxy.swift */; };
+		CAF0875829360BB700EBB20B /* CBPeripheralDelegateType.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAF0873B29360BB700EBB20B /* CBPeripheralDelegateType.swift */; };
+		CAF0875929360BB700EBB20B /* CBCentralManagerDelegateProxy.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAF0873C29360BB700EBB20B /* CBCentralManagerDelegateProxy.swift */; };
+		CAF0875A29360BB700EBB20B /* CBPeripheralDelegateProxy.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAF0873D29360BB700EBB20B /* CBPeripheralDelegateProxy.swift */; };
+		CAF0875B29360BB700EBB20B /* CBCharacteristicType.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAF0873E29360BB700EBB20B /* CBCharacteristicType.swift */; };
+		CAF0875C29360BB700EBB20B /* CBManagerType.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAF0873F29360BB700EBB20B /* CBManagerType.swift */; };
+		CAF0875D29360BB700EBB20B /* CBPeripheralManagerDelegateType.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAF0874029360BB700EBB20B /* CBPeripheralManagerDelegateType.swift */; };
+		CAF0875E29360BB700EBB20B /* CBPeripheralType.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAF0874129360BB700EBB20B /* CBPeripheralType.swift */; };
+		CAF0875F29360BB700EBB20B /* CBCentralManagerDelegateType.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAF0874229360BB700EBB20B /* CBCentralManagerDelegateType.swift */; };
+		CAF0876029360BB700EBB20B /* CBPeerType.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAF0874329360BB700EBB20B /* CBPeerType.swift */; };
+		CAF0876129360BB700EBB20B /* CBPeripheralManagerType.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAF0874429360BB700EBB20B /* CBPeripheralManagerType.swift */; };
+		CAF0876229360BB700EBB20B /* CBServiceType.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAF0874529360BB700EBB20B /* CBServiceType.swift */; };
+		CAF0876329360BB700EBB20B /* CBAttributeType.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAF0874629360BB700EBB20B /* CBAttributeType.swift */; };
+		CAF0876429360BB700EBB20B /* CentralManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAF0874729360BB700EBB20B /* CentralManager.swift */; };
+		CAF0876529360BB700EBB20B /* Logger.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAF0874929360BB700EBB20B /* Logger.swift */; };
+		CAF0876629360BB700EBB20B /* Support.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAF0874A29360BB700EBB20B /* Support.swift */; };
+		CAF0876729360BB700EBB20B /* PeripheralManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAF0874B29360BB700EBB20B /* PeripheralManager.swift */; };
+		CAF0876829360BB700EBB20B /* Characteristic.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAF0874C29360BB700EBB20B /* Characteristic.swift */; };
+		CAF0876929360BB700EBB20B /* ABLE.h in Headers */ = {isa = PBXBuildFile; fileRef = CAF0874D29360BB700EBB20B /* ABLE.h */; };
+		CAF0877029360BD100EBB20B /* PeripheralManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAF0876C29360BD100EBB20B /* PeripheralManagerTests.swift */; };
+		CAF0877129360BD100EBB20B /* CentralManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAF0876D29360BD100EBB20B /* CentralManagerTests.swift */; };
+		CAF0877229360BD100EBB20B /* PeripheralTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAF0876E29360BD100EBB20B /* PeripheralTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -53,43 +51,42 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		6005C02E20D3B5FA00428356 /* PeripheralManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PeripheralManagerTests.swift; sourceTree = "<group>"; };
-		6058344220CEA97400AD216C /* CBPeripheralManagerType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CBPeripheralManagerType.swift; sourceTree = "<group>"; };
-		6058344420CEAB0200AD216C /* CBPeripheralManagerDelegateType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CBPeripheralManagerDelegateType.swift; sourceTree = "<group>"; };
-		6058344620CEAC2200AD216C /* CBPeripheralManagerDelegateProxy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CBPeripheralManagerDelegateProxy.swift; sourceTree = "<group>"; };
-		6058344820CEB75C00AD216C /* CBPeripheralManagerMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CBPeripheralManagerMock.swift; sourceTree = "<group>"; };
-		6058A7C41F0B946500D302E4 /* LICENSE */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = LICENSE; sourceTree = SOURCE_ROOT; };
-		6058A7C51F0B946500D302E4 /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = SOURCE_ROOT; xcLanguageSpecificationIdentifier = xcode.lang.markdown; };
 		606ECAB81EDEF101003BFA19 /* ABLE.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = ABLE.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		606ECABB1EDEF101003BFA19 /* ABLE.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ABLE.h; sourceTree = "<group>"; };
-		606ECABC1EDEF101003BFA19 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		606ECAC31EDEF131003BFA19 /* CentralManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; lineEnding = 0; path = CentralManager.swift; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.swift; };
-		606ECAC41EDEF131003BFA19 /* Peripheral.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; lineEnding = 0; path = Peripheral.swift; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.swift; };
-		606ECAC51EDEF131003BFA19 /* PeripheralManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; lineEnding = 0; path = PeripheralManager.swift; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.swift; };
-		606ECAC61EDEF131003BFA19 /* Support.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Support.swift; sourceTree = "<group>"; };
-		606ECACD1EDEF275003BFA19 /* Logger.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; lineEnding = 0; path = Logger.swift; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.swift; };
 		607A704820C91CD200796BDC /* ABLETests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ABLETests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		607A704A20C91CD200796BDC /* CentralManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CentralManagerTests.swift; sourceTree = "<group>"; };
-		607A704C20C91CD200796BDC /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		60DAF5A120C7D65300349954 /* CBPeripheralType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CBPeripheralType.swift; sourceTree = "<group>"; };
-		60EA021120C970820081738E /* CBCentralManagerMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CBCentralManagerMock.swift; sourceTree = "<group>"; };
-		60EA021320C971740081738E /* CBPeripheralMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CBPeripheralMock.swift; sourceTree = "<group>"; };
-		60EA021620C972530081738E /* CBCentralManagerType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CBCentralManagerType.swift; sourceTree = "<group>"; };
-		60EA021820C972D20081738E /* CBPeerType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CBPeerType.swift; sourceTree = "<group>"; };
-		60EA021A20C973100081738E /* CBManagerType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CBManagerType.swift; sourceTree = "<group>"; };
-		60EA021C20C9734F0081738E /* CBCentralManagerDelegateType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CBCentralManagerDelegateType.swift; sourceTree = "<group>"; };
-		60EA021E20C973840081738E /* CBPeripheralDelegateType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CBPeripheralDelegateType.swift; sourceTree = "<group>"; };
-		60EA022020C973B00081738E /* CBCentralManagerDelegateProxy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CBCentralManagerDelegateProxy.swift; sourceTree = "<group>"; };
-		60EA022220C973D30081738E /* CBPeripheralDelegateProxy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CBPeripheralDelegateProxy.swift; sourceTree = "<group>"; };
-		60EA316E20D2594E0072B5CA /* PeripheralTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PeripheralTests.swift; sourceTree = "<group>"; };
-		60EA317020D25F790072B5CA /* CBServiceType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CBServiceType.swift; sourceTree = "<group>"; };
-		60EA317220D268180072B5CA /* CBCharacteristicType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CBCharacteristicType.swift; sourceTree = "<group>"; };
-		60EA317420D268C00072B5CA /* CBAttributeType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CBAttributeType.swift; sourceTree = "<group>"; };
-		60EA317620D269500072B5CA /* CBServiceMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CBServiceMock.swift; sourceTree = "<group>"; };
-		60EA317820D26D860072B5CA /* Service.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Service.swift; sourceTree = "<group>"; };
-		60EA317A20D278230072B5CA /* Characteristic.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Characteristic.swift; sourceTree = "<group>"; };
-		60EA317C20D27D6D0072B5CA /* CBCharacteristicMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CBCharacteristicMock.swift; sourceTree = "<group>"; };
-		60EF8C0F225F73060069FB1B /* ABLE.podspec */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = ABLE.podspec; sourceTree = SOURCE_ROOT; xcLanguageSpecificationIdentifier = xcode.lang.ruby; };
+		CACF3A3229360D8E00534324 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		CACF3A3329360E0700534324 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		CACF3A3429360F5D00534324 /* Package.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Package.swift; sourceTree = "<group>"; };
+		CACF3A3529360F6400534324 /* ABLE.podspec */ = {isa = PBXFileReference; lastKnownFileType = text; path = ABLE.podspec; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.ruby; };
+		CAF0873129360BB700EBB20B /* CBCentralManagerMock.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CBCentralManagerMock.swift; sourceTree = "<group>"; };
+		CAF0873229360BB700EBB20B /* CBCharacteristicMock.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CBCharacteristicMock.swift; sourceTree = "<group>"; };
+		CAF0873329360BB700EBB20B /* CBPeripheralMock.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CBPeripheralMock.swift; sourceTree = "<group>"; };
+		CAF0873429360BB700EBB20B /* CBPeripheralManagerMock.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CBPeripheralManagerMock.swift; sourceTree = "<group>"; };
+		CAF0873529360BB700EBB20B /* CBServiceMock.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CBServiceMock.swift; sourceTree = "<group>"; };
+		CAF0873629360BB700EBB20B /* Peripheral.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Peripheral.swift; sourceTree = "<group>"; };
+		CAF0873729360BB700EBB20B /* Service.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Service.swift; sourceTree = "<group>"; };
+		CAF0873929360BB700EBB20B /* CBCentralManagerType.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CBCentralManagerType.swift; sourceTree = "<group>"; };
+		CAF0873A29360BB700EBB20B /* CBPeripheralManagerDelegateProxy.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CBPeripheralManagerDelegateProxy.swift; sourceTree = "<group>"; };
+		CAF0873B29360BB700EBB20B /* CBPeripheralDelegateType.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CBPeripheralDelegateType.swift; sourceTree = "<group>"; };
+		CAF0873C29360BB700EBB20B /* CBCentralManagerDelegateProxy.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CBCentralManagerDelegateProxy.swift; sourceTree = "<group>"; };
+		CAF0873D29360BB700EBB20B /* CBPeripheralDelegateProxy.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CBPeripheralDelegateProxy.swift; sourceTree = "<group>"; };
+		CAF0873E29360BB700EBB20B /* CBCharacteristicType.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CBCharacteristicType.swift; sourceTree = "<group>"; };
+		CAF0873F29360BB700EBB20B /* CBManagerType.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CBManagerType.swift; sourceTree = "<group>"; };
+		CAF0874029360BB700EBB20B /* CBPeripheralManagerDelegateType.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CBPeripheralManagerDelegateType.swift; sourceTree = "<group>"; };
+		CAF0874129360BB700EBB20B /* CBPeripheralType.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CBPeripheralType.swift; sourceTree = "<group>"; };
+		CAF0874229360BB700EBB20B /* CBCentralManagerDelegateType.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CBCentralManagerDelegateType.swift; sourceTree = "<group>"; };
+		CAF0874329360BB700EBB20B /* CBPeerType.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CBPeerType.swift; sourceTree = "<group>"; };
+		CAF0874429360BB700EBB20B /* CBPeripheralManagerType.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CBPeripheralManagerType.swift; sourceTree = "<group>"; };
+		CAF0874529360BB700EBB20B /* CBServiceType.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CBServiceType.swift; sourceTree = "<group>"; };
+		CAF0874629360BB700EBB20B /* CBAttributeType.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CBAttributeType.swift; sourceTree = "<group>"; };
+		CAF0874729360BB700EBB20B /* CentralManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CentralManager.swift; sourceTree = "<group>"; };
+		CAF0874929360BB700EBB20B /* Logger.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Logger.swift; sourceTree = "<group>"; };
+		CAF0874A29360BB700EBB20B /* Support.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Support.swift; sourceTree = "<group>"; };
+		CAF0874B29360BB700EBB20B /* PeripheralManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PeripheralManager.swift; sourceTree = "<group>"; };
+		CAF0874C29360BB700EBB20B /* Characteristic.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Characteristic.swift; sourceTree = "<group>"; };
+		CAF0874D29360BB700EBB20B /* ABLE.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ABLE.h; sourceTree = "<group>"; };
+		CAF0876C29360BD100EBB20B /* PeripheralManagerTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PeripheralManagerTests.swift; sourceTree = "<group>"; };
+		CAF0876D29360BD100EBB20B /* CentralManagerTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CentralManagerTests.swift; sourceTree = "<group>"; };
+		CAF0876E29360BD100EBB20B /* PeripheralTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PeripheralTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -114,8 +111,10 @@
 		606ECAAE1EDEF101003BFA19 = {
 			isa = PBXGroup;
 			children = (
-				606ECABA1EDEF101003BFA19 /* ABLE */,
-				607A704920C91CD200796BDC /* ABLETests */,
+				CACF3A3529360F6400534324 /* ABLE.podspec */,
+				CACF3A3429360F5D00534324 /* Package.swift */,
+				CAF0872F29360BB700EBB20B /* ABLE */,
+				CAF0876B29360BD100EBB20B /* ABLETests */,
 				606ECAB91EDEF101003BFA19 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -129,77 +128,76 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
-		606ECABA1EDEF101003BFA19 /* ABLE */ = {
+		CAF0872F29360BB700EBB20B /* ABLE */ = {
 			isa = PBXGroup;
 			children = (
-				60EF8C0F225F73060069FB1B /* ABLE.podspec */,
-				6058A7C41F0B946500D302E4 /* LICENSE */,
-				606ECABB1EDEF101003BFA19 /* ABLE.h */,
-				6058A7C51F0B946500D302E4 /* README.md */,
-				606ECABC1EDEF101003BFA19 /* Info.plist */,
-				606ECAC31EDEF131003BFA19 /* CentralManager.swift */,
-				60EA317A20D278230072B5CA /* Characteristic.swift */,
-				606ECAC41EDEF131003BFA19 /* Peripheral.swift */,
-				606ECAC51EDEF131003BFA19 /* PeripheralManager.swift */,
-				60EA317820D26D860072B5CA /* Service.swift */,
-				60EA021520C9722C0081738E /* CBTypes */,
-				60EA021020C970640081738E /* Mocks */,
-				60EA022420C974070081738E /* Support */,
+				CAF0874D29360BB700EBB20B /* ABLE.h */,
+				CACF3A3229360D8E00534324 /* Info.plist */,
+				CAF0874729360BB700EBB20B /* CentralManager.swift */,
+				CAF0874C29360BB700EBB20B /* Characteristic.swift */,
+				CAF0873629360BB700EBB20B /* Peripheral.swift */,
+				CAF0874B29360BB700EBB20B /* PeripheralManager.swift */,
+				CAF0873729360BB700EBB20B /* Service.swift */,
+				CAF0873829360BB700EBB20B /* CBTypes */,
+				CAF0873029360BB700EBB20B /* Mocks */,
+				CAF0874829360BB700EBB20B /* Support */,
 			);
-			path = ABLE;
+			name = ABLE;
+			path = Sources/ABLE;
 			sourceTree = "<group>";
 		};
-		607A704920C91CD200796BDC /* ABLETests */ = {
+		CAF0873029360BB700EBB20B /* Mocks */ = {
 			isa = PBXGroup;
 			children = (
-				607A704C20C91CD200796BDC /* Info.plist */,
-				607A704A20C91CD200796BDC /* CentralManagerTests.swift */,
-				60EA316E20D2594E0072B5CA /* PeripheralTests.swift */,
-				6005C02E20D3B5FA00428356 /* PeripheralManagerTests.swift */,
-			);
-			path = ABLETests;
-			sourceTree = "<group>";
-		};
-		60EA021020C970640081738E /* Mocks */ = {
-			isa = PBXGroup;
-			children = (
-				60EA021120C970820081738E /* CBCentralManagerMock.swift */,
-				60EA317C20D27D6D0072B5CA /* CBCharacteristicMock.swift */,
-				6058344820CEB75C00AD216C /* CBPeripheralManagerMock.swift */,
-				60EA021320C971740081738E /* CBPeripheralMock.swift */,
-				60EA317620D269500072B5CA /* CBServiceMock.swift */,
+				CAF0873129360BB700EBB20B /* CBCentralManagerMock.swift */,
+				CAF0873229360BB700EBB20B /* CBCharacteristicMock.swift */,
+				CAF0873329360BB700EBB20B /* CBPeripheralMock.swift */,
+				CAF0873429360BB700EBB20B /* CBPeripheralManagerMock.swift */,
+				CAF0873529360BB700EBB20B /* CBServiceMock.swift */,
 			);
 			path = Mocks;
 			sourceTree = "<group>";
 		};
-		60EA021520C9722C0081738E /* CBTypes */ = {
+		CAF0873829360BB700EBB20B /* CBTypes */ = {
 			isa = PBXGroup;
 			children = (
-				60EA317420D268C00072B5CA /* CBAttributeType.swift */,
-				60EA022020C973B00081738E /* CBCentralManagerDelegateProxy.swift */,
-				60EA021C20C9734F0081738E /* CBCentralManagerDelegateType.swift */,
-				60EA021620C972530081738E /* CBCentralManagerType.swift */,
-				60EA317220D268180072B5CA /* CBCharacteristicType.swift */,
-				60EA021A20C973100081738E /* CBManagerType.swift */,
-				60EA021820C972D20081738E /* CBPeerType.swift */,
-				60EA022220C973D30081738E /* CBPeripheralDelegateProxy.swift */,
-				60EA021E20C973840081738E /* CBPeripheralDelegateType.swift */,
-				6058344620CEAC2200AD216C /* CBPeripheralManagerDelegateProxy.swift */,
-				6058344420CEAB0200AD216C /* CBPeripheralManagerDelegateType.swift */,
-				6058344220CEA97400AD216C /* CBPeripheralManagerType.swift */,
-				60DAF5A120C7D65300349954 /* CBPeripheralType.swift */,
-				60EA317020D25F790072B5CA /* CBServiceType.swift */,
+				CAF0873929360BB700EBB20B /* CBCentralManagerType.swift */,
+				CAF0873A29360BB700EBB20B /* CBPeripheralManagerDelegateProxy.swift */,
+				CAF0873B29360BB700EBB20B /* CBPeripheralDelegateType.swift */,
+				CAF0873C29360BB700EBB20B /* CBCentralManagerDelegateProxy.swift */,
+				CAF0873D29360BB700EBB20B /* CBPeripheralDelegateProxy.swift */,
+				CAF0873E29360BB700EBB20B /* CBCharacteristicType.swift */,
+				CAF0873F29360BB700EBB20B /* CBManagerType.swift */,
+				CAF0874029360BB700EBB20B /* CBPeripheralManagerDelegateType.swift */,
+				CAF0874129360BB700EBB20B /* CBPeripheralType.swift */,
+				CAF0874229360BB700EBB20B /* CBCentralManagerDelegateType.swift */,
+				CAF0874329360BB700EBB20B /* CBPeerType.swift */,
+				CAF0874429360BB700EBB20B /* CBPeripheralManagerType.swift */,
+				CAF0874529360BB700EBB20B /* CBServiceType.swift */,
+				CAF0874629360BB700EBB20B /* CBAttributeType.swift */,
 			);
 			path = CBTypes;
 			sourceTree = "<group>";
 		};
-		60EA022420C974070081738E /* Support */ = {
+		CAF0874829360BB700EBB20B /* Support */ = {
 			isa = PBXGroup;
 			children = (
-				606ECACD1EDEF275003BFA19 /* Logger.swift */,
-				606ECAC61EDEF131003BFA19 /* Support.swift */,
+				CAF0874929360BB700EBB20B /* Logger.swift */,
+				CAF0874A29360BB700EBB20B /* Support.swift */,
 			);
 			path = Support;
+			sourceTree = "<group>";
+		};
+		CAF0876B29360BD100EBB20B /* ABLETests */ = {
+			isa = PBXGroup;
+			children = (
+				CACF3A3329360E0700534324 /* Info.plist */,
+				CAF0876D29360BD100EBB20B /* CentralManagerTests.swift */,
+				CAF0876C29360BD100EBB20B /* PeripheralManagerTests.swift */,
+				CAF0876E29360BD100EBB20B /* PeripheralTests.swift */,
+			);
+			name = ABLETests;
+			path = Tests/ABLETests;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -209,7 +207,7 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				606ECABD1EDEF101003BFA19 /* ABLE.h in Headers */,
+				CAF0876929360BB700EBB20B /* ABLE.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -299,8 +297,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				60EF8C10225F73060069FB1B /* ABLE.podspec in Resources */,
-				6058A7C61F0B946500D302E4 /* LICENSE in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -318,32 +314,32 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				60EA317520D268C00072B5CA /* CBAttributeType.swift in Sources */,
-				60EA317120D25F7A0072B5CA /* CBServiceType.swift in Sources */,
-				60EA317920D26D860072B5CA /* Service.swift in Sources */,
-				60EA021B20C973100081738E /* CBManagerType.swift in Sources */,
-				60EA021220C970820081738E /* CBCentralManagerMock.swift in Sources */,
-				60EA021420C971740081738E /* CBPeripheralMock.swift in Sources */,
-				606ECACE1EDEF275003BFA19 /* Logger.swift in Sources */,
-				6058344720CEAC2200AD216C /* CBPeripheralManagerDelegateProxy.swift in Sources */,
-				60EA021920C972D20081738E /* CBPeerType.swift in Sources */,
-				60EA317B20D278230072B5CA /* Characteristic.swift in Sources */,
-				60DAF5A220C7D65300349954 /* CBPeripheralType.swift in Sources */,
-				60EA021D20C9734F0081738E /* CBCentralManagerDelegateType.swift in Sources */,
-				60EA022320C973D30081738E /* CBPeripheralDelegateProxy.swift in Sources */,
-				606ECAC91EDEF131003BFA19 /* PeripheralManager.swift in Sources */,
-				60EA021F20C973840081738E /* CBPeripheralDelegateType.swift in Sources */,
-				60EA317320D268180072B5CA /* CBCharacteristicType.swift in Sources */,
-				6058344520CEAB0200AD216C /* CBPeripheralManagerDelegateType.swift in Sources */,
-				60EA021720C972530081738E /* CBCentralManagerType.swift in Sources */,
-				606ECACA1EDEF131003BFA19 /* Support.swift in Sources */,
-				6058344320CEA97500AD216C /* CBPeripheralManagerType.swift in Sources */,
-				60EA317D20D27D6D0072B5CA /* CBCharacteristicMock.swift in Sources */,
-				60EA022120C973B00081738E /* CBCentralManagerDelegateProxy.swift in Sources */,
-				606ECAC71EDEF131003BFA19 /* CentralManager.swift in Sources */,
-				6058344920CEB75C00AD216C /* CBPeripheralManagerMock.swift in Sources */,
-				60EA317720D269500072B5CA /* CBServiceMock.swift in Sources */,
-				606ECAC81EDEF131003BFA19 /* Peripheral.swift in Sources */,
+				CAF0876729360BB700EBB20B /* PeripheralManager.swift in Sources */,
+				CAF0875629360BB700EBB20B /* CBCentralManagerType.swift in Sources */,
+				CAF0875F29360BB700EBB20B /* CBCentralManagerDelegateType.swift in Sources */,
+				CAF0874F29360BB700EBB20B /* CBCentralManagerMock.swift in Sources */,
+				CAF0876329360BB700EBB20B /* CBAttributeType.swift in Sources */,
+				CAF0875529360BB700EBB20B /* Service.swift in Sources */,
+				CAF0876629360BB700EBB20B /* Support.swift in Sources */,
+				CAF0876429360BB700EBB20B /* CentralManager.swift in Sources */,
+				CAF0875429360BB700EBB20B /* Peripheral.swift in Sources */,
+				CAF0875E29360BB700EBB20B /* CBPeripheralType.swift in Sources */,
+				CAF0876829360BB700EBB20B /* Characteristic.swift in Sources */,
+				CAF0876029360BB700EBB20B /* CBPeerType.swift in Sources */,
+				CAF0876529360BB700EBB20B /* Logger.swift in Sources */,
+				CAF0875329360BB700EBB20B /* CBServiceMock.swift in Sources */,
+				CAF0875B29360BB700EBB20B /* CBCharacteristicType.swift in Sources */,
+				CAF0875029360BB700EBB20B /* CBCharacteristicMock.swift in Sources */,
+				CAF0876229360BB700EBB20B /* CBServiceType.swift in Sources */,
+				CAF0875229360BB700EBB20B /* CBPeripheralManagerMock.swift in Sources */,
+				CAF0875C29360BB700EBB20B /* CBManagerType.swift in Sources */,
+				CAF0875129360BB700EBB20B /* CBPeripheralMock.swift in Sources */,
+				CAF0875A29360BB700EBB20B /* CBPeripheralDelegateProxy.swift in Sources */,
+				CAF0875929360BB700EBB20B /* CBCentralManagerDelegateProxy.swift in Sources */,
+				CAF0875729360BB700EBB20B /* CBPeripheralManagerDelegateProxy.swift in Sources */,
+				CAF0875829360BB700EBB20B /* CBPeripheralDelegateType.swift in Sources */,
+				CAF0876129360BB700EBB20B /* CBPeripheralManagerType.swift in Sources */,
+				CAF0875D29360BB700EBB20B /* CBPeripheralManagerDelegateType.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -351,9 +347,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				607A704B20C91CD200796BDC /* CentralManagerTests.swift in Sources */,
-				60EA316F20D2594E0072B5CA /* PeripheralTests.swift in Sources */,
-				6005C02F20D3B5FA00428356 /* PeripheralManagerTests.swift in Sources */,
+				CAF0877029360BD100EBB20B /* PeripheralManagerTests.swift in Sources */,
+				CAF0877229360BD100EBB20B /* PeripheralTests.swift in Sources */,
+				CAF0877129360BD100EBB20B /* CentralManagerTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -499,7 +495,7 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
-				INFOPLIST_FILE = ABLE/Info.plist;
+				INFOPLIST_FILE = Sources/ABLE/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				IPHONEOS_DEPLOYMENT_TARGET = 13.6;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
@@ -522,7 +518,7 @@
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
-				INFOPLIST_FILE = ABLE/Info.plist;
+				INFOPLIST_FILE = Sources/ABLE/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				IPHONEOS_DEPLOYMENT_TARGET = 13.6;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
@@ -537,6 +533,7 @@
 		607A705120C91CD200796BDC /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
 				CLANG_ENABLE_OBJC_WEAK = YES;
@@ -545,7 +542,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = M77GXJ5SX8;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
-				INFOPLIST_FILE = ABLETests/Info.plist;
+				INFOPLIST_FILE = Tests/ABLETests/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 13.6;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.alessiodeveloper.ABLETests;
@@ -558,6 +555,7 @@
 		607A705220C91CD200796BDC /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
 				CLANG_ENABLE_OBJC_WEAK = YES;
@@ -566,7 +564,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = M77GXJ5SX8;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
-				INFOPLIST_FILE = ABLETests/Info.plist;
+				INFOPLIST_FILE = Tests/ABLETests/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 13.6;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.alessiodeveloper.ABLETests;
