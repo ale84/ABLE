@@ -47,7 +47,7 @@ public struct PeripheralAdvertisements {
 // MARK: - Peripheral -
 public class Peripheral: NSObject {
     
-    public private (set) var cbPeripheral: CBPeripheralType
+    public private(set) var cbPeripheral: CBPeripheralType
 
     /// Connection name.
     public var name: String? {

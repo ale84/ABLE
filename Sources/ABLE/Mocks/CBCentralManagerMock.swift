@@ -15,9 +15,14 @@ public class CBCentralManagerMock: CBCentralManagerType {
                 managerState = .poweredOn
             case .poweredOn(let seconds):
                 managerState = .poweredOff
-                delay(seconds) { [weak self] in
-                    self?.managerState = .poweredOn
-                }
+                // Timer per simulare il power on dopo X secondi
+                waitForPoweredOnTimer = Timer.scheduledTimer(
+                    timeInterval: seconds,
+                    target: self,
+                    selector: #selector(handleWaitForPoweredOnTimer(_:)),
+                    userInfo: nil,
+                    repeats: false
+                )
             }
         }
     }
@@ -39,14 +44,46 @@ public class CBCentralManagerMock: CBCentralManagerType {
     
     public lazy var managerAuthorization: ManagerAuthorization = .allowedAlways
     
+    // Timers interni
+    private var waitForPoweredOnTimer: Timer?
+    private var disconnectTimers: [Timer] = []
+    private var connectTimers: [Timer] = []
+    private var connectionEventTimers: [Timer] = []
+
+    // Box per userInfo dei timer
+    private class DisconnectContext {
+        let peripheral: CBPeripheralType
+        init(peripheral: CBPeripheralType) { self.peripheral = peripheral }
+    }
+
+    private class ConnectContext {
+        let peripheral: CBPeripheralType
+        init(peripheral: CBPeripheralType) { self.peripheral = peripheral }
+    }
+
+    private class ConnectionEventContext {
+        let event: CBConnectionEvent
+        let peripheral: CBPeripheralType
+        init(event: CBConnectionEvent, peripheral: CBPeripheralType) {
+            self.event = event
+            self.peripheral = peripheral
+        }
+    }
+    
     public func cancelPeripheralConnection(_ peripheral: CBPeripheralType) {
         switch disconnectionBehaviour {
         case .success:
             cbDelegate?.centralManager(self, didDisconnectPeripheral: peripheral, error: nil)
         case .successAfter(let seconds):
-            delay(seconds) {
-                self.cbDelegate?.centralManager(self, didDisconnectPeripheral: peripheral, error: nil)
-            }
+            let context = DisconnectContext(peripheral: peripheral)
+            let timer = Timer.scheduledTimer(
+                timeInterval: seconds,
+                target: self,
+                selector: #selector(handleDisconnectTimer(_:)),
+                userInfo: context,
+                repeats: false
+            )
+            disconnectTimers.append(timer)
         }
     }
     
@@ -68,9 +105,15 @@ public class CBCentralManagerMock: CBCentralManagerType {
     public func connect(_ peripheral: CBPeripheralType, options: [String : Any]?) {
         switch peripheralConnectionBehaviour {
         case .success(let seconds):
-            delay(seconds) {
-                self.cbDelegate?.centralManager(self, didConnect: peripheral)
-            }
+            let context = ConnectContext(peripheral: peripheral)
+            let timer = Timer.scheduledTimer(
+                timeInterval: seconds,
+                target: self,
+                selector: #selector(handleConnectTimer(_:)),
+                userInfo: context,
+                repeats: false
+            )
+            connectTimers.append(timer)
         case .failure:
             cbDelegate?.centralManager(self, didFailToConnect: peripheral, error: CentralManager.CentralManagerError.connectionFailed(nil))
         }
@@ -83,9 +126,16 @@ public class CBCentralManagerMock: CBCentralManagerType {
             let peripheralMock = CBPeripheralMock()
             peripheralMock.name = "ConnectionEventTest"
             
-            delay(after) {
-                self.cbDelegate?.centralManager(self, connectionEventDidOccur: event, for: peripheralMock)
-            }
+            let context = ConnectionEventContext(event: event, peripheral: peripheralMock)
+            let timer = Timer.scheduledTimer(
+                timeInterval: after,
+                target: self,
+                selector: #selector(handleConnectionEventTimer(_:)),
+                userInfo: context,
+                repeats: false
+            )
+            connectionEventTimers.append(timer)
+            
         case .idle:
             break
         }
@@ -112,5 +162,53 @@ public extension CBCentralManagerMock {
     enum ConnectionEventBehaviour {
         case generateEvent(event: CBConnectionEvent, after: TimeInterval)
         case idle
+    }
+}
+
+// MARK: Timer Handlers.
+private extension CBCentralManagerMock {
+
+    @objc func handleWaitForPoweredOnTimer(_ timer: Timer) {
+        waitForPoweredOnTimer?.invalidate()
+        waitForPoweredOnTimer = nil
+        managerState = .poweredOn
+    }
+
+    @objc func handleDisconnectTimer(_ timer: Timer) {
+        defer {
+            if let index = disconnectTimers.firstIndex(of: timer) {
+                disconnectTimers.remove(at: index)
+            }
+        }
+
+        guard let context = timer.userInfo as? DisconnectContext else { return }
+        cbDelegate?.centralManager(self,
+                                   didDisconnectPeripheral: context.peripheral,
+                                   error: nil)
+    }
+
+    @objc func handleConnectTimer(_ timer: Timer) {
+        defer {
+            if let index = connectTimers.firstIndex(of: timer) {
+                connectTimers.remove(at: index)
+            }
+        }
+
+        guard let context = timer.userInfo as? ConnectContext else { return }
+        cbDelegate?.centralManager(self,
+                                   didConnect: context.peripheral)
+    }
+
+    @objc func handleConnectionEventTimer(_ timer: Timer) {
+        defer {
+            if let index = connectionEventTimers.firstIndex(of: timer) {
+                connectionEventTimers.remove(at: index)
+            }
+        }
+
+        guard let context = timer.userInfo as? ConnectionEventContext else { return }
+        cbDelegate?.centralManager(self,
+                                   connectionEventDidOccur: context.event,
+                                   for: context.peripheral)
     }
 }

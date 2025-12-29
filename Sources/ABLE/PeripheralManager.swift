@@ -20,7 +20,7 @@ public class PeripheralManager: NSObject {
         return cbPeripheralManager.isAdvertising
     }
     
-    private (set) var cbPeripheralManager: CBPeripheralManagerType
+    private(set) var cbPeripheralManager: CBPeripheralManagerType
     
     private var waitForStateAttempts: Set<WaitForStateAttempt> = []
     private var addServiceCompletion: AddServiceCompletion?
@@ -254,8 +254,8 @@ private extension PeripheralManager {
     }
     
     struct AddServiceAttempt: Hashable {
-        private (set) var service: CBMutableService
-        private (set) var completion: AddServiceCompletion
+        private(set) var service: CBMutableService
+        private(set) var completion: AddServiceCompletion
         
         static func == (lhs: AddServiceAttempt, rhs: AddServiceAttempt) -> Bool {
             return lhs.hashValue == rhs.hashValue

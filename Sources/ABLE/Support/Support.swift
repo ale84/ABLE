@@ -6,7 +6,7 @@
 import Foundation
 import CoreBluetooth
 
-public enum ManagerState: Int {
+public enum ManagerState: Int, Sendable {
     case poweredOff
     case poweredOn
     case resetting
@@ -56,14 +56,4 @@ public extension ManagerAuthorization {
             fatalError("Unhandled enum case: \(authorization)")
         }
     }
-}
-
-/// Delays the execution of a given closure.
-///
-/// - Parameters:
-///   - delay: Delay time in seconds.
-///   - closure: A closure.
-func delay(_ delay:Double, queue: DispatchQueue = DispatchQueue.main, closure:@escaping ()->()) {
-    queue.asyncAfter(
-        deadline: .now() + delay, execute: closure)
 }

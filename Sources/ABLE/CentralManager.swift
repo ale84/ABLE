@@ -19,13 +19,13 @@ public class CentralManager: NSObject {
         return ManagerNotification.bluetoothStateChanged.notificationName
     }
     
-    public private (set) var cbCentralManager: CBCentralManagerType
-    public private (set) var centralQueue: DispatchQueue
-    public private (set) var isScanning: Bool = false
+    public private(set) var cbCentralManager: CBCentralManagerType
+    public private(set) var centralQueue: DispatchQueue
+    public private(set) var isScanning: Bool = false
     
-    public private (set) var knownPeripherals: Set<UUID> = []
-    public private (set) var foundPeripherals: Set<Peripheral> = []
-    public private (set) var cachedPeripherals: Set<Peripheral> = []
+    public private(set) var knownPeripherals: Set<UUID> = []
+    public private(set) var foundPeripherals: Set<Peripheral> = []
+    public private(set) var cachedPeripherals: Set<Peripheral> = []
     
     private var userDefaults: UserDefaults
     
@@ -130,24 +130,23 @@ public class CentralManager: NSObject {
                         connectionTimeout: TimeInterval? = nil,
                         completion: @escaping ConnectionCompletion)
     {
-        let connectionAttempt = ConnectionAttempt(with: peripheral, connectionTimeout: connectionTimeout, completion: completion)
+        let connectionAttempt = ConnectionAttempt(with: peripheral,
+                                                  connectionTimeout: connectionTimeout,
+                                                  completion: completion)
         connectionAttempts.update(with: connectionAttempt)
 
-        if let timeout = attemptTimeout {
-            delay(timeout, queue: centralQueue) { [weak self] in
-                guard let strongSelf = self else {
-                    return
-                }
-                if let attempt = strongSelf.connectionAttempts.filter({ $0 === connectionAttempt }).last {
-                    completion(.failure(CentralManagerError.connectionTimeoutReached))
-                    strongSelf.connectionAttempts.remove(attempt)
-                    strongSelf.disconnect(from: peripheral)
-                }
-            }
+        if let timeout = attemptTimeout, timeout > 0 {
+            let timer = Timer.scheduledTimer(timeInterval: timeout,
+                                             target: self,
+                                             selector: #selector(handleConnectionAttemptTimeoutReached(_:)),
+                                             userInfo: connectionAttempt,
+                                             repeats: false)
+            connectionAttempt.attemptTimer = timer
         }
 
         cbCentralManager.connect(peripheral.cbPeripheral, options: options)
     }
+
     
     public func disconnect(from peripheral: Peripheral, completion: DisconnectionCompletion? = nil) {
         if let completion = completion {
@@ -269,6 +268,27 @@ private extension CentralManager {
         }
     }
     
+    @objc func handleConnectionAttemptTimeoutReached(_ timer: Timer) {
+        Logger.debug("connection attempt timeout reached.")
+
+        guard let attempt = timer.userInfo as? ConnectionAttempt else {
+            return
+        }
+
+        // Se nel frattempo l’attempt è stato rimosso (perché connesso o fallito), non facciamo nulla
+        guard connectionAttempts.contains(attempt) else {
+            return
+        }
+
+        attempt.attemptTimer?.invalidate()
+        attempt.attemptTimer = nil
+
+        connectionAttempts.remove(attempt)
+        attempt.completion(.failure(.connectionTimeoutReached))
+
+        disconnect(from: attempt.peripheral)
+    }
+    
     @objc func handleConnectionTimeoutReached(_ timer: Timer) {
         let connectionInfo = getConnectionInfo(for: timer)!
         connectionInfo.timer?.invalidate()
@@ -318,6 +338,8 @@ extension CentralManager: CBCentralManagerDelegateType {
         writeKnownPeripherals()
         if let peripheral = self.peripheral(for: peripheral),
             let attempt = getConnectionAttempt(for: peripheral) {
+            attempt.attemptTimer?.invalidate()
+            attempt.attemptTimer = nil
             connectionAttempts.remove(attempt)
             attempt.completion(.failure(CentralManagerError.connectionFailed(error)))
         }
@@ -352,6 +374,8 @@ extension CentralManager: CBCentralManagerDelegateType {
 
         if let peripheral = self.peripheral(for: peripheral),
             let attempt = getConnectionAttempt(for: peripheral) {
+            attempt.attemptTimer?.invalidate()
+            attempt.attemptTimer = nil
             connectionAttempts.remove(attempt)
             addConnectionInfo(for: peripheral, timeout: attempt.connectionTimeout)
             attempt.completion(.success(peripheral))
@@ -395,11 +419,14 @@ private extension CentralManager {
     }
         
     class ConnectionAttempt: Hashable {
-        private (set) var peripheral: Peripheral
-        private (set) var completion: ConnectionCompletion
-        private (set) var connectionTimeout: TimeInterval? = nil
+        private(set) var peripheral: Peripheral
+        private(set) var completion: ConnectionCompletion
+        private(set) var connectionTimeout: TimeInterval? = nil
+        var attemptTimer: Timer?
         
-        init(with peripheral: Peripheral, connectionTimeout: TimeInterval? = nil, completion: @escaping ConnectionCompletion) {
+        init(with peripheral: Peripheral,
+             connectionTimeout: TimeInterval? = nil,
+             completion: @escaping ConnectionCompletion) {
             self.peripheral = peripheral
             self.completion = completion
             self.connectionTimeout = connectionTimeout
@@ -415,8 +442,8 @@ private extension CentralManager {
     }
     
     struct DisconnectionRequest: Hashable {
-        private (set) var peripheral: Peripheral
-        private (set) var completion: DisconnectionCompletion
+        private(set) var peripheral: Peripheral
+        private(set) var completion: DisconnectionCompletion
         
         static func == (lhs: DisconnectionRequest, rhs: DisconnectionRequest) -> Bool {
             return lhs.peripheral == rhs.peripheral
@@ -428,9 +455,9 @@ private extension CentralManager {
     }
     
     struct ConnectionInfo: Hashable {
-        private (set) var peripheral: Peripheral
-        private (set) var timer: Timer?
-        private (set) var startDate: Date
+        private(set) var peripheral: Peripheral
+        private(set) var timer: Timer?
+        private(set) var startDate: Date
         
         static func == (lhs: ConnectionInfo, rhs: ConnectionInfo) -> Bool {
             return lhs.peripheral == rhs.peripheral
