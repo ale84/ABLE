@@ -1,5 +1,5 @@
 # ABLE
-[![Build Status](https://travis-ci.org/ale84/ABLE.svg?branch=master)](https://travis-ci.org/ale84/ABLE)
+[![CI](https://github.com/ale84/ABLE/actions/workflows/ci.yml/badge.svg)](https://github.com/ale84/ABLE/actions/workflows/ci.yml)
 
 BLE library for iOS.
 
