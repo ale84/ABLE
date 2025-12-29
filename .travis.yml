@@ -1,4 +1,4 @@
 language: objective-c
-osx_image: xcode9.3
+osx_image: xcode26.2
 script:
-  - xcodebuild test -scheme ABLETests -destination "platform=iOS Simulator,OS=11.4,name=iPhone X" -sdk "iphonesimulator11.4" -configuration Debug ONLY_ACTIVE_ARCH=NO | xcpretty -c;
+  - xcodebuild test -scheme ABLETests -destination "platform=iOS Simulator,OS=26.2,name=iPhone 17" -sdk "iphonesimulator11.4" -configuration Debug ONLY_ACTIVE_ARCH=NO | xcpretty -c;
