@@ -25,7 +25,7 @@ jobs:
       - name: Build & Test (Xcode)
         run: |
           xcodebuild \
-            -workspace ABLE.xcworkspace
+            -project ABLE.xcodeproj \
             -scheme ABLETests \
             -destination 'platform=iOS Simulator,name=iPhone 15' \
             test
