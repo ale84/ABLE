@@ -27,5 +27,5 @@ jobs:
           xcodebuild \
             -project ABLE.xcodeproj \
             -scheme ABLETests \
-            -destination 'platform=iOS Simulator,name=iPhone 15' \
+            -destination 'platform=iOS Simulator,name=iPhone 17' \
             test
