@@ -31,7 +31,6 @@ public class CentralManager: NSObject {
     
     private var userDefaults: UserDefaults
     
-    private var waitForStateAttempts: Set<WaitForStateAttempt> = []
     private var scanUpdate: ScanUpdate?
     private var scanAttempt: ScanAttempt?
     private var connectionAttempts: Set<ConnectionAttempt> = []
@@ -240,10 +239,6 @@ public class CentralManager: NSObject {
         return connectionInfos.filter { $0.timer == timer }.last
     }
     
-    private func getWaitForStateAttempt(for timer: Timer) -> WaitForStateAttempt? {
-        return waitForStateAttempts.filter { $0.timer == timer }.last
-    }
-    
     private func addConnectionInfo(for peripheral: Peripheral, timeout: TimeInterval?) {
         if let existingConnectionInfo = getConnectionInfo(for: peripheral) {
             existingConnectionInfo.timer?.invalidate()
@@ -276,16 +271,6 @@ public class CentralManager: NSObject {
 
 // MARK: Timers handling.
 private extension CentralManager {
-    @objc func handleWaitStateTimeoutReached(_ timer: Timer) {
-        Logger.debug("ble wait for state timeout reached.")
-        if let attempt = getWaitForStateAttempt(for: timer), attempt.isValid {
-            attempt.invalidate()
-            attempt.completion(state)
-            waitForStateAttempts.remove(attempt)
-            Logger.debug("Invalidated wait for state attempt: \(attempt).")
-            Logger.debug("Wait for state attempts: \(waitForStateAttempts).")
-        }
-    }
     
     @objc func handleConnectionAttemptTimeoutReached(_ timer: Timer) {
         Logger.debug("connection attempt timeout reached.")
@@ -371,24 +356,12 @@ extension CentralManager: CBCentralManagerDelegateType {
     public func centralManagerDidUpdateState(_ central: CBCentralManagerType) {
         Logger.debug("ble updated state: \(state)")
         
-        var toRemove: Set<WaitForStateAttempt> = []
-        waitForStateAttempts.filter({ $0.isValid && $0.state == state }).forEach {
-            Logger.debug("Wait for state attempt success.")
-            $0.completion(state)
-            $0.invalidate()
-            toRemove.insert($0)
-            Logger.debug("Invalidated wait for state attempt: \($0).")
-        }
-        waitForStateAttempts.subtract(toRemove)
-        
         bluetoothStateUpdate?(state)
         
         NotificationCenter.default.post(name: ManagerNotification.bluetoothStateChanged.notificationName,
                                         object: self,
                                         userInfo: ["state": state])
-        
-        Logger.debug("Wait for state attempts: \(waitForStateAttempts).")
-        
+                
         Task { await stateProducer.yield(state) }
     }
     
