@@ -44,6 +44,7 @@ public class CentralManager: NSObject {
 
     internal let scanProducer = ScanProducer<Peripheral>()
     internal let stateProducer = StateProducer()
+    internal let connectionCoordinator = ConnectionCoordinator()
     
     public init(with centralManager: CBCentralManagerType,
                 queue: DispatchQueue?,
@@ -142,28 +143,28 @@ public class CentralManager: NSObject {
         await scanProducer.finish()
     }
     
-    public func connect(to peripheral: Peripheral,
-                        options: [String : Any]? = nil,
-                        attemptTimeout: TimeInterval? = nil,
-                        connectionTimeout: TimeInterval? = nil,
-                        completion: @escaping ConnectionCompletion)
-    {
-        let connectionAttempt = ConnectionAttempt(with: peripheral,
-                                                  connectionTimeout: connectionTimeout,
-                                                  completion: completion)
-        connectionAttempts.update(with: connectionAttempt)
-
-        if let timeout = attemptTimeout, timeout > 0 {
-            let timer = Timer.scheduledTimer(timeInterval: timeout,
-                                             target: self,
-                                             selector: #selector(handleConnectionAttemptTimeoutReached(_:)),
-                                             userInfo: connectionAttempt,
-                                             repeats: false)
-            connectionAttempt.attemptTimer = timer
-        }
-
-        cbCentralManager.connect(peripheral.cbPeripheral, options: options)
-    }
+//    public func connect(to peripheral: Peripheral,
+//                        options: [String : Any]? = nil,
+//                        attemptTimeout: TimeInterval? = nil,
+//                        connectionTimeout: TimeInterval? = nil,
+//                        completion: @escaping ConnectionCompletion)
+//    {
+//        let connectionAttempt = ConnectionAttempt(with: peripheral,
+//                                                  connectionTimeout: connectionTimeout,
+//                                                  completion: completion)
+//        connectionAttempts.update(with: connectionAttempt)
+//
+//        if let timeout = attemptTimeout, timeout > 0 {
+//            let timer = Timer.scheduledTimer(timeInterval: timeout,
+//                                             target: self,
+//                                             selector: #selector(handleConnectionAttemptTimeoutReached(_:)),
+//                                             userInfo: connectionAttempt,
+//                                             repeats: false)
+//            connectionAttempt.attemptTimer = timer
+//        }
+//
+//        cbCentralManager.connect(peripheral.cbPeripheral, options: options)
+//    }
 
     
     public func disconnect(from peripheral: Peripheral, completion: DisconnectionCompletion? = nil) {
@@ -203,7 +204,7 @@ public class CentralManager: NSObject {
         allPeripherals.forEach { disconnect(from: $0) }
     }
     
-    private func peripheral(for cbPeripheral: CBPeripheralType) -> Peripheral? {
+    internal func peripheral(for cbPeripheral: CBPeripheralType) -> Peripheral? {
         return allPeripherals.filter { $0.cbPeripheral.identifier == cbPeripheral.identifier }.last
     }
     
@@ -332,24 +333,32 @@ extension CentralManager: CBCentralManagerDelegateType {
     
     public func centralManager(_ central: CBCentralManagerType, willRestoreState dict: [String : Any]) { }
     
-    public func centralManager(_ central: CBCentralManagerType, didDisconnectPeripheral peripheral: CBPeripheralType, error: Error?) {
-        if let peripheral = self.peripheral(for: peripheral),
-            let attempt = getDisconnectionRequest(for: peripheral) {
+    public func centralManager(_ central: CBCentralManagerType, didDisconnectPeripheral cbPeripheral: CBPeripheralType, error: Error?) {
+        Task {
+            if await connectionCoordinator.hasInFlight(peripheralID: cbPeripheral.identifier) {
+                await connectionCoordinator.fail(
+                    peripheralID: cbPeripheral.identifier,
+                    error: CentralManagerError.connectionFailed(error)
+                )
+            }
+        }
+
+        // legacy disconnectionRequests
+        if let peripheral = self.peripheral(for: cbPeripheral),
+           let attempt = getDisconnectionRequest(for: peripheral) {
             disconnectionRequests.remove(attempt)
             attempt.completion(peripheral)
         }
     }
     
-    public func centralManager(_ central: CBCentralManagerType, didFailToConnect peripheral: CBPeripheralType, error: Error?) {
-        Logger.debug("Failed to connect to peripheral: \(peripheral), error: \(String(describing: error))")
-        knownPeripherals.remove(peripheral.identifier)
-        writeKnownPeripherals()
-        if let peripheral = self.peripheral(for: peripheral),
-            let attempt = getConnectionAttempt(for: peripheral) {
-            attempt.attemptTimer?.invalidate()
-            attempt.attemptTimer = nil
-            connectionAttempts.remove(attempt)
-            attempt.completion(.failure(CentralManagerError.connectionFailed(error)))
+    public func centralManager(_ central: CBCentralManagerType, didFailToConnect cbPeripheral: CBPeripheralType, error: Error?) {
+        Logger.debug("Failed to connect to peripheral: \(cbPeripheral), error: \(String(describing: error))")
+
+        Task {
+            await connectionCoordinator.fail(
+                peripheralID: cbPeripheral.identifier,
+                error: CentralManagerError.connectionFailed(error)
+            )
         }
     }
     
@@ -365,18 +374,13 @@ extension CentralManager: CBCentralManagerDelegateType {
         Task { await stateProducer.yield(state) }
     }
     
-    public func centralManager(_ central: CBCentralManagerType, didConnect peripheral: CBPeripheralType) {
-        Logger.debug("ble did connect to peripheral: \(peripheral).")
-        Logger.debug("peripherals: \(allPeripherals).")
-        Logger.debug("connection attempts: \(connectionAttempts).")
+    public func centralManager(_ central: CBCentralManagerType, didConnect cbPeripheral: CBPeripheralType) {
+        Logger.debug("ble did connect to peripheral: \(cbPeripheral).")
 
-        if let peripheral = self.peripheral(for: peripheral),
-            let attempt = getConnectionAttempt(for: peripheral) {
-            attempt.attemptTimer?.invalidate()
-            attempt.attemptTimer = nil
-            connectionAttempts.remove(attempt)
-            addConnectionInfo(for: peripheral, timeout: attempt.connectionTimeout)
-            attempt.completion(.success(peripheral))
+        let p = self.peripheral(for: cbPeripheral) ?? Peripheral(with: cbPeripheral)
+
+        Task {
+            await connectionCoordinator.succeed(peripheralID: cbPeripheral.identifier, peripheral: p)
         }
     }
     
@@ -501,6 +505,9 @@ public extension CentralManager {
         case connectionTimeoutReached
         case waitForStateTimeout(desired: ManagerState, lastState: ManagerState)
         case cancelled
+        case connectAlreadyInProgress
+        case connectAttemptTimedOut
+        case connectCancelled
     }
     
     enum ManagerNotification: String {
