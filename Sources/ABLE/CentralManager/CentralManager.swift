@@ -143,30 +143,6 @@ public class CentralManager: NSObject {
         await scanProducer.finish()
     }
     
-//    public func connect(to peripheral: Peripheral,
-//                        options: [String : Any]? = nil,
-//                        attemptTimeout: TimeInterval? = nil,
-//                        connectionTimeout: TimeInterval? = nil,
-//                        completion: @escaping ConnectionCompletion)
-//    {
-//        let connectionAttempt = ConnectionAttempt(with: peripheral,
-//                                                  connectionTimeout: connectionTimeout,
-//                                                  completion: completion)
-//        connectionAttempts.update(with: connectionAttempt)
-//
-//        if let timeout = attemptTimeout, timeout > 0 {
-//            let timer = Timer.scheduledTimer(timeInterval: timeout,
-//                                             target: self,
-//                                             selector: #selector(handleConnectionAttemptTimeoutReached(_:)),
-//                                             userInfo: connectionAttempt,
-//                                             repeats: false)
-//            connectionAttempt.attemptTimer = timer
-//        }
-//
-//        cbCentralManager.connect(peripheral.cbPeripheral, options: options)
-//    }
-
-    
     public func disconnect(from peripheral: Peripheral, completion: DisconnectionCompletion? = nil) {
         if let completion = completion {
             let disconnectionRequest = DisconnectionRequest(peripheral: peripheral, completion: completion)

@@ -15,14 +15,11 @@ public class CBCentralManagerMock: CBCentralManagerType {
                 managerState = .poweredOn
             case .poweredOn(let seconds):
                 managerState = .poweredOff
-                // Timer per simulare il power on dopo X secondi
-                waitForPoweredOnTimer = Timer.scheduledTimer(
-                    timeInterval: seconds,
-                    target: self,
-                    selector: #selector(handleWaitForPoweredOnTimer(_:)),
-                    userInfo: nil,
-                    repeats: false
-                )
+                DispatchQueue.main.asyncAfter(deadline: .now() + seconds) { [weak self] in
+                    guard let self else { return }
+                    self.managerState = .poweredOn
+                    self.cbDelegate?.centralManagerDidUpdateState(self)
+                }
             }
         }
     }
@@ -73,17 +70,16 @@ public class CBCentralManagerMock: CBCentralManagerType {
     public func cancelPeripheralConnection(_ peripheral: CBPeripheralType) {
         switch disconnectionBehaviour {
         case .success:
-            cbDelegate?.centralManager(self, didDisconnectPeripheral: peripheral, error: nil)
+            DispatchQueue.main.async { [weak self] in
+                guard let self else { return }
+                self.cbDelegate?.centralManager(self, didDisconnectPeripheral: peripheral, error: nil)
+            }
+
         case .successAfter(let seconds):
-            let context = DisconnectContext(peripheral: peripheral)
-            let timer = Timer.scheduledTimer(
-                timeInterval: seconds,
-                target: self,
-                selector: #selector(handleDisconnectTimer(_:)),
-                userInfo: context,
-                repeats: false
-            )
-            disconnectTimers.append(timer)
+            DispatchQueue.main.asyncAfter(deadline: .now() + seconds) { [weak self] in
+                guard let self else { return }
+                self.cbDelegate?.centralManager(self, didDisconnectPeripheral: peripheral, error: nil)
+            }
         }
     }
     
@@ -105,37 +101,30 @@ public class CBCentralManagerMock: CBCentralManagerType {
     public func connect(_ peripheral: CBPeripheralType, options: [String : Any]?) {
         switch peripheralConnectionBehaviour {
         case .success(let seconds):
-            let context = ConnectContext(peripheral: peripheral)
-            let timer = Timer.scheduledTimer(
-                timeInterval: seconds,
-                target: self,
-                selector: #selector(handleConnectTimer(_:)),
-                userInfo: context,
-                repeats: false
-            )
-            connectTimers.append(timer)
+            DispatchQueue.main.asyncAfter(deadline: .now() + seconds) { [weak self] in
+                guard let self else { return }
+                self.cbDelegate?.centralManager(self, didConnect: peripheral)
+            }
+
         case .failure:
-            cbDelegate?.centralManager(self, didFailToConnect: peripheral, error: CentralManager.CentralManagerError.connectionFailed(nil))
+            DispatchQueue.main.async { [weak self] in
+                guard let self else { return }
+                self.cbDelegate?.centralManager(self, didFailToConnect: peripheral, error: nil)
+            }
         }
     }
     
     public func registerForConnectionEvents(options: [CBConnectionEventMatchingOption : Any]?) {
         switch connectionEventBehaviour {
         case .generateEvent(let event, let after):
-            
             let peripheralMock = CBPeripheralMock()
             peripheralMock.name = "ConnectionEventTest"
-            
-            let context = ConnectionEventContext(event: event, peripheral: peripheralMock)
-            let timer = Timer.scheduledTimer(
-                timeInterval: after,
-                target: self,
-                selector: #selector(handleConnectionEventTimer(_:)),
-                userInfo: context,
-                repeats: false
-            )
-            connectionEventTimers.append(timer)
-            
+
+            DispatchQueue.main.asyncAfter(deadline: .now() + after) { [weak self] in
+                guard let self else { return }
+                self.cbDelegate?.centralManager(self, connectionEventDidOccur: event, for: peripheralMock)
+            }
+
         case .idle:
             break
         }

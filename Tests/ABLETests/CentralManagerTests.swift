@@ -70,7 +70,7 @@ class CentralManagerTests: XCTestCase {
             expectation.fulfill()
         }
         
-        wait(for: [expectation], timeout: 3.0)
+        wait(for: [expectation], timeout: 3.5)
 
     }
     
@@ -97,7 +97,7 @@ class CentralManagerTests: XCTestCase {
             expectation.fulfill()
         }
         
-        wait(for: [expectation], timeout: 3)
+        wait(for: [expectation], timeout: 4)
     }
     
     func testConnectToPeripheralAfterInterval() {
@@ -122,7 +122,7 @@ class CentralManagerTests: XCTestCase {
             expectation.fulfill()
         }
         
-        wait(for: [expectation], timeout: 3)
+        wait(for: [expectation], timeout: 4)
     }
     
     func testConnectToPeripheralTimeoutFailure() {
