@@ -41,9 +41,10 @@ public class CentralManager: NSObject {
     
     private var cbDelegateProxy: CBCentralManagerDelegateProxy?
     
-    // MARK: - Scan support
+    // MARK: - Async stream support
 
     internal let scanProducer = ScanProducer<Peripheral>()
+    internal let stateProducer = StateProducer()
     
     public init(with centralManager: CBCentralManagerType,
                 queue: DispatchQueue?,
@@ -75,20 +76,23 @@ public class CentralManager: NSObject {
         return cbCentralManager.managerState
     }
     
+    @available(*, deprecated, message: "Use async waitForPoweredOn(timeout:) instead.")
     public func waitForPoweredOn(withTimeout timeout: TimeInterval = 3, completion: @escaping WaitForStateCompletion) {
         wait(for: .poweredOn, timeout: timeout, completion: completion)
     }
-    
+
+    @available(*, deprecated, message: "Use async wait(for:timeout:) instead.")
     public func wait(for state: ManagerState, timeout: TimeInterval = 3, completion: @escaping WaitForStateCompletion) {
-        if self.state == state {
+        Task {
+            do {
+                _ = try await wait(for: state, timeout: .seconds(timeout))
+            } catch {
+                // in legacy API, ritorniamo comunque lo state attuale
+            }
             completion(self.state)
-            return
         }
-        
-        let timer = Timer.scheduledTimer(timeInterval: timeout, target: self, selector: #selector(handleWaitStateTimeoutReached(_:)), userInfo: nil, repeats: false)
-        let waitForStateAttempt = WaitForStateAttempt(state: state, completion: completion, timer: timer)
-        waitForStateAttempts.update(with: waitForStateAttempt)
     }
+
     
     public func scanForPeripherals(withServices services: [CBUUID]? = nil,
                                    options: [String : Any]? = nil,
@@ -384,6 +388,8 @@ extension CentralManager: CBCentralManagerDelegateType {
                                         userInfo: ["state": state])
         
         Logger.debug("Wait for state attempts: \(waitForStateAttempts).")
+        
+        Task { await stateProducer.yield(state) }
     }
     
     public func centralManager(_ central: CBCentralManagerType, didConnect peripheral: CBPeripheralType) {
@@ -520,6 +526,8 @@ public extension CentralManager {
         case connectionFailed(Error?)
         case bluetoothNotAvailable(ManagerState)
         case connectionTimeoutReached
+        case waitForStateTimeout(desired: ManagerState, lastState: ManagerState)
+        case cancelled
     }
     
     enum ManagerNotification: String {
