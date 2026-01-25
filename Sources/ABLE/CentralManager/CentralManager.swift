@@ -1,6 +1,5 @@
 //
-//  Created by Alessio Orlando on 09/01/17.
-//  Copyright © 2019 Alessio Orlando. All rights reserved.
+//  Copyright ©2026 Alessio Orlando. All rights reserved.
 //
 
 import UIKit
@@ -21,7 +20,10 @@ public class CentralManager: NSObject {
     
     public private(set) var cbCentralManager: CBCentralManagerType
     public private(set) var centralQueue: DispatchQueue
-    public private(set) var isScanning: Bool = false
+    
+    /// Indica se è attiva una scansione BLE AsyncStream-based.
+    /// Lo stato è gestito internamente dal lifecycle dello stream.
+    public internal(set) var isScanning: Bool = false
     
     public private(set) var knownPeripherals: Set<UUID> = []
     public private(set) var foundPeripherals: Set<Peripheral> = []
@@ -38,6 +40,10 @@ public class CentralManager: NSObject {
     private var connectionEventCallback: ConnectionEventCallback?
     
     private var cbDelegateProxy: CBCentralManagerDelegateProxy?
+    
+    // MARK: - Scan support
+
+    internal let scanProducer = ScanProducer<Peripheral>()
     
     public init(with centralManager: CBCentralManagerType,
                 queue: DispatchQueue?,
@@ -117,11 +123,20 @@ public class CentralManager: NSObject {
     
     /// Stop the current BLE scan.
     public func stopScan() {
+        // API pubblica sync: manteniamo compatibilità
+        Task { [weak self] in
+            await self?.stopScanAsync()
+        }
+    }
+    
+    internal func stopScanAsync() async {
+        // Stop CoreBluetooth
         cbCentralManager.stopScan()
         scanAttempt?.timer.invalidate()
         scanAttempt = nil
         isScanning = false
         Logger.debug("ble scan stopped.")
+        await scanProducer.finish()
     }
     
     public func connect(to peripheral: Peripheral,
@@ -319,7 +334,11 @@ extension CentralManager: CBCentralManagerDelegateType {
         
         addPeripheral(peripheral)
         
-        scanUpdate?(peripheral)
+        //scanUpdate?(peripheral)
+        
+        Task {
+            await scanProducer.yield(peripheral)
+        }
     }
     
     public func centralManager(_ central: CBCentralManagerType, willRestoreState dict: [String : Any]) { }
