@@ -45,7 +45,8 @@ public class CentralManager: NSObject {
     internal let scanProducer = ScanProducer<Peripheral>()
     internal let stateProducer = StateProducer()
     internal let connectionCoordinator = ConnectionCoordinator()
-    
+    internal let disconnectionCoordinator = DisconnectionCoordinator()
+
     public init(with centralManager: CBCentralManagerType,
                 queue: DispatchQueue?,
                 options: [String : Any]? = nil,
@@ -141,20 +142,6 @@ public class CentralManager: NSObject {
         isScanning = false
         Logger.debug("ble scan stopped.")
         await scanProducer.finish()
-    }
-    
-    public func disconnect(from peripheral: Peripheral, completion: DisconnectionCompletion? = nil) {
-        if let completion = completion {
-            let disconnectionRequest = DisconnectionRequest(peripheral: peripheral, completion: completion)
-            disconnectionRequests.update(with: disconnectionRequest)
-        }
-        if let connectionInfo = getConnectionInfo(for: peripheral) {
-            connectionInfo.timer?.invalidate()
-            connectionInfos.remove(connectionInfo)
-        }
-        
-        cbCentralManager.cancelPeripheralConnection(peripheral.cbPeripheral)
-        Logger.debug("ble disconnected from peripheral: \(peripheral.cbPeripheral).")
     }
     
     public func registerForConnectionEvents(options: [CBConnectionEventMatchingOption : Any]? = nil,
@@ -309,23 +296,28 @@ extension CentralManager: CBCentralManagerDelegateType {
     
     public func centralManager(_ central: CBCentralManagerType, willRestoreState dict: [String : Any]) { }
     
-    public func centralManager(_ central: CBCentralManagerType, didDisconnectPeripheral cbPeripheral: CBPeripheralType, error: Error?) {
+    public func centralManager(_ central: CBCentralManagerType,
+                               didDisconnectPeripheral cbPeripheral: CBPeripheralType,
+                               error: Error?) {
+        let id = cbPeripheral.identifier
+        let p = self.peripheral(for: cbPeripheral) ?? Peripheral(with: cbPeripheral)
+
         Task {
-            if await connectionCoordinator.hasInFlight(peripheralID: cbPeripheral.identifier) {
-                await connectionCoordinator.fail(
-                    peripheralID: cbPeripheral.identifier,
-                    error: CentralManagerError.connectionFailed(error)
-                )
+            // fail-safe: se era un connect pending, falliscilo
+            await connectionCoordinator.fail(
+                peripheralID: id,
+                error: CentralManagerError.connectionFailed(error)
+            )
+
+            // completa eventuale disconnect pending
+            if let error {
+                await disconnectionCoordinator.fail(peripheralID: id, error: error)
+            } else {
+                await disconnectionCoordinator.succeed(peripheralID: id, peripheral: p)
             }
         }
-
-        // legacy disconnectionRequests
-        if let peripheral = self.peripheral(for: cbPeripheral),
-           let attempt = getDisconnectionRequest(for: peripheral) {
-            disconnectionRequests.remove(attempt)
-            attempt.completion(peripheral)
-        }
     }
+
     
     public func centralManager(_ central: CBCentralManagerType, didFailToConnect cbPeripheral: CBPeripheralType, error: Error?) {
         Logger.debug("Failed to connect to peripheral: \(cbPeripheral), error: \(String(describing: error))")
@@ -484,6 +476,10 @@ public extension CentralManager {
         case connectAlreadyInProgress
         case connectAttemptTimedOut
         case connectCancelled
+        case disconnectAlreadyInProgress
+        case disconnectCancelled
+        case disconnectFail(Error?)
+        case disconnectAttemptTimedOut
     }
     
     enum ManagerNotification: String {
