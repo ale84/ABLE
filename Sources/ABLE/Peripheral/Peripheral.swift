@@ -75,6 +75,8 @@ public class Peripheral: NSObject {
     
     public private(set) var advertisements: PeripheralAdvertisements
     
+    internal var discoverServicesCoordinator = DiscoverServicesCoordinator()
+    
     private var readRSSICompletion: ReadRSSICompletion?
     private var discoverServicesAttempt: DiscoverServicesAttempt?
     private var discoverCharacteristicsAttempt: DiscoverCharacteristicsAttempt?
@@ -101,14 +103,6 @@ public class Peripheral: NSObject {
     public func readRSSI(with completion: @escaping ReadRSSICompletion) {
         self.readRSSICompletion = completion
         cbPeripheral.readRSSI()
-    }
-    
-    public func discoverServices(with uuid: [CBUUID], timeout: TimeInterval = 3, completion: @escaping DiscoverServicesCompletion) {
-        discoverServicesAttempt?.invalidate()
-        let timer = Timer.scheduledTimer(timeInterval: timeout, target: self, selector: #selector(handleDiscoverServicesTimeoutReached(timer:)), userInfo: nil, repeats: false)
-        discoverServicesAttempt = DiscoverServicesAttempt(uuids: uuid, completion: completion, timer: timer)
-        cbPeripheral.discoverServices(uuid)
-        Logger.debug("start discovering services: \(uuid), timeout: \(timeout)")
     }
     
     public func discoverCharacteristics(with uuid: [CBUUID], service: Service, timeout: TimeInterval = 3, completion: @escaping DiscoverCharacteristicsCompletion) {
@@ -174,6 +168,9 @@ public extension Peripheral {
     enum PeripheralError: Error {
         case timeoutReached
         case cbError(detail: Error)
+        case discoverServicesReplaced
+        case discoverServicesCancelled
+        case discoverServicesTimeout
     }
 }
 
@@ -225,18 +222,12 @@ extension Peripheral {
 // MARK: CBPeripheral delegate.
 extension Peripheral: CBPeripheralDelegateType {
     public func peripheral(_ peripheral: CBPeripheralType, didDiscoverServices error: Error?) {
-        if let attempt = discoverServicesAttempt {
-            discoverServicesAttempt = nil
+        Task {
             if let error = error {
-                Logger.debug("discover services failure: \(error)")
-                attempt.completion(.failure(PeripheralError.cbError(detail: error)))
+                await discoverServicesCoordinator.fail(error: PeripheralError.cbError(detail: error))
+            } else {
+                await discoverServicesCoordinator.succeed(services: discoveredServices)
             }
-            else {
-                Logger.debug("discover services success: \(String(describing: peripheral.cbServices))")
-                //discoveredServices = peripheral.cbServices?.map { Service(with: $0) } ?? []
-                attempt.completion(.success(discoveredServices))
-            }
-            attempt.invalidate()
         }
     }
     
