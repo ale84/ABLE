@@ -75,8 +75,6 @@ public class Peripheral: NSObject {
     
     public private(set) var advertisements: PeripheralAdvertisements
     
-    internal var discoverServicesCoordinator = DiscoverServicesCoordinator()
-    
     private var readRSSICompletion: ReadRSSICompletion?
     private var discoverServicesAttempt: DiscoverServicesAttempt?
     private var discoverCharacteristicsAttempt: DiscoverCharacteristicsAttempt?
@@ -85,6 +83,11 @@ public class Peripheral: NSObject {
     private var setNotifyUpdateStateCompletion: SetNotifyUpdateStateCompletion?
     private var setNotifyUpdateValueCallback: SetNotifyUpdateValueCallback?
     private var peripheralDelegateProxy: CBPeripheralDelegateProxy?
+    
+    // MARK: Async api support.
+    internal var discoverServicesCoordinator = DiscoverServicesCoordinator()
+    internal var discoverCharacteristicsCoordinator = DiscoverCharacteristicsCoordinator()
+    internal var notifyCoordinator = NotifyCoordinator()
     
     public init(with peripheral: CBPeripheralType, advertisements: [String : Any] = [:], RSSI: Int = 0) {
         self.cbPeripheral = peripheral
@@ -105,14 +108,6 @@ public class Peripheral: NSObject {
         cbPeripheral.readRSSI()
     }
     
-    public func discoverCharacteristics(with uuid: [CBUUID], service: Service, timeout: TimeInterval = 3, completion: @escaping DiscoverCharacteristicsCompletion) {
-        discoverCharacteristicsAttempt?.invalidate()
-        let timer = Timer.scheduledTimer(timeInterval: timeout, target: self, selector: #selector(handleDiscoverCharacteristicsTimeoutReached(timer:)), userInfo: nil, repeats: false)
-        discoverCharacteristicsAttempt = DiscoverCharacteristicsAttempt(uuids: uuid, completion: completion, timer: timer)
-        cbPeripheral.discoverCharacteristics(uuid, for: service.cbService)
-        Logger.debug("start discovering characteristics: \(uuid) from: \(service), timeout: \(timeout)")
-    }
-    
     public func service(for uuid: CBUUID) -> Service? {
         return discoveredServices.filter { $0.cbService.uuid == uuid }.first
     }
@@ -131,13 +126,6 @@ public class Peripheral: NSObject {
             writeCharacteristicCompletion = completion
         }
         cbPeripheral.writeValue(data, for: characteristic.cbCharacteristic, type: type)
-    }
-    
-    public func setNotifyValue(_ enabled: Bool, for characteristic: Characteristic, updateState: @escaping SetNotifyUpdateStateCompletion, updateValue: @escaping SetNotifyUpdateValueCallback) {
-        setNotifyUpdateStateCompletion = updateState
-        setNotifyUpdateValueCallback = updateValue
-        Logger.debug("peripheral setting notyfy: \(enabled), for: \(characteristic)")
-        cbPeripheral.setNotifyValue(enabled, for: characteristic.cbCharacteristic)
     }
     
     public func maximumWriteValueLength(for type: CBCharacteristicWriteType) -> Int {
@@ -168,9 +156,20 @@ public extension Peripheral {
     enum PeripheralError: Error {
         case timeoutReached
         case cbError(detail: Error)
+
         case discoverServicesReplaced
         case discoverServicesCancelled
         case discoverServicesTimeout
+
+        case discoverCharacteristicsReplaced(service: CBUUID)
+        case discoverCharacteristicsTimedOut(service: CBUUID)
+        case discoverCharacteristicsCancelled(service: CBUUID)
+        
+        case notifyReplaced(characteristic: CBUUID)
+        case notifyCancelled(characteristic: CBUUID)
+        case notifyEnableFailed(characteristic: CBUUID, underlying: Error?)
+        case notifyValueFailed(characteristic: CBUUID, underlying: Error?)
+
     }
 }
 
@@ -233,35 +232,55 @@ extension Peripheral: CBPeripheralDelegateType {
     
     public func peripheral(_ peripheral: CBPeripheralType, didDiscoverIncludedServicesFor service: CBServiceType, error: Error?) { }
     
-    public func peripheral(_ peripheral: CBPeripheralType, didDiscoverCharacteristicsFor service: CBServiceType, error: Error?) {
-        if let attempt = discoverCharacteristicsAttempt {
-            discoverCharacteristicsAttempt = nil
-            if let error = error {
-                Logger.debug("discover characteristics failure: \(error)")
-                attempt.completion(.failure(PeripheralError.cbError(detail: error)))
+    public func peripheral(_ peripheral: CBPeripheralType,
+                           didDiscoverCharacteristicsFor service: CBServiceType,
+                           error: Error?) {
+        let serviceUUID = service.uuid
+
+        Task { [weak self] in
+            guard let self else { return }
+
+            if let error {
+                await self.discoverCharacteristicsCoordinator.fail(
+                    serviceUUID: serviceUUID,
+                    error: PeripheralError.cbError(detail: error)
+                )
+                return
             }
-            else {
-                Logger.debug("discover characteristics success: \(String(describing: service.cbCharacteristics))")
-                let service = self.service(for: service.uuid)!
-                attempt.completion(.success(service.characteristics))
-            }
-            attempt.invalidate()
+
+            let chars = (service.cbCharacteristics ?? []).map { Characteristic(with: $0) }
+
+            await self.discoverCharacteristicsCoordinator.succeed(
+                serviceUUID: serviceUUID,
+                characteristics: chars
+            )
         }
     }
     
     public func peripheral(_ peripheral: CBPeripheralType, didDiscoverDescriptorsFor characteristic: CBCharacteristicType, error: Error?) { }
     
-    public func peripheral(_ peripheral: CBPeripheralType, didUpdateValueFor characteristic: CBCharacteristicType, error: Error?) {
+    public func peripheral(_ peripheral: CBPeripheralType,
+                           didUpdateValueFor characteristic: CBCharacteristicType,
+                           error: Error?) {
+
+        // 1) One-shot read (se esiste)
         let readCompletion = readCharacteristicCompletion
         readCharacteristicCompletion = nil
         if let error = error {
             readCompletion?(.failure(PeripheralError.cbError(detail: error)))
-            setNotifyUpdateValueCallback?(.failure(PeripheralError.cbError(detail: error)))
-        }
-        else {
-            Logger.debug("peripheral characteristic update value for: \(characteristic)")
+        } else {
             readCompletion?(.success(characteristic.value ?? Data()))
-            setNotifyUpdateValueCallback?(.success(characteristic.value ?? Data()))
+        }
+
+        // 2) Notify stream / legacy (se esiste)
+        let uuid = characteristic.uuid
+        Task { [weak self] in
+            guard let self else { return }
+            await self.notifyCoordinator.handleDidUpdateValue(
+                characteristicUUID: uuid,
+                data: characteristic.value,
+                error: error
+            )
         }
     }
     
@@ -279,18 +298,18 @@ extension Peripheral: CBPeripheralDelegateType {
     }
     
     public func peripheral(_ peripheral: CBPeripheralType, didWriteValueFor descriptor: CBDescriptor, error: Error?) { }
-    
-    public func peripheral(_ peripheral: CBPeripheralType, didUpdateNotificationStateFor characteristic: CBCharacteristicType, error: Error?) {
-        let updateStateCompletion = setNotifyUpdateStateCompletion
-        setNotifyUpdateStateCompletion = nil
-        if let error = error {
-            updateStateCompletion?(.failure(PeripheralError.cbError(detail: error)))
-        }
-        else {
-            updateStateCompletion?(.success(()))
-            if characteristic.isNotifying == false {
-                setNotifyUpdateValueCallback = nil
-            }
+  
+    public func peripheral(_ peripheral: CBPeripheralType,
+                           didUpdateNotificationStateFor characteristic: CBCharacteristicType,
+                           error: Error?) {
+        let uuid = characteristic.uuid
+        Task { [weak self] in
+            guard let self else { return }
+            await self.notifyCoordinator.handleDidUpdateNotificationState(
+                characteristicUUID: uuid,
+                isNotifying: characteristic.isNotifying,
+                error: error
+            )
         }
     }
     
