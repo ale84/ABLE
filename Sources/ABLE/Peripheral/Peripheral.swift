@@ -94,7 +94,8 @@ public class Peripheral: NSObject {
     internal let discoverIncludedServicesCoordinator = DiscoverIncludedServicesCoordinator()
     internal let discoverDescriptorsCoordinator = DiscoverDescriptorsCoordinator()
     internal let readDescriptorValueCoordinator = ReadDescriptorValueCoordinator()
-    
+    internal let writeDescriptorCoordinator = WriteDescriptorCoordinator()
+
     public init(with peripheral: CBPeripheralType, advertisements: [String : Any] = [:], RSSI: Int = 0) {
         self.cbPeripheral = peripheral
         self.advertisements = PeripheralAdvertisements(advertisements: advertisements)
@@ -182,6 +183,10 @@ public extension Peripheral {
         case readDescriptorValueTimeout(descriptor: CBUUID)
         case readDescriptorValueCancelled(descriptor: CBUUID)
         case readDescriptorValueReplaced(descriptor: CBUUID)
+        
+        case writeDescriptorTimeout(descriptor: CBUUID)
+        case writeDescriptorCancelled(descriptor: CBUUID)
+        case writeDescriptorReplaced(descriptor: CBUUID)
     }
 }
 
@@ -350,7 +355,7 @@ extension Peripheral: CBPeripheralDelegateType {
     }
 
     public func peripheral(_ peripheral: CBPeripheralType,
-                           didUpdateValueFor descriptor: CBDescriptor,
+                           didUpdateValueFor descriptor: CBDescriptorType,
                            error: Error?) {
 
         let uuid = descriptor.uuid
@@ -396,8 +401,27 @@ extension Peripheral: CBPeripheralDelegateType {
         }
     }
     
-    public func peripheral(_ peripheral: CBPeripheralType, didWriteValueFor descriptor: CBDescriptor, error: Error?) { }
-  
+    public func peripheral(_ peripheral: CBPeripheralType,
+                           didWriteValueFor descriptor: CBDescriptorType,
+                           error: Error?) {
+
+        let uuid = descriptor.uuid
+
+        Task { [weak self] in
+            guard let self else { return }
+            guard await self.writeDescriptorCoordinator.hasInFlight(descriptorUUID: uuid) else { return }
+
+            if let error {
+                await self.writeDescriptorCoordinator.fail(
+                    descriptorUUID: uuid,
+                    error: PeripheralError.cbError(detail: error)
+                )
+            } else {
+                await self.writeDescriptorCoordinator.succeed(descriptorUUID: uuid)
+            }
+        }
+    }
+
     public func peripheral(_ peripheral: CBPeripheralType,
                            didUpdateNotificationStateFor characteristic: CBCharacteristicType,
                            error: Error?) {
