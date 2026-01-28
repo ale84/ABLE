@@ -7,6 +7,7 @@ import Foundation
 import CoreBluetooth
 
 public class CBPeripheralMock: CBPeripheralType {
+    
     public var discoverServicesBehaviour: DiscoverServicesBehaviour = .success(with: [], after: 0)
     public var discoverCharacteristicsBehaviour: DiscoverCharacteristicsBehaviour = .failure
     public var readValueBehaviour: ReadValueBehaviour = .success
@@ -148,6 +149,14 @@ public class CBPeripheralMock: CBPeripheralType {
                                    didReadRSSI: NSNumber(value: 0),
                                    error: ReadRSSIError.readFailed)
         }
+    }
+    
+    public func readValue(for descriptor: any CBDescriptorType) {
+        // To implement.
+    }
+    
+    public func writeValue(_ data: Data, for descriptor: any CBDescriptorType) {
+        // To implement.
     }
     
     public func readValue(for descriptor: CBDescriptor) { }

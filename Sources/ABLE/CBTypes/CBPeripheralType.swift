@@ -19,9 +19,9 @@ public protocol CBPeripheralType: AnyObject, CBPeerType {
     func discoverCharacteristics(_ characteristicUUIDs: [CBUUID]?, for service: CBServiceType)
     func discoverDescriptors(for characteristic: CBCharacteristicType)
     func readValue(for characteristic: CBCharacteristicType)
-    func readValue(for descriptor: CBDescriptor)
+    func readValue(for descriptor: CBDescriptorType)
     func writeValue(_ data: Data, for characteristic: CBCharacteristicType, type: CBCharacteristicWriteType)
-    func writeValue(_ data: Data, for descriptor: CBDescriptor)
+    func writeValue(_ data: Data, for descriptor: CBDescriptorType)
     func setNotifyValue(_ enabled: Bool, for characteristic: CBCharacteristicType)
     func readRSSI()
     func maximumWriteValueLength(for type: CBCharacteristicWriteType) -> Int
@@ -29,32 +29,41 @@ public protocol CBPeripheralType: AnyObject, CBPeerType {
 }
 
 extension CBPeripheral: CBPeripheralType {
+    
     public var cbServices: [CBServiceType]? {
-        return services
+        services
     }
     
     public func discoverDescriptors(for characteristic: CBCharacteristicType) {
-        return discoverDescriptors(for: characteristic as! CBCharacteristic)
+        discoverDescriptors(for: characteristic as! CBCharacteristic)
     }
     
     public func readValue(for characteristic: CBCharacteristicType) {
-        return readValue(for: characteristic as! CBCharacteristic)
+        readValue(for: characteristic as! CBCharacteristic)
     }
     
     public func writeValue(_ data: Data, for characteristic: CBCharacteristicType, type: CBCharacteristicWriteType) {
-        return writeValue(data, for: characteristic as! CBCharacteristic, type: type)
+        writeValue(data, for: characteristic as! CBCharacteristic, type: type)
     }
     
     public func setNotifyValue(_ enabled: Bool, for characteristic: CBCharacteristicType) {
-        return setNotifyValue(enabled, for: characteristic as! CBCharacteristic)
+        setNotifyValue(enabled, for: characteristic as! CBCharacteristic)
     }
     
     public func discoverIncludedServices(_ includedServiceUUIDs: [CBUUID]?, for service: CBServiceType) {
-        return discoverIncludedServices(includedServiceUUIDs, for: service as! CBService)
+        discoverIncludedServices(includedServiceUUIDs, for: service as! CBService)
     }
     
     public func discoverCharacteristics(_ characteristicUUIDs: [CBUUID]?, for service: CBServiceType) {
         discoverCharacteristics(characteristicUUIDs, for: service as! CBService)
+    }
+    
+    public func readValue(for descriptor: any CBDescriptorType) {
+        readValue(for: descriptor as! CBDescriptor)
+    }
+    
+    public func writeValue(_ data: Data, for descriptor: any CBDescriptorType) {
+        writeValue(data, for: descriptor as! CBDescriptor)
     }
     
     weak public var cbDelegate: CBPeripheralDelegateType? {

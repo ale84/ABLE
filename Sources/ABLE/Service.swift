@@ -3,20 +3,17 @@
 //  Copyright © 2019 Alessio Orlando. All rights reserved.
 //
 
-import Foundation
 import CoreBluetooth
 
 public class Service {
-    public var uuid: CBUUID {
-        return cbService.uuid
-    }
+    public var uuid: CBUUID { cbService.uuid }
     public var characteristics: [Characteristic] {
-        return cbService.cbCharacteristics?.map { Characteristic(with: $0) } ?? []
+        cbService.cbCharacteristics?.map { Characteristic(with: $0) } ?? []
     }
-    
-    private(set) var cbService: CBServiceType
-    
-    init(with cbService: CBServiceType) {
-        self.cbService = cbService
+    public var includedServices: [Service] {
+        cbService.cbIncludedServices?.map { Service(with: $0) } ?? []
     }
+
+    internal let cbService: CBServiceType
+    init(with cbService: CBServiceType) { self.cbService = cbService }
 }

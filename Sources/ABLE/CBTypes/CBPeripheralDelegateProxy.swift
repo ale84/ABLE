@@ -40,5 +40,17 @@ class CBPeripheralDelegateProxy: NSObject, CBPeripheralDelegate {
     public func peripheral(_ peripheral: CBPeripheral, didModifyServices invalidatedServices: [CBService]) {
         Logger.debug("peripheral did modify services. Invalidated services: \(invalidatedServices)")
     }
+    
+    public func peripheral(_ peripheral: CBPeripheral, didDiscoverIncludedServicesFor service: CBService, error: (any Error)?) {
+        target?.peripheral(peripheral, didDiscoverIncludedServicesFor: service, error: error)
+    }
+    
+    public func peripheral(_ peripheral: CBPeripheral, didDiscoverDescriptorsFor characteristic: CBCharacteristic, error: (any Error)?) {
+        target?.peripheral(peripheral, didDiscoverDescriptorsFor: characteristic, error: error)
+    }
+    
+    public func peripheral(_ peripheral: CBPeripheral, didUpdateValueFor descriptor: CBDescriptor, error: (any Error)?) {
+        target?.peripheral(peripheral, didUpdateValueFor: descriptor, error: error)
+    }
 }
 

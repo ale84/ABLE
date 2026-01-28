@@ -12,35 +12,35 @@ public struct PeripheralAdvertisements {
     let advertisements: [String : Any]
     
     public var localName: String? {
-        return advertisements[CBAdvertisementDataLocalNameKey] as? String
+        advertisements[CBAdvertisementDataLocalNameKey] as? String
     }
     
     public var manufactuereData: Data? {
-        return advertisements[CBAdvertisementDataManufacturerDataKey] as? Data
+        advertisements[CBAdvertisementDataManufacturerDataKey] as? Data
     }
     
     public var txPower: NSNumber? {
-        return advertisements[CBAdvertisementDataTxPowerLevelKey] as? NSNumber
+        advertisements[CBAdvertisementDataTxPowerLevelKey] as? NSNumber
     }
     
     public var isConnectable: NSNumber? {
-        return advertisements[CBAdvertisementDataIsConnectable] as? NSNumber
+        advertisements[CBAdvertisementDataIsConnectable] as? NSNumber
     }
     
     public var serviceUUIDs: [CBUUID]? {
-        return advertisements[CBAdvertisementDataServiceUUIDsKey] as? [CBUUID]
+        advertisements[CBAdvertisementDataServiceUUIDsKey] as? [CBUUID]
     }
     
     public var serviceData: [CBUUID : Data]? {
-        return advertisements[CBAdvertisementDataServiceDataKey] as? [CBUUID : Data]
+        advertisements[CBAdvertisementDataServiceDataKey] as? [CBUUID : Data]
     }
     
     public var overflowServiceUUIDs: [CBUUID]? {
-        return advertisements[CBAdvertisementDataOverflowServiceUUIDsKey] as? [CBUUID]
+        advertisements[CBAdvertisementDataOverflowServiceUUIDsKey] as? [CBUUID]
     }
     
     public var solicitedServiceUUIDs: [CBUUID]? {
-        return advertisements[CBAdvertisementDataSolicitedServiceUUIDsKey] as? [CBUUID]
+        advertisements[CBAdvertisementDataSolicitedServiceUUIDsKey] as? [CBUUID]
     }
 }
 
@@ -51,26 +51,26 @@ public class Peripheral: NSObject {
 
     /// Connection name.
     public var name: String? {
-        return cbPeripheral.name
+        cbPeripheral.name
     }
     
     /// Connection state.
     public var isConnected: Bool {
-        return cbPeripheral.state == .connected
+        cbPeripheral.state == .connected
     }
     
     public var discoveredServices: [Service] {
-        return cbPeripheral.cbServices?.map { Service(with: $0) } ?? []
+        cbPeripheral.cbServices?.map { Service(with: $0) } ?? []
     }
     
     public var RSSI: Int
     
     public var state: CBPeripheralState {
-        return cbPeripheral.state
+        cbPeripheral.state
     }
     
     public var ancsAuthorized: Bool {
-        return cbPeripheral.ancsAuthorized
+        cbPeripheral.ancsAuthorized
     }
     
     public private(set) var advertisements: PeripheralAdvertisements
@@ -91,7 +91,10 @@ public class Peripheral: NSObject {
     internal let notifyCoordinator = NotifyCoordinator()
     internal let writeCoordinator = WriteCoordinator()
     internal let readRSSICoordinator = ReadRSSICoordinator()
-
+    internal let discoverIncludedServicesCoordinator = DiscoverIncludedServicesCoordinator()
+    internal let discoverDescriptorsCoordinator = DiscoverDescriptorsCoordinator()
+    internal let readDescriptorValueCoordinator = ReadDescriptorValueCoordinator()
+    
     public init(with peripheral: CBPeripheralType, advertisements: [String : Any] = [:], RSSI: Int = 0) {
         self.cbPeripheral = peripheral
         self.advertisements = PeripheralAdvertisements(advertisements: advertisements)
@@ -167,6 +170,18 @@ public extension Peripheral {
         case writeTimeout(characteristic: CBUUID)
         case writeCancelled(characteristic: CBUUID)
         case writeReplaced(characteristic: CBUUID)
+        
+        case discoverIncludedServicesReplaced(service: CBUUID)
+        case discoverIncludedServicesTimeout(service: CBUUID)
+        case discoverIncludedServicesCancelled(service: CBUUID)
+        
+        case discoverDescriptorsReplaced(characteristic: CBUUID)
+        case discoverDescriptorsTimeout(characteristic: CBUUID)
+        case discoverDescriptorsCancelled(characteristic: CBUUID)
+        
+        case readDescriptorValueTimeout(descriptor: CBUUID)
+        case readDescriptorValueCancelled(descriptor: CBUUID)
+        case readDescriptorValueReplaced(descriptor: CBUUID)
     }
 }
 
@@ -227,7 +242,29 @@ extension Peripheral: CBPeripheralDelegateType {
         }
     }
     
-    public func peripheral(_ peripheral: CBPeripheralType, didDiscoverIncludedServicesFor service: CBServiceType, error: Error?) { }
+    public func peripheral(_ peripheral: CBPeripheralType,
+                           didDiscoverIncludedServicesFor service: CBServiceType,
+                           error: Error?) {
+
+        let serviceUUID = service.uuid
+        let included = service.cbIncludedServices?.map { Service(with: $0) } ?? []
+
+        Task { [weak self] in
+            guard let self else { return }
+
+            if let error {
+                await self.discoverIncludedServicesCoordinator.fail(
+                    serviceUUID: serviceUUID,
+                    error: PeripheralError.cbError(detail: error)
+                )
+            } else {
+                await self.discoverIncludedServicesCoordinator.succeed(
+                    serviceUUID: serviceUUID,
+                    services: included
+                )
+            }
+        }
+    }
     
     public func peripheral(_ peripheral: CBPeripheralType,
                            didDiscoverCharacteristicsFor service: CBServiceType,
@@ -254,7 +291,29 @@ extension Peripheral: CBPeripheralDelegateType {
         }
     }
     
-    public func peripheral(_ peripheral: CBPeripheralType, didDiscoverDescriptorsFor characteristic: CBCharacteristicType, error: Error?) { }
+    public func peripheral(_ peripheral: CBPeripheralType,
+                           didDiscoverDescriptorsFor characteristic: CBCharacteristicType,
+                           error: Error?) {
+
+        let uuid = characteristic.uuid
+        let descriptors = (characteristic.descriptors ?? []).map { Descriptor(with: $0) } // se usi CBDescriptorType, cast/bridge
+
+        Task { [weak self] in
+            guard let self else { return }
+
+            if let error {
+                await self.discoverDescriptorsCoordinator.fail(
+                    characteristicUUID: uuid,
+                    error: PeripheralError.cbError(detail: error)
+                )
+            } else {
+                await self.discoverDescriptorsCoordinator.succeed(
+                    characteristicUUID: uuid,
+                    descriptors: descriptors
+                )
+            }
+        }
+    }
     
     public func peripheral(_ peripheral: CBPeripheralType,
                            didUpdateValueFor characteristic: CBCharacteristicType,
@@ -290,8 +349,29 @@ extension Peripheral: CBPeripheralDelegateType {
         }
     }
 
-    
-    public func peripheral(_ peripheral: CBPeripheralType, didUpdateValueFor descriptor: CBDescriptor, error: Error?) { }
+    public func peripheral(_ peripheral: CBPeripheralType,
+                           didUpdateValueFor descriptor: CBDescriptor,
+                           error: Error?) {
+
+        let uuid = descriptor.uuid
+        let data = (descriptor.value as? Data) ?? Data()
+
+        Task { [weak self] in
+            guard let self else { return }
+
+            if let error {
+                await self.readDescriptorValueCoordinator.fail(
+                    descriptorUUID: uuid,
+                    error: PeripheralError.cbError(detail: error)
+                )
+            } else {
+                await self.readDescriptorValueCoordinator.succeed(
+                    descriptorUUID: uuid,
+                    data: data
+                )
+            }
+        }
+    }
     
     public func peripheral(_ peripheral: CBPeripheralType,
                            didWriteValueFor characteristic: CBCharacteristicType,
