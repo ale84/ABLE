@@ -85,10 +85,12 @@ public class Peripheral: NSObject {
     private var peripheralDelegateProxy: CBPeripheralDelegateProxy?
     
     // MARK: Async api support.
-    internal var discoverServicesCoordinator = DiscoverServicesCoordinator()
-    internal var discoverCharacteristicsCoordinator = DiscoverCharacteristicsCoordinator()
-    internal var notifyCoordinator = NotifyCoordinator()
-    internal var readRSSICoordinator = ReadRSSICoordinator()
+    internal let discoverServicesCoordinator = DiscoverServicesCoordinator()
+    internal let discoverCharacteristicsCoordinator = DiscoverCharacteristicsCoordinator()
+    internal let readValueCoordinator = ReadValueCoordinator()
+    internal let notifyCoordinator = NotifyCoordinator()
+    internal let writeCoordinator = WriteCoordinator()
+    internal let readRSSICoordinator = ReadRSSICoordinator()
 
     public init(with peripheral: CBPeripheralType, advertisements: [String : Any] = [:], RSSI: Int = 0) {
         self.cbPeripheral = peripheral
@@ -105,27 +107,15 @@ public class Peripheral: NSObject {
     }
     
     public func service(for uuid: CBUUID) -> Service? {
-        return discoveredServices.filter { $0.cbService.uuid == uuid }.first
+        discoveredServices.filter { $0.cbService.uuid == uuid }.first
     }
     
     public func characteristic(for uuid: CBUUID, service: Service) -> Characteristic? {
-        return service.characteristics.filter { $0.uuid == uuid }.first
-    }
-    
-    public func readValue(for characteristic: Characteristic, completion: @escaping ReadCharacteristicCompletion) {
-        self.readCharacteristicCompletion = completion
-        cbPeripheral.readValue(for: characteristic.cbCharacteristic)
-    }
-    
-    public func write(_ data: Data, for characteristic: Characteristic, type: CBCharacteristicWriteType, completion: @escaping WriteCharacteristicCompletion) {
-        if type == .withResponse {
-            writeCharacteristicCompletion = completion
-        }
-        cbPeripheral.writeValue(data, for: characteristic.cbCharacteristic, type: type)
+        service.characteristics.filter { $0.uuid == uuid }.first
     }
     
     public func maximumWriteValueLength(for type: CBCharacteristicWriteType) -> Int {
-        return cbPeripheral.maximumWriteValueLength(for: type)
+        cbPeripheral.maximumWriteValueLength(for: type)
     }
     
     @objc private func handleDiscoverServicesTimeoutReached(timer: Timer) {
@@ -168,9 +158,15 @@ public extension Peripheral {
         
         case readRSSIReplaced
         case readRSSITimeout
-        case readRSSIFailed(underlying: Error?)
         case readRSSICancelled
-
+        
+        case readValueTimeout(characteristic: CBUUID)
+        case readValueCancelled(characteristic: CBUUID)
+        case readValueReplaced(characteristic: CBUUID)
+        
+        case writeTimeout(characteristic: CBUUID)
+        case writeCancelled(characteristic: CBUUID)
+        case writeReplaced(characteristic: CBUUID)
     }
 }
 
@@ -264,19 +260,28 @@ extension Peripheral: CBPeripheralDelegateType {
                            didUpdateValueFor characteristic: CBCharacteristicType,
                            error: Error?) {
 
-        // 1) One-shot read (se esiste)
-        let readCompletion = readCharacteristicCompletion
-        readCharacteristicCompletion = nil
-        if let error = error {
-            readCompletion?(.failure(PeripheralError.cbError(detail: error)))
-        } else {
-            readCompletion?(.success(characteristic.value ?? Data()))
-        }
-
-        // 2) Notify stream / legacy (se esiste)
         let uuid = characteristic.uuid
+        let value = characteristic.value ?? Data()
+
         Task { [weak self] in
             guard let self else { return }
+
+            // 1) One-shot read (se era un read in-flight su questa characteristic)
+            if await self.readValueCoordinator.hasInFlight(characteristicUUID: uuid) {
+                if let error {
+                    await self.readValueCoordinator.fail(
+                        characteristicUUID: uuid,
+                        error: PeripheralError.cbError(detail: error)
+                    )
+                } else {
+                    await self.readValueCoordinator.succeed(
+                        characteristicUUID: uuid,
+                        data: value
+                    )
+                }
+            }
+
+            // 2) Notify stream / legacy notify
             await self.notifyCoordinator.handleDidUpdateValue(
                 characteristicUUID: uuid,
                 data: characteristic.value,
@@ -284,17 +289,30 @@ extension Peripheral: CBPeripheralDelegateType {
             )
         }
     }
+
     
     public func peripheral(_ peripheral: CBPeripheralType, didUpdateValueFor descriptor: CBDescriptor, error: Error?) { }
     
-    public func peripheral(_ peripheral: CBPeripheralType, didWriteValueFor characteristic: CBCharacteristicType, error: Error?) {
-        let completion = writeCharacteristicCompletion
-        writeCharacteristicCompletion = nil
-        if let error = error {
-            completion?(.failure(PeripheralError.cbError(detail: error)))
-        }
-        else {
-            completion?(.success(()))
+    public func peripheral(_ peripheral: CBPeripheralType,
+                           didWriteValueFor characteristic: CBCharacteristicType,
+                           error: Error?) {
+
+        let uuid = characteristic.uuid
+
+        Task { [weak self] in
+            guard let self else { return }
+
+            // se nessun write in-flight su questa characteristic, ignora
+            guard await self.writeCoordinator.hasInFlight(characteristicUUID: uuid) else { return }
+
+            if let error {
+                await self.writeCoordinator.fail(
+                    characteristicUUID: uuid,
+                    error: PeripheralError.cbError(detail: error)
+                )
+            } else {
+                await self.writeCoordinator.succeed(characteristicUUID: uuid)
+            }
         }
     }
     
