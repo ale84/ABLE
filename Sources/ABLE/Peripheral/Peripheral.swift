@@ -88,7 +88,8 @@ public class Peripheral: NSObject {
     internal var discoverServicesCoordinator = DiscoverServicesCoordinator()
     internal var discoverCharacteristicsCoordinator = DiscoverCharacteristicsCoordinator()
     internal var notifyCoordinator = NotifyCoordinator()
-    
+    internal var readRSSICoordinator = ReadRSSICoordinator()
+
     public init(with peripheral: CBPeripheralType, advertisements: [String : Any] = [:], RSSI: Int = 0) {
         self.cbPeripheral = peripheral
         self.advertisements = PeripheralAdvertisements(advertisements: advertisements)
@@ -101,11 +102,6 @@ public class Peripheral: NSObject {
             peripheral.delegate = peripheralDelegateProxy
             Logger.debug("peripheral delegate set. \(String(describing: peripheral.delegate))")
         }
-    }
-    
-    public func readRSSI(with completion: @escaping ReadRSSICompletion) {
-        self.readRSSICompletion = completion
-        cbPeripheral.readRSSI()
     }
     
     public func service(for uuid: CBUUID) -> Service? {
@@ -169,6 +165,11 @@ public extension Peripheral {
         case notifyCancelled(characteristic: CBUUID)
         case notifyEnableFailed(characteristic: CBUUID, underlying: Error?)
         case notifyValueFailed(characteristic: CBUUID, underlying: Error?)
+        
+        case readRSSIReplaced
+        case readRSSITimeout
+        case readRSSIFailed(underlying: Error?)
+        case readRSSICancelled
 
     }
 }
@@ -314,13 +315,16 @@ extension Peripheral: CBPeripheralDelegateType {
     }
     
     public func peripheral(_ peripheral: CBPeripheralType, didReadRSSI RSSI: NSNumber, error: Error?) {
-        let completion = readRSSICompletion
-        readRSSICompletion = nil
-        if let error = error {
-            completion?(.failure(PeripheralError.cbError(detail: error)))
-        }
-        else {
-            completion?(.success(RSSI.intValue))
+        
+        Task { [weak self] in
+            guard let self else { return }
+            
+            if let error = error {
+                await self.readRSSICoordinator.fail(error: PeripheralError.cbError(detail: error))
+            }
+            else {
+                await self.readRSSICoordinator.succeed(rssi: RSSI.intValue)
+            }
         }
     }
     
