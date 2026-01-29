@@ -33,6 +33,7 @@ public class PeripheralManager: NSObject {
     // MARK: Async api support.
     internal let managerStateCoordinator = ManagerStateCoordinator()
     internal let addServiceCoordinator = AddServiceCoordinator()
+    internal let startAdvertisingCoordinator = StartAdvertisingCoordinator()
     
     public init(with peripheralManager: CBPeripheralManagerType,
                 queue: DispatchQueue?,
@@ -61,26 +62,6 @@ public class PeripheralManager: NSObject {
     
     public func removeAllServices() {
         cbPeripheralManager.removeAllServices()
-    }
-    
-    public func startAdvertising(_ advertisementData: [String : Any]?, completion: @escaping StartAdvertisingCompletion) {
-        startAdvertisingCompletion = completion
-        cbPeripheralManager.startAdvertising(advertisementData)
-    }
-    
-    public func startAdvertising(with localName: String? = nil, UUIDs: [CBUUID]? = nil, completion: @escaping StartAdvertisingCompletion) {
-        var advertisementData: [String : Any] = [:]
-        if let localName = localName {
-            advertisementData[CBAdvertisementDataLocalNameKey] = localName
-        }
-        if let UUIDs = UUIDs {
-            advertisementData[CBAdvertisementDataServiceUUIDsKey] = UUIDs
-        }
-        startAdvertising(advertisementData, completion: completion)
-    }
-    
-    public func stopAdvertising() {
-        cbPeripheralManager.stopAdvertising()
     }
     
     public func updateValue(_ value: Data, for characteristic: CBMutableCharacteristic, onSubscribedCentrals centrals: [CBCentral]?, readyToUpdateCallback: @escaping ReadyToUpdateSubscribersCallback) -> Bool {
@@ -167,11 +148,16 @@ extension PeripheralManager: CBPeripheralManagerDelegateType {
     }
     
     public func peripheralManagerDidStartAdvertising(_ peripheral: CBPeripheralManagerType, error: Error?) {
-        if let error = error {
-            startAdvertisingCompletion?(.failure(PeripheralManagerError.cbError(error)))
-        }
-        else {
-            startAdvertisingCompletion?(.success(()))
+        Task { [weak self] in
+            guard let self else { return }
+
+            if let error {
+                await self.startAdvertisingCoordinator.fail(
+                    error: PeripheralManagerError.cbError(error)
+                )
+            } else {
+                await self.startAdvertisingCoordinator.succeed()
+            }
         }
     }
     
@@ -213,13 +199,17 @@ public extension PeripheralManager {
         case addServiceReplaced(serviceUUID: CBUUID)
         case addServiceCancelled(serviceUUID: CBUUID)
         case addServiceTimeout(serviceUUID: CBUUID, lastState: ManagerState)
+        
+        case advertisingReplaced
+        case advertisingCancelled
+        case advertisingTimeout(lastState: ManagerState)
     }
     
     enum PeripheralManagerNotification: String {
         case stateChanged = "it.able.peripheralmanager.statechangednotification"
         
         var notificationName: Notification.Name {
-            return Notification.Name(rawValue)
+            Notification.Name(rawValue)
         }
     }
 
@@ -227,7 +217,7 @@ public extension PeripheralManager {
         case bluetoothStateChanged = "it.able.centralmanager.bluetoothstatechangednotification"
         
         var notificationName: Notification.Name {
-            return Notification.Name(rawValue)
+            Notification.Name(rawValue)
         }
     }
 }

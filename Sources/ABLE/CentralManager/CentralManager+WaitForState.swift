@@ -16,7 +16,7 @@ public extension CentralManager {
         let current = state
         if current == desired { return current }
 
-        let stream = stateProducer.stream()
+        let stream = managerStateCoordinator.stream()
 
         do {
             return try await withThrowingTaskGroup(of: ManagerState.self) { group in
