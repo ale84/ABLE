@@ -8,10 +8,6 @@ import CoreBluetooth
 
 public class PeripheralManager: NSObject {
     
-    public var bluetoothStateUpdate: BluetoothStateUpdate?
-    public var readRequestCallback: ReadRequestCallback?
-    public var writeRequestsCallback: WriteRequestsCallback?
-    
     public var state: ManagerState {
         cbPeripheralManager.managerState
     }
@@ -20,12 +16,42 @@ public class PeripheralManager: NSObject {
         cbPeripheralManager.isAdvertising
     }
     
+    // MARK: - Legacy callbacks (auto-bridged from streams)
+
+    public var bluetoothStateUpdate: BluetoothStateUpdate? {
+        get { _bluetoothStateUpdate }
+        set { _bluetoothStateUpdate = newValue }
+    }
+
+    public var readRequestCallback: ReadRequestCallback? {
+        get { _readRequestCallback }
+        set {
+            _readRequestCallback = newValue
+            attachReadRequestsLegacyBridge()
+        }
+    }
+
+    public var writeRequestsCallback: WriteRequestsCallback? {
+        get { _writeRequestsCallback }
+        set {
+            _writeRequestsCallback = newValue
+            attachWriteRequestsLegacyBridge()
+        }
+    }
+
+    public var readyToUpdateCallback: ReadyToUpdateSubscribersCallback? {
+        get { _readyToUpdateCallback }
+        set {
+            _readyToUpdateCallback = newValue
+            attachReadyToUpdateLegacyBridge()
+        }
+    }
+    
     private(set) var cbPeripheralManager: CBPeripheralManagerType
     
     private var waitForStateAttempts: Set<WaitForStateAttempt> = []
     private var addServiceCompletion: AddServiceCompletion?
     private var startAdvertisingCompletion: StartAdvertisingCompletion?
-    private var readyToUpdateCallback: ReadyToUpdateSubscribersCallback?
     private var addServiceAttempts: Set<AddServiceAttempt> = []
     
     private var cbPeripheralManagerDelegateProxy: CBPeripheralManagerDelegateProxy?
@@ -35,13 +61,24 @@ public class PeripheralManager: NSObject {
     internal let addServiceCoordinator = AddServiceCoordinator()
     internal let startAdvertisingCoordinator = StartAdvertisingCoordinator()
     internal let readyToUpdateSubscribersCoordinator = ReadyToUpdateSubscribersCoordinator()
+    internal let readRequestsCoordinator = ReadRequestsCoordinator()
+    internal let writeRequestsCoordinator = WriteRequestsCoordinator()
+
+    internal var readRequestsBridgeTask: Task<Void, Never>?
+    internal var writeRequestsBridgeTask: Task<Void, Never>?
+    internal var readyToUpdateBridgeTask: Task<Void, Never>?
     
+    internal var _bluetoothStateUpdate: BluetoothStateUpdate?
+    internal var _readRequestCallback: ReadRequestCallback?
+    internal var _writeRequestsCallback: WriteRequestsCallback?
+    internal var _readyToUpdateCallback: ReadyToUpdateSubscribersCallback?
+
     public init(with peripheralManager: CBPeripheralManagerType,
                 queue: DispatchQueue?,
                 options: [String : Any]? = nil,
                 stateUpdate: BluetoothStateUpdate? = nil) {
         cbPeripheralManager = peripheralManager
-        bluetoothStateUpdate = stateUpdate
+        _bluetoothStateUpdate = stateUpdate
         
         super.init()
         
@@ -71,6 +108,17 @@ public class PeripheralManager: NSObject {
     
     public func setDesiredConnectionLatency(_ latency: CBPeripheralManagerConnectionLatency, for central: CBCentral) {
         cbPeripheralManager.setDesiredConnectionLatency(latency, for: central)
+    }
+    
+    deinit {
+        readRequestsBridgeTask?.cancel()
+        writeRequestsBridgeTask?.cancel()
+        readyToUpdateBridgeTask?.cancel()
+
+        Task { [managerStateCoordinator] in await managerStateCoordinator.finish() }
+        Task { [readRequestsCoordinator] in await readRequestsCoordinator.finish() }
+        Task { [writeRequestsCoordinator] in await writeRequestsCoordinator.finish() }
+        Task { [readyToUpdateSubscribersCoordinator] in await readyToUpdateSubscribersCoordinator.finish() }
     }
     
     // MARK: Utilities
@@ -163,13 +211,18 @@ extension PeripheralManager: CBPeripheralManagerDelegateType {
         }
     }
 
-    
     public func peripheralManager(_ peripheral: CBPeripheralManagerType, didReceiveRead request: CBATTRequest) {
-        readRequestCallback?(request)
+        Task { [weak self] in
+            guard let self else { return }
+            await self.readRequestsCoordinator.yield(request)
+        }
     }
-    
+
     public func peripheralManager(_ peripheral: CBPeripheralManagerType, didReceiveWrite requests: [CBATTRequest]) {
-        writeRequestsCallback?(requests)
+        Task { [weak self] in
+            guard let self else { return }
+            await self.writeRequestsCoordinator.yield(requests)
+        }
     }
     
     public func peripheralManager(_ peripheral: CBPeripheralManagerType, willRestoreState dict: [String : Any]) { }
