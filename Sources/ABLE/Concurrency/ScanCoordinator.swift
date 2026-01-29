@@ -3,57 +3,57 @@
 //  Copyright © 2026 Alessio Orlando. All rights reserved.
 //
 
-actor ScanProducer<Element> {
+actor ScanCoordinator<Element> {
 
     private var continuation: AsyncStream<Element>.Continuation?
-    private var isFinished = false
+    private var isStreamFinished = false
 
-    /// Crea uno stream. Se esiste già uno stream attivo, viene terminato.
+    /// Creates a stream. Replaces a previous stream if it exists.
     nonisolated func stream(
         onStart: @escaping () -> Void,
         onStop: @escaping () -> Void
     ) -> AsyncStream<Element> {
 
         AsyncStream { continuation in
-            // 1) Registra la nuova continuation *dentro l’actor* e invalida la precedente.
             Task { [weak self] in
                 guard let self else { return }
                 await self.replaceContinuation(continuation)
                 onStart()
             }
 
-            // 2) Termination = cleanup bidirezionale (chiude stream + ferma BLE)
             continuation.onTermination = { @Sendable _ in
                 Task { [weak self] in
                     guard let self else { return }
-                    await self.finish()
+                    await self.stopCurrentStream()
                     onStop()
                 }
             }
         }
     }
 
-    /// Termina lo stream attuale e imposta la nuova continuation come attiva.
     private func replaceContinuation(_ newContinuation: AsyncStream<Element>.Continuation) {
-        // Termina l'eventuale stream precedente
-        if continuation != nil, !isFinished {
+        // terminate previous stream
+        if continuation != nil, !isStreamFinished {
             continuation?.finish()
         }
 
-        // Attiva il nuovo stream
         continuation = newContinuation
-        isFinished = false
+        isStreamFinished = false
     }
 
     func yield(_ element: Element) {
-        guard !isFinished else { return }
+        guard !isStreamFinished else { return }
         continuation?.yield(element)
     }
 
-    func finish() {
+    func stopCurrentStream() {
         guard continuation != nil else { return }
-        isFinished = true
+        isStreamFinished = true
         continuation?.finish()
         continuation = nil
+    }
+
+    func finishAll() {
+        stopCurrentStream()
     }
 }

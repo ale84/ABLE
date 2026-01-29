@@ -40,4 +40,21 @@ public extension CentralManager {
             throw CentralManagerError.cancelled
         }
     }
+    
+    // MARK: legacy apis
+    @available(*, deprecated, message: "Use async waitForPoweredOn(timeout:) instead.")
+    func waitForPoweredOn(withTimeout timeout: TimeInterval = 3, completion: @escaping WaitForStateCompletion) {
+        wait(for: .poweredOn, timeout: timeout, completion: completion)
+    }
+
+    @available(*, deprecated, message: "Use async wait(for:timeout:) instead.")
+    func wait(for state: ManagerState, timeout: TimeInterval = 3, completion: @escaping WaitForStateCompletion) {
+        Task {
+            do {
+                _ = try await wait(for: state, timeout: .seconds(timeout))
+            } catch {
+            }
+            completion(self.state)
+        }
+    }
 }

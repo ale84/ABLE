@@ -8,31 +8,27 @@ import Foundation
 import CoreBluetooth
 
 // MARK: - Scan API (AsyncStream based)
-
 public extension CentralManager {
-    
-    /// Stream di periferiche scoperte durante una scansione BLE.
-    /// La scansione parte all’inizio dello stream e termina automaticamente
-    /// quando lo stream viene cancellato o termina.
+
     func scan(
         services: [CBUUID]? = nil,
         options: [String: Any]? = nil
     ) -> AsyncStream<Peripheral> {
-        
-        scanProducer.stream(
+
+        scanCoordinator.stream(
             onStart: { [weak self] in
                 guard let self else { return }
-                
+
                 Task {
                     await self.stopScanAsync()
-                    
+
                     Logger.debug("Attempt to start BLE scan (async).")
-                    
+
                     guard self.cbCentralManager.managerState == .poweredOn else {
                         Logger.debug("BLE not powered on, scan not started.")
                         return
                     }
-                    
+
                     self.cbCentralManager.scanForPeripherals(withServices: services, options: options)
                     self.isScanning = true
                     Logger.debug("BLE scan started (async) with services: \(String(describing: services)).")
@@ -44,40 +40,78 @@ public extension CentralManager {
             }
         )
     }
-    
-    
-    /// Effettua una singola scansione e restituisce le periferiche trovate.
-    /// La scansione termina automaticamente allo scadere del timeout.
-    func scanOnce(
-        services: [CBUUID]? = nil,
-        options: [String: Any]? = nil,
-        timeout: Duration
-    ) async throws -> [Peripheral] {
-        
-        var peripherals: [Peripheral] = []
-        
-        let stream = scan(services: services, options: options)
-        
-        try await withThrowingTaskGroup(of: Void.self) { group in
-            
-            // Task consumer
-            group.addTask {
-                for await peripheral in stream {
-                    peripherals.append(peripheral)
-                }
-            }
-            
-            // Task timeout
-            group.addTask {
-                try await Task.sleep(for: timeout)
-                throw CentralManagerError.connectionTimeoutReached
-            }
-            
-            // Appena uno dei due termina → cancel
-            try await group.next()
-            group.cancelAll()
+
+    func stopScan() {
+        Task { [weak self] in
+            await self?.stopScanAsync()
         }
-        
-        return peripherals
     }
+
+    internal func stopScanAsync() async {
+        cbCentralManager.stopScan()
+
+        isScanning = false
+        Logger.debug("ble scan stopped.")
+        
+        await scanCoordinator.stopCurrentStream()
+    }
+    
+    // Legacy api
+    func scanForPeripherals(withServices services: [CBUUID]? = nil,
+                            options: [String : Any]? = nil,
+                            update: ScanUpdate? = nil,
+                            timeoutInterval: TimeInterval? = nil,
+                            timeoutCompletion: ScanTimeout? = nil) {
+        
+        Task { [weak self] in
+            guard let self else { return }
+
+            // stop previous scan
+            await self.stopScanAsync()
+
+            Logger.debug("Attempt to start a new ble scan (legacy -> async).")
+
+            guard self.cbCentralManager.managerState == .poweredOn else {
+                Logger.debug("BLE not powered on, scan not started.")
+                return
+            }
+
+            let stream = self.scan(services: services, options: options)
+
+            do {
+                try await withThrowingTaskGroup(of: Void.self) { group in
+
+
+                    group.addTask {
+                        for await p in stream {
+                            update?(p)
+                        }
+                    }
+
+                    // optional timeout
+                    if let timeoutInterval, let timeoutCompletion {
+                        group.addTask { [weak self] in
+                            guard let self else { return }
+                            try await Task.sleep(nanoseconds: UInt64(timeoutInterval * 1_000_000_000))
+                            
+                            await self.stopScanAsync()
+                            
+                            let connectionsArray = Array<Peripheral>(foundPeripherals)
+                            timeoutCompletion(.success(connectionsArray))
+                        }
+                    }
+
+                    // wait: if there's timeout, scan stops when it ends; if not, it remains active until somebody calls stopScan()
+                    _ = try await group.next()
+                    group.cancelAll()
+                }
+            } catch is CancellationError {
+                // if somebody cancels scan, stop task
+                await self.stopScanAsync()
+            } catch {
+                await self.stopScanAsync()
+            }
+        }
+    }
+
 }

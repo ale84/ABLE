@@ -11,19 +11,15 @@ public class CentralManager: NSObject {
     public var ancsUpdateCallback: AncsAuthUpdateCallback?
 
     public var allPeripherals: Set<Peripheral> {
-        return foundPeripherals.union(cachedPeripherals)
+        foundPeripherals.union(cachedPeripherals)
     }
     
     public static var bluetoothChangedNotification: Notification.Name {
-        return ManagerNotification.bluetoothStateChanged.notificationName
+        ManagerNotification.bluetoothStateChanged.notificationName
     }
     
     public private(set) var cbCentralManager: CBCentralManagerType
     public private(set) var centralQueue: DispatchQueue
-    
-    /// Indica se è attiva una scansione BLE AsyncStream-based.
-    /// Lo stato è gestito internamente dal lifecycle dello stream.
-    public internal(set) var isScanning: Bool = false
     
     public private(set) var knownPeripherals: Set<UUID> = []
     public private(set) var foundPeripherals: Set<Peripheral> = []
@@ -31,18 +27,17 @@ public class CentralManager: NSObject {
     
     private var userDefaults: UserDefaults
     
-    private var scanUpdate: ScanUpdate?
-    private var scanAttempt: ScanAttempt?
-    private var connectionAttempts: Set<ConnectionAttempt> = []
-    private var connectionInfos: Set<ConnectionInfo> = []
-    private var disconnectionRequests: Set<DisconnectionRequest> = []
     private var connectionEventCallback: ConnectionEventCallback?
     
     private var cbDelegateProxy: CBCentralManagerDelegateProxy?
     
     // MARK: - Async stream support
 
-    internal let scanProducer = ScanProducer<Peripheral>()
+    /// Indicates weather an AsyncStream-based BLE scan is active.
+    /// State is internally managed by the stream lifecycle.
+    public internal(set) var isScanning: Bool = false
+    
+    internal let scanCoordinator = ScanCoordinator<Peripheral>()
     internal let managerStateCoordinator = ManagerStateCoordinator()
     internal let connectionCoordinator = ConnectionCoordinator()
     internal let disconnectionCoordinator = DisconnectionCoordinator()
@@ -74,74 +69,7 @@ public class CentralManager: NSObject {
     }
     
     public var state: ManagerState {
-        return cbCentralManager.managerState
-    }
-    
-    @available(*, deprecated, message: "Use async waitForPoweredOn(timeout:) instead.")
-    public func waitForPoweredOn(withTimeout timeout: TimeInterval = 3, completion: @escaping WaitForStateCompletion) {
-        wait(for: .poweredOn, timeout: timeout, completion: completion)
-    }
-
-    @available(*, deprecated, message: "Use async wait(for:timeout:) instead.")
-    public func wait(for state: ManagerState, timeout: TimeInterval = 3, completion: @escaping WaitForStateCompletion) {
-        Task {
-            do {
-                _ = try await wait(for: state, timeout: .seconds(timeout))
-            } catch {
-                // in legacy API, ritorniamo comunque lo state attuale
-            }
-            completion(self.state)
-        }
-    }
-
-    
-    public func scanForPeripherals(withServices services: [CBUUID]? = nil,
-                                   options: [String : Any]? = nil,
-                                   update: ScanUpdate? = nil,
-                                   timeoutInterval: TimeInterval? = nil,
-                                   timeoutCompletion: ScanTimeout? = nil) {
-        scanAttempt?.timer.invalidate()
-        scanAttempt = nil
-        
-        scanUpdate = update
-        
-        Logger.debug("Attempt to start a new ble scan.")
-        guard cbCentralManager.managerState == .poweredOn else {
-            return
-        }
-        
-        if let timeoutInterval = timeoutInterval,
-            let timeoutCompletion = timeoutCompletion {
-            let timer = Timer.scheduledTimer(timeInterval: timeoutInterval,
-                                             target: self,
-                                             selector: #selector(handleScanTimeoutReached(_:)),
-                                             userInfo: nil,
-                                             repeats: false)
-            let scanAttempt = ScanAttempt(completion: timeoutCompletion, timer: timer)
-            self.scanAttempt = scanAttempt
-        }
-        
-        cbCentralManager.scanForPeripherals(withServices: services, options: options)
-        isScanning = true
-        Logger.debug("ble scan started with services: \(String(describing: services)).")
-    }
-    
-    /// Stop the current BLE scan.
-    public func stopScan() {
-        // API pubblica sync: manteniamo compatibilità
-        Task { [weak self] in
-            await self?.stopScanAsync()
-        }
-    }
-    
-    internal func stopScanAsync() async {
-        // Stop CoreBluetooth
-        cbCentralManager.stopScan()
-        scanAttempt?.timer.invalidate()
-        scanAttempt = nil
-        isScanning = false
-        Logger.debug("ble scan stopped.")
-        await scanProducer.finish()
+        cbCentralManager.managerState
     }
     
     public func registerForConnectionEvents(options: [CBConnectionEventMatchingOption : Any]? = nil,
@@ -168,7 +96,7 @@ public class CentralManager: NSObject {
     }
     
     internal func peripheral(for cbPeripheral: CBPeripheralType) -> Peripheral? {
-        return allPeripherals.filter { $0.cbPeripheral.identifier == cbPeripheral.identifier }.last
+        allPeripherals.filter { $0.cbPeripheral.identifier == cbPeripheral.identifier }.last
     }
     
     private func writeKnownPeripherals() {
@@ -185,35 +113,6 @@ public class CentralManager: NSObject {
     deinit {
         Logger.debug("ble manager deinit: disconnected from all peripherals.")
         disconnectAll()
-    }
-    
-    private func getConnectionAttempt(for peripheral: Peripheral) -> ConnectionAttempt? {
-        return connectionAttempts.filter { $0.peripheral == peripheral }.last
-    }
-    
-    private func getDisconnectionRequest(for peripheral: Peripheral) -> DisconnectionRequest? {
-        return disconnectionRequests.filter { $0.peripheral == peripheral }.last
-    }
-    
-    private func getConnectionInfo(for peripheral: Peripheral) -> ConnectionInfo? {
-        return connectionInfos.filter { $0.peripheral == peripheral }.last
-    }
-    
-    private func getConnectionInfo(for timer: Timer) -> ConnectionInfo? {
-        return connectionInfos.filter { $0.timer == timer }.last
-    }
-    
-    private func addConnectionInfo(for peripheral: Peripheral, timeout: TimeInterval?) {
-        if let existingConnectionInfo = getConnectionInfo(for: peripheral) {
-            existingConnectionInfo.timer?.invalidate()
-            connectionInfos.remove(existingConnectionInfo)
-        }
-        var timer: Timer? = nil
-        if let timeout = timeout, timeout > 0 {
-            timer = Timer.scheduledTimer(timeInterval: timeout, target: self, selector: #selector(handleConnectionTimeoutReached(_:)), userInfo: nil, repeats: false)
-        }
-        let connectionInfo = ConnectionInfo(peripheral: peripheral, timer: timer, startDate: Date())
-        connectionInfos.insert(connectionInfo)
     }
     
     private func clearAllPeripherals() {
@@ -233,48 +132,6 @@ public class CentralManager: NSObject {
     }
 }
 
-// MARK: Timers handling.
-private extension CentralManager {
-    
-    @objc func handleConnectionAttemptTimeoutReached(_ timer: Timer) {
-        Logger.debug("connection attempt timeout reached.")
-
-        guard let attempt = timer.userInfo as? ConnectionAttempt else {
-            return
-        }
-
-        // Se nel frattempo l’attempt è stato rimosso (perché connesso o fallito), non facciamo nulla
-        guard connectionAttempts.contains(attempt) else {
-            return
-        }
-
-        attempt.attemptTimer?.invalidate()
-        attempt.attemptTimer = nil
-
-        connectionAttempts.remove(attempt)
-        attempt.completion(.failure(.connectionTimeoutReached))
-
-        disconnect(from: attempt.peripheral)
-    }
-    
-    @objc func handleConnectionTimeoutReached(_ timer: Timer) {
-        let connectionInfo = getConnectionInfo(for: timer)!
-        connectionInfo.timer?.invalidate()
-        connectionInfos.remove(connectionInfo)
-        disconnect(from: connectionInfo.peripheral)
-    }
-    
-    @objc func handleScanTimeoutReached(_ timer: Timer) {
-        Logger.debug("ble scan timeout reached.")
-        if let attempt = scanAttempt, attempt.timer.isValid {
-            attempt.timer.invalidate()
-            stopScan()
-            let connectionsArray = Array<Peripheral>(foundPeripherals)
-            attempt.completion(.success(connectionsArray))
-        }
-    }
-}
-
 // MARK: CBCentralManager delegate.
 extension CentralManager: CBCentralManagerDelegateType {
     public func centralManager(_ central: CBCentralManagerType,
@@ -282,15 +139,12 @@ extension CentralManager: CBCentralManagerDelegateType {
                                advertisementData: [String : Any],
                                rssi RSSI: NSNumber) {
         Logger.debug("central discovered peripheral: \(peripheral)")
-        
+
         let peripheral = Peripheral(with: peripheral, advertisements: advertisementData, RSSI: RSSI.intValue)
-        
         addPeripheral(peripheral)
-        
-        //scanUpdate?(peripheral)
-        
+
         Task {
-            await scanProducer.yield(peripheral)
+            await scanCoordinator.yield(peripheral)
         }
     }
     
@@ -303,13 +157,13 @@ extension CentralManager: CBCentralManagerDelegateType {
         let p = self.peripheral(for: cbPeripheral) ?? Peripheral(with: cbPeripheral)
 
         Task {
-            // fail-safe: se era un connect pending, falliscilo
+            // fail-safe: if it is a pending connection, terminate it
             await connectionCoordinator.fail(
                 peripheralID: id,
                 error: CentralManagerError.connectionFailed(error)
             )
 
-            // completa eventuale disconnect pending
+            // complete disconnect pending if present
             if let error {
                 await disconnectionCoordinator.fail(peripheralID: id, error: error)
             } else {
@@ -318,7 +172,6 @@ extension CentralManager: CBCentralManagerDelegateType {
         }
     }
 
-    
     public func centralManager(_ central: CBCentralManagerType, didFailToConnect cbPeripheral: CBPeripheralType, error: Error?) {
         Logger.debug("Failed to connect to peripheral: \(cbPeripheral), error: \(String(describing: error))")
 
@@ -386,82 +239,6 @@ private extension CentralManager {
     
     enum UserDefaultsKeys: String {
         case knownPeripheral = "it.able.centralmanager.knownPeripheralKey"
-    }
-        
-    class ConnectionAttempt: Hashable {
-        private(set) var peripheral: Peripheral
-        private(set) var completion: ConnectionCompletion
-        private(set) var connectionTimeout: TimeInterval? = nil
-        var attemptTimer: Timer?
-        
-        init(with peripheral: Peripheral,
-             connectionTimeout: TimeInterval? = nil,
-             completion: @escaping ConnectionCompletion) {
-            self.peripheral = peripheral
-            self.completion = completion
-            self.connectionTimeout = connectionTimeout
-        }
-        
-        static func == (lhs: ConnectionAttempt, rhs: ConnectionAttempt) -> Bool {
-            return lhs.peripheral == rhs.peripheral
-        }
-        
-        func hash(into hasher: inout Hasher) {
-            hasher.combine(peripheral.hashValue)
-        }
-    }
-    
-    struct DisconnectionRequest: Hashable {
-        private(set) var peripheral: Peripheral
-        private(set) var completion: DisconnectionCompletion
-        
-        static func == (lhs: DisconnectionRequest, rhs: DisconnectionRequest) -> Bool {
-            return lhs.peripheral == rhs.peripheral
-        }
-        
-        func hash(into hasher: inout Hasher) {
-            hasher.combine(peripheral.hashValue)
-        }
-    }
-    
-    struct ConnectionInfo: Hashable {
-        private(set) var peripheral: Peripheral
-        private(set) var timer: Timer?
-        private(set) var startDate: Date
-        
-        static func == (lhs: ConnectionInfo, rhs: ConnectionInfo) -> Bool {
-            return lhs.peripheral == rhs.peripheral
-        }
-        
-        func hash(into hasher: inout Hasher) {
-            hasher.combine(peripheral.hashValue)
-        }
-    }
-    
-    struct WaitForStateAttempt: Hashable {
-        var state: ManagerState
-        var completion: WaitForStateCompletion
-        var timer: Timer
-        var isValid: Bool {
-            return timer.isValid
-        }
-        
-        func invalidate() {
-            timer.invalidate()
-        }
-        
-        static func == (lhs: WaitForStateAttempt, rhs: WaitForStateAttempt) -> Bool {
-            return lhs.timer == rhs.timer
-        }
-        
-        func hash(into hasher: inout Hasher) {
-            hasher.combine(timer.hashValue)
-        }
-    }
-    
-    struct ScanAttempt {
-        var completion: ScanTimeout
-        var timer: Timer
     }
 }
 
