@@ -13,11 +13,11 @@ public class PeripheralManager: NSObject {
     public var writeRequestsCallback: WriteRequestsCallback?
     
     public var state: ManagerState {
-        return cbPeripheralManager.managerState
+        cbPeripheralManager.managerState
     }
     
     public var isAdvertising: Bool {
-        return cbPeripheralManager.isAdvertising
+        cbPeripheralManager.isAdvertising
     }
     
     private(set) var cbPeripheralManager: CBPeripheralManagerType
@@ -34,6 +34,7 @@ public class PeripheralManager: NSObject {
     internal let managerStateCoordinator = ManagerStateCoordinator()
     internal let addServiceCoordinator = AddServiceCoordinator()
     internal let startAdvertisingCoordinator = StartAdvertisingCoordinator()
+    internal let readyToUpdateSubscribersCoordinator = ReadyToUpdateSubscribersCoordinator()
     
     public init(with peripheralManager: CBPeripheralManagerType,
                 queue: DispatchQueue?,
@@ -64,11 +65,6 @@ public class PeripheralManager: NSObject {
         cbPeripheralManager.removeAllServices()
     }
     
-    public func updateValue(_ value: Data, for characteristic: CBMutableCharacteristic, onSubscribedCentrals centrals: [CBCentral]?, readyToUpdateCallback: @escaping ReadyToUpdateSubscribersCallback) -> Bool {
-        self.readyToUpdateCallback = readyToUpdateCallback
-        return cbPeripheralManager.updateValue(value, for: characteristic, onSubscribedCentrals: centrals)
-    }
-    
     public func respond(to request: CBATTRequest, withResult result: CBATTError.Code) {
         cbPeripheralManager.respond(to: request, withResult: result)
     }
@@ -78,9 +74,8 @@ public class PeripheralManager: NSObject {
     }
     
     // MARK: Utilities
-    
     private func getWaitForStateAttempt(for timer: Timer) -> WaitForStateAttempt? {
-        return waitForStateAttempts.filter { $0.timer == timer }.last
+        waitForStateAttempts.filter { $0.timer == timer }.last
     }
 }
 
@@ -162,8 +157,12 @@ extension PeripheralManager: CBPeripheralManagerDelegateType {
     }
     
     public func peripheralManagerIsReady(toUpdateSubscribers peripheral: CBPeripheralManagerType) {
-        readyToUpdateCallback?()
+        Task { [weak self] in
+            guard let self else { return }
+            await self.readyToUpdateSubscribersCoordinator.yieldReady()
+        }
     }
+
     
     public func peripheralManager(_ peripheral: CBPeripheralManagerType, didReceiveRead request: CBATTRequest) {
         readRequestCallback?(request)
@@ -203,6 +202,9 @@ public extension PeripheralManager {
         case advertisingReplaced
         case advertisingCancelled
         case advertisingTimeout(lastState: ManagerState)
+        
+        case updateValueCancelled
+        case updateValueTimeout(lastState: ManagerState)
     }
     
     enum PeripheralManagerNotification: String {
