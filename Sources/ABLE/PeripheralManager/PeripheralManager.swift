@@ -32,6 +32,7 @@ public class PeripheralManager: NSObject {
     
     // MARK: Async api support.
     internal let managerStateCoordinator = ManagerStateCoordinator()
+    internal let addServiceCoordinator = AddServiceCoordinator()
     
     public init(with peripheralManager: CBPeripheralManagerType,
                 queue: DispatchQueue?,
@@ -52,13 +53,6 @@ public class PeripheralManager: NSObject {
         self.init(with: manager, queue: queue, options: options, stateUpdate: stateUpdate)
         self.cbPeripheralManagerDelegateProxy = CBPeripheralManagerDelegateProxy(withTarget: self)
         manager.delegate = cbPeripheralManagerDelegateProxy
-    }
-    
-    public func add(_ service: CBMutableService, completion: @escaping AddServiceCompletion) {
-        let addServiceAttempt = AddServiceAttempt(service: service, completion: completion)
-        addServiceAttempts.update(with: addServiceAttempt)
-        
-        cbPeripheralManager.add(service)
     }
     
     public func remove(_ service: CBMutableService) {
@@ -153,15 +147,22 @@ extension PeripheralManager: CBPeripheralManagerDelegateType {
     }
     
     public func peripheralManager(_ peripheral: CBPeripheralManagerType, didAdd service: CBServiceType, error: Error?) {
-        if let attempt = addServiceAttempts.filter({ $0.service.uuid.uuidString == service.uuid.uuidString }).first {
-            if let error = error {
-                attempt.completion(.failure(PeripheralManagerError.cbError(error)))
+        let uuid = service.uuid
+
+        Task { [weak self] in
+            guard let self else { return }
+
+            if let error {
+                await self.addServiceCoordinator.fail(
+                    serviceUUID: uuid,
+                    error: PeripheralManagerError.cbError(error)
+                )
+            } else {
+                await self.addServiceCoordinator.succeed(
+                    serviceUUID: uuid,
+                    service: Service(with: service)
+                )
             }
-            else {
-                let service = Service(with: service)
-                attempt.completion(.success(service))
-            }
-            addServiceAttempts.remove(attempt)
         }
     }
     
@@ -207,6 +208,11 @@ public extension PeripheralManager {
         
         case cancelled
         case waitForStateTimeout(desired: ManagerState, lastState: ManagerState)
+        
+        
+        case addServiceReplaced(serviceUUID: CBUUID)
+        case addServiceCancelled(serviceUUID: CBUUID)
+        case addServiceTimeout(serviceUUID: CBUUID, lastState: ManagerState)
     }
     
     enum PeripheralManagerNotification: String {
