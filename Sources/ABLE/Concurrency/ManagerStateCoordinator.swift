@@ -3,13 +3,14 @@
 //  Copyright © 2026 Alessio Orlando. All rights reserved.
 //
 
-
 import Foundation
 
-actor StateProducer {
+
+actor ManagerStateCoordinator {
 
     private var continuations: [UUID: AsyncStream<ManagerState>.Continuation] = [:]
     private var isFinished = false
+    private var lastState: ManagerState?
 
     nonisolated func stream() -> AsyncStream<ManagerState> {
         AsyncStream { continuation in
@@ -34,7 +35,13 @@ actor StateProducer {
             continuation.finish()
             return
         }
+
         continuations[id] = continuation
+
+        // replay ultimo stato noto (se presente)
+        if let lastState {
+            continuation.yield(lastState)
+        }
     }
 
     private func removeContinuation(id: UUID) {
@@ -43,6 +50,9 @@ actor StateProducer {
 
     func yield(_ state: ManagerState) {
         guard !isFinished else { return }
+
+        lastState = state
+
         for (_, c) in continuations {
             c.yield(state)
         }
@@ -51,6 +61,7 @@ actor StateProducer {
     func finish() {
         guard !isFinished else { return }
         isFinished = true
+
         for (_, c) in continuations {
             c.finish()
         }

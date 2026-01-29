@@ -30,6 +30,9 @@ public class PeripheralManager: NSObject {
     
     private var cbPeripheralManagerDelegateProxy: CBPeripheralManagerDelegateProxy?
     
+    // MARK: Async api support.
+    internal let managerStateCoordinator = ManagerStateCoordinator()
+    
     public init(with peripheralManager: CBPeripheralManagerType,
                 queue: DispatchQueue?,
                 options: [String : Any]? = nil,
@@ -49,20 +52,6 @@ public class PeripheralManager: NSObject {
         self.init(with: manager, queue: queue, options: options, stateUpdate: stateUpdate)
         self.cbPeripheralManagerDelegateProxy = CBPeripheralManagerDelegateProxy(withTarget: self)
         manager.delegate = cbPeripheralManagerDelegateProxy
-    }
-    
-    public func waitForPoweredOn(withTimeout timeout: TimeInterval = 3, completion: @escaping WaitForStateCompletion) {
-        wait(for: .poweredOn, timeout: timeout, completion: completion)
-    }
-    
-    public func wait(for state: ManagerState, timeout: TimeInterval = 3, completion: @escaping WaitForStateCompletion) {
-        if state == self.state {
-            completion(state)
-            return
-        }
-        let timer = Timer.scheduledTimer(timeInterval: timeout, target: self, selector: #selector(handleWaitStateTimeoutReached(_:)), userInfo: nil, repeats: false)
-        let waitForStateAttempt = WaitForStateAttempt(state: state, completion: completion, timer: timer)
-        waitForStateAttempts.update(with: waitForStateAttempt)
     }
     
     public func add(_ service: CBMutableService, completion: @escaping AddServiceCompletion) {
@@ -139,23 +128,28 @@ extension PeripheralManager: CBPeripheralManagerDelegateType {
     public func peripheralManagerDidUpdateState(_ peripheral: CBPeripheralManagerType) {
         Logger.debug("peripheral manager updated state: \(state)")
         
+        // legacy behavior
         var toRemove: Set<WaitForStateAttempt> = []
         waitForStateAttempts.filter({ $0.isValid && $0.state == state }).forEach {
             Logger.debug("Wait for state attempt success.")
             $0.completion(state)
             $0.invalidate()
             toRemove.insert($0)
-            Logger.debug("Invalidated wait for state attempt: \($0).")
         }
         waitForStateAttempts.subtract(toRemove)
         
         bluetoothStateUpdate?(state)
         
-        NotificationCenter.default.post(name: PeripheralManagerNotification.stateChanged.notificationName,
-                                        object: self,
-                                        userInfo: ["state": state])
+        NotificationCenter.default.post(
+            name: PeripheralManagerNotification.stateChanged.notificationName,
+            object: self,
+            userInfo: ["state": state]
+        )
         
-        Logger.debug("Wait for state attempts: \(waitForStateAttempts).")
+        Task { [weak self] in
+            guard let self else { return }
+            await self.managerStateCoordinator.yield(self.state)
+        }
     }
     
     public func peripheralManager(_ peripheral: CBPeripheralManagerType, didAdd service: CBServiceType, error: Error?) {
@@ -210,6 +204,9 @@ public extension PeripheralManager {
     
     enum PeripheralManagerError: Error {
         case cbError(Error)
+        
+        case cancelled
+        case waitForStateTimeout(desired: ManagerState, lastState: ManagerState)
     }
     
     enum PeripheralManagerNotification: String {

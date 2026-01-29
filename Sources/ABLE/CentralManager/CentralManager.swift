@@ -43,7 +43,7 @@ public class CentralManager: NSObject {
     // MARK: - Async stream support
 
     internal let scanProducer = ScanProducer<Peripheral>()
-    internal let stateProducer = StateProducer()
+    internal let managerStateCoordinator = ManagerStateCoordinator()
     internal let connectionCoordinator = ConnectionCoordinator()
     internal let disconnectionCoordinator = DisconnectionCoordinator()
 
@@ -339,7 +339,7 @@ extension CentralManager: CBCentralManagerDelegateType {
                                         object: self,
                                         userInfo: ["state": state])
                 
-        Task { await stateProducer.yield(state) }
+        Task { await managerStateCoordinator.yield(state) }
     }
     
     public func centralManager(_ central: CBCentralManagerType, didConnect cbPeripheral: CBPeripheralType) {
