@@ -8,7 +8,6 @@ import CoreBluetooth
 public class CentralManager: NSObject {
 
     public var bluetoothStateUpdate: BluetoothStateUpdate?
-    public var ancsUpdateCallback: AncsAuthUpdateCallback?
 
     public var allPeripherals: Set<Peripheral> {
         foundPeripherals.union(cachedPeripherals)
@@ -18,6 +17,10 @@ public class CentralManager: NSObject {
         ManagerNotification.bluetoothStateChanged.notificationName
     }
     
+    /// Indicates weather an AsyncStream-based BLE scan is active.
+    /// State is internally managed by the stream lifecycle.
+    public internal(set) var isScanning: Bool = false
+    
     public private(set) var cbCentralManager: CBCentralManagerType
     public private(set) var centralQueue: DispatchQueue
     
@@ -25,22 +28,31 @@ public class CentralManager: NSObject {
     public private(set) var foundPeripherals: Set<Peripheral> = []
     public private(set) var cachedPeripherals: Set<Peripheral> = []
     
+    public var ancsUpdateCallback: AncsAuthUpdateCallback? {
+        get { _ancsUpdateCallback }
+        set {
+            _ancsUpdateCallback = newValue
+            attachAncsLegacyBridge()
+        }
+    }
+    
     private var userDefaults: UserDefaults
-    
-    private var connectionEventCallback: ConnectionEventCallback?
-    
+
     private var cbDelegateProxy: CBCentralManagerDelegateProxy?
     
     // MARK: - Async stream support
-
-    /// Indicates weather an AsyncStream-based BLE scan is active.
-    /// State is internally managed by the stream lifecycle.
-    public internal(set) var isScanning: Bool = false
-    
     internal let scanCoordinator = ScanCoordinator<Peripheral>()
     internal let managerStateCoordinator = ManagerStateCoordinator()
     internal let connectionCoordinator = ConnectionCoordinator()
     internal let disconnectionCoordinator = DisconnectionCoordinator()
+    internal let connectionEventsCoordinator = ConnectionEventsCoordinator()
+    internal let ancsAuthUpdatesCoordinator = AncsAuthUpdatesCoordinator()
+
+    internal var _connectionEventCallback: ConnectionEventCallback?
+    internal var _ancsUpdateCallback: AncsAuthUpdateCallback?
+    
+    internal var connectionEventsBridgeTask: Task<Void, Never>?
+    internal var ancsBridgeTask: Task<Void, Never>?
 
     public init(with centralManager: CBCentralManagerType,
                 queue: DispatchQueue?,
@@ -70,13 +82,6 @@ public class CentralManager: NSObject {
     
     public var state: ManagerState {
         cbCentralManager.managerState
-    }
-    
-    public func registerForConnectionEvents(options: [CBConnectionEventMatchingOption : Any]? = nil,
-                                            callback: @escaping ConnectionEventCallback) {
-        connectionEventCallback = callback
-        cbCentralManager.registerForConnectionEvents(options: options)
-        Logger.debug("registered for connection events with options: \(String(describing: options))")
     }
     
     private func addPeripheral(_ peripheral: Peripheral) {
@@ -111,6 +116,8 @@ public class CentralManager: NSObject {
     }
     
     deinit {
+        connectionEventsBridgeTask?.cancel()
+        ancsBridgeTask?.cancel()
         Logger.debug("ble manager deinit: disconnected from all peripherals.")
         disconnectAll()
     }
@@ -207,30 +214,77 @@ extension CentralManager: CBCentralManagerDelegateType {
     
     public func centralManager(_ central: CBCentralManagerType,
                                connectionEventDidOccur event: CBConnectionEvent,
-                               for peripheral: CBPeripheralType) {
-        
-        Logger.debug("connection event did occur: \(event), peripheral: \(peripheral)")
+                               for cbPeripheral: CBPeripheralType) {
 
-        if let peripheral = self.peripheral(for: peripheral) {
-            connectionEventCallback?(ConnectionEvent(event: event, peripheral: peripheral))
+        Logger.debug("connection event did occur: \(event), peripheral: \(cbPeripheral)")
+
+        let p: Peripheral
+        if let existing = self.peripheral(for: cbPeripheral) {
+            p = existing
+        } else {
+            let created = Peripheral(with: cbPeripheral)
+            addPeripheral(created)
+            p = created
         }
-        else {
-            let peripheral = Peripheral(with: peripheral)
-            
-            addPeripheral(peripheral)
-            
-            connectionEventCallback?(ConnectionEvent(event: event, peripheral: peripheral))
+
+        let payload: ConnectionEvent = (event: event, peripheral: p)
+
+        Task {
+            await connectionEventsCoordinator.yield(payload)
         }
     }
     
-    public func centralManager(_ central: CBCentralManagerType, didUpdateANCSAuthorizationFor peripheral: CBPeripheralType) {
-        Logger.debug("did update ANCS authorization for peripheral: \(peripheral)")
+    public func centralManager(_ central: CBCentralManagerType,
+                               didUpdateANCSAuthorizationFor cbPeripheral: CBPeripheralType) {
+        Logger.debug("did update ANCS authorization for peripheral: \(cbPeripheral)")
 
-        guard let peripheral = self.peripheral(for: peripheral) else {
+        guard let p = self.peripheral(for: cbPeripheral) else {
             return
         }
-        
-        ancsUpdateCallback?(peripheral)
+
+        Task {
+            await ancsAuthUpdatesCoordinator.yield(p)
+        }
+    }
+}
+
+// MARK: Async streams
+public extension CentralManager {
+
+    var connectionEventsStream: AsyncStream<ConnectionEvent> {
+        connectionEventsCoordinator.stream()
+    }
+
+    var ancsAuthUpdatesStream: AsyncStream<Peripheral> {
+        ancsAuthUpdatesCoordinator.stream()
+    }
+}
+
+// MARK: Attach helpers.
+internal extension CentralManager {
+
+    func attachConnectionEventsLegacyBridge() {
+        connectionEventsBridgeTask?.cancel()
+        guard _connectionEventCallback != nil else { return }
+
+        connectionEventsBridgeTask = Task { [weak self] in
+            guard let self else { return }
+            for await event in self.connectionEventsStream {
+                self._connectionEventCallback?(event)
+            }
+        }
+    }
+
+    func attachAncsLegacyBridge() {
+        ancsBridgeTask?.cancel()
+        guard _ancsUpdateCallback != nil else { return }
+
+        ancsBridgeTask = Task { [weak self] in
+            guard let self else { return }
+            for await p in self.ancsAuthUpdatesStream {
+                self._ancsUpdateCallback?(p)
+            }
+        }
     }
 }
 
