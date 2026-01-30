@@ -180,17 +180,23 @@ extension PeripheralManager: CBPeripheralManagerDelegateType {
         }
     }
 
-    public func peripheralManager(_ peripheral: CBPeripheralManagerType, didReceiveRead request: CBATTRequest) {
-        Task { [weak self] in
-            guard let self else { return }
-            await self.readRequestsCoordinator.yield(request)
+    public func peripheralManager(
+        _ peripheral: CBPeripheralManagerType,
+        didReceiveRead request: CBATTRequestType
+    ) {
+        let wrapped = ATTRequest(request)
+        Task {
+            await readRequestsCoordinator.yield(wrapped)
         }
     }
 
-    public func peripheralManager(_ peripheral: CBPeripheralManagerType, didReceiveWrite requests: [CBATTRequest]) {
-        Task { [weak self] in
-            guard let self else { return }
-            await self.writeRequestsCoordinator.yield(requests)
+    public func peripheralManager(
+        _ peripheral: CBPeripheralManagerType,
+        didReceiveWrite requests: [CBATTRequestType]
+    ) {
+        let wrapped = requests.map { ATTRequest($0) }
+        Task {
+            await writeRequestsCoordinator.yield(wrapped)
         }
     }
     
@@ -244,6 +250,6 @@ public extension PeripheralManager {
     typealias AddServiceCompletion = ((Result<Service, PeripheralManagerError>) -> Void)
     typealias StartAdvertisingCompletion = ((Result<Void, PeripheralManagerError>) -> (Void))
     typealias ReadyToUpdateSubscribersCallback = (() -> Void)
-    typealias ReadRequestCallback = ((CBATTRequest) -> Void)
-    typealias WriteRequestsCallback = (([CBATTRequest]) -> Void)
+    typealias ReadRequestCallback = ((ATTRequest) -> Void)
+    typealias WriteRequestsCallback = (([ATTRequest]) -> Void)
 }

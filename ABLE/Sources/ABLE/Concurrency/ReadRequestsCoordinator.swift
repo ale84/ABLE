@@ -8,10 +8,10 @@ import CoreBluetooth
 
 actor ReadRequestsCoordinator {
 
-    private var continuations: [UUID: AsyncStream<CBATTRequest>.Continuation] = [:]
+    private var continuations: [UUID: AsyncStream<ATTRequest>.Continuation] = [:]
     private var isFinished = false
 
-    nonisolated func stream() -> AsyncStream<CBATTRequest> {
+    nonisolated func stream() -> AsyncStream<ATTRequest> {
         AsyncStream { continuation in
             let id = UUID()
 
@@ -29,7 +29,7 @@ actor ReadRequestsCoordinator {
         }
     }
 
-    private func addContinuation(_ continuation: AsyncStream<CBATTRequest>.Continuation, id: UUID) {
+    private func addContinuation(_ continuation: AsyncStream<ATTRequest>.Continuation, id: UUID) {
         guard !isFinished else {
             continuation.finish()
             return
@@ -41,7 +41,7 @@ actor ReadRequestsCoordinator {
         continuations[id] = nil
     }
 
-    func yield(_ request: CBATTRequest) {
+    func yield(_ request: ATTRequest) {
         guard !isFinished else { return }
         for (_, c) in continuations {
             c.yield(request)

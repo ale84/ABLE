@@ -8,11 +8,11 @@ import CoreBluetooth
 
 public extension PeripheralManager {
 
-    var readRequestsStream: AsyncStream<CBATTRequest> {
+    var readRequestsStream: AsyncStream<ATTRequest> {
         readRequestsCoordinator.stream()
     }
 
-    var writeRequestsStream: AsyncStream<[CBATTRequest]> {
+    var writeRequestsStream: AsyncStream<[ATTRequest]> {
         writeRequestsCoordinator.stream()
     }
     
