@@ -48,7 +48,7 @@ public extension Peripheral {
         })
     }
 
-    // Bridge legacy (closure) sopra async
+    // Bridge legacy (closure)
     func readValue(
         for characteristic: Characteristic,
         completion: @escaping ReadCharacteristicCompletion

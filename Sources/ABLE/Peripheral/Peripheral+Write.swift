@@ -24,7 +24,7 @@ public extension Peripheral {
             return
         }
 
-        // withResponse: attendi didWriteValueFor
+        // withResponse: wait didWriteValueFor
         try await withTaskCancellationHandler(operation: {
             try await withCheckedThrowingContinuation { continuation in
                 Task { [weak self] in

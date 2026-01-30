@@ -1,48 +1,11 @@
 //
 //  Created by Alessio Orlando on 05/04/17.
-//  Copyright © 2019 Alessio Orlando. All rights reserved.
+//  Copyright © 2026 Alessio Orlando. All rights reserved.
 //
 
 import Foundation
 import CoreBluetooth
 
-// MARK: - PeripheralAdvertisements -
-public struct PeripheralAdvertisements {
-    
-    let advertisements: [String : Any]
-    
-    public var localName: String? {
-        advertisements[CBAdvertisementDataLocalNameKey] as? String
-    }
-    
-    public var manufactuereData: Data? {
-        advertisements[CBAdvertisementDataManufacturerDataKey] as? Data
-    }
-    
-    public var txPower: NSNumber? {
-        advertisements[CBAdvertisementDataTxPowerLevelKey] as? NSNumber
-    }
-    
-    public var isConnectable: NSNumber? {
-        advertisements[CBAdvertisementDataIsConnectable] as? NSNumber
-    }
-    
-    public var serviceUUIDs: [CBUUID]? {
-        advertisements[CBAdvertisementDataServiceUUIDsKey] as? [CBUUID]
-    }
-    
-    public var serviceData: [CBUUID : Data]? {
-        advertisements[CBAdvertisementDataServiceDataKey] as? [CBUUID : Data]
-    }
-    
-    public var overflowServiceUUIDs: [CBUUID]? {
-        advertisements[CBAdvertisementDataOverflowServiceUUIDsKey] as? [CBUUID]
-    }
-    
-    public var solicitedServiceUUIDs: [CBUUID]? {
-        advertisements[CBAdvertisementDataSolicitedServiceUUIDsKey] as? [CBUUID]
-    }
-}
 
 // MARK: - Peripheral -
 public class Peripheral: NSObject {
@@ -76,8 +39,6 @@ public class Peripheral: NSObject {
     public private(set) var advertisements: PeripheralAdvertisements
     
     private var readRSSICompletion: ReadRSSICompletion?
-    private var discoverServicesAttempt: DiscoverServicesAttempt?
-    private var discoverCharacteristicsAttempt: DiscoverCharacteristicsAttempt?
     private var readCharacteristicCompletion: ReadCharacteristicCompletion?
     private var writeCharacteristicCompletion: WriteCharacteristicCompletion?
     private var setNotifyUpdateStateCompletion: SetNotifyUpdateStateCompletion?
@@ -120,24 +81,6 @@ public class Peripheral: NSObject {
     
     public func maximumWriteValueLength(for type: CBCharacteristicWriteType) -> Int {
         cbPeripheral.maximumWriteValueLength(for: type)
-    }
-    
-    @objc private func handleDiscoverServicesTimeoutReached(timer: Timer) {
-        Logger.debug("discover services timeout reached.")
-        if let attempt = discoverServicesAttempt, attempt.isValid {
-            attempt.completion(.failure(PeripheralError.timeoutReached))
-            attempt.invalidate()
-        }
-        discoverServicesAttempt = nil
-    }
-    
-    @objc private func handleDiscoverCharacteristicsTimeoutReached(timer: Timer) {
-        Logger.debug("discover characteristics timeout reached.")
-        if let attempt = discoverCharacteristicsAttempt, attempt.isValid {
-            attempt.completion(.failure(PeripheralError.timeoutReached))
-            attempt.invalidate()
-        }
-        discoverCharacteristicsAttempt = nil
     }
 }
 
@@ -190,39 +133,10 @@ public extension Peripheral {
     }
 }
 
-// MARK: Private support.
-private extension Peripheral {
-    struct DiscoverServicesAttempt {
-        var uuids: [CBUUID]
-        var completion: DiscoverServicesCompletion
-        var timer: Timer
-        var isValid: Bool {
-            return timer.isValid
-        }
-        
-        func invalidate() {
-            timer.invalidate()
-        }
-    }
-    
-    struct DiscoverCharacteristicsAttempt {
-        var uuids: [CBUUID]
-        var completion: DiscoverCharacteristicsCompletion
-        var timer: Timer
-        var isValid: Bool {
-            return timer.isValid
-        }
-        
-        func invalidate() {
-            timer.invalidate()
-        }
-    }
-}
-
 // MARK: Equality.
 extension Peripheral {
     override public var hash: Int {
-        return cbPeripheral.identifier.hashValue
+        cbPeripheral.identifier.hashValue
     }
     
     override public func isEqual(_ object: Any?) -> Bool {
@@ -330,7 +244,7 @@ extension Peripheral: CBPeripheralDelegateType {
         Task { [weak self] in
             guard let self else { return }
 
-            // 1) One-shot read (se era un read in-flight su questa characteristic)
+            // 1) One-shot read
             if await self.readValueCoordinator.hasInFlight(characteristicUUID: uuid) {
                 if let error {
                     await self.readValueCoordinator.fail(
@@ -387,7 +301,7 @@ extension Peripheral: CBPeripheralDelegateType {
         Task { [weak self] in
             guard let self else { return }
 
-            // se nessun write in-flight su questa characteristic, ignora
+            // if no in-flight write on this characteristic, ignore
             guard await self.writeCoordinator.hasInFlight(characteristicUUID: uuid) else { return }
 
             if let error {
@@ -473,6 +387,6 @@ public extension Peripheral {
 // MARK: Debug.
 extension Peripheral {
     override public var debugDescription: String {
-        return name ?? "-"
+        name ?? "-"
     }
 }

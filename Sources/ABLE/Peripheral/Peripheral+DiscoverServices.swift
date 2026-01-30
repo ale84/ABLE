@@ -45,7 +45,7 @@ public extension Peripheral {
         }
     }
     
-    // Bridge legacy (closure) sopra async
+    // Bridge legacy (closure)
     func discoverServices(with uuid: [CBUUID], timeout: TimeInterval = 3, completion: @escaping DiscoverServicesCompletion) {
         Task {
             do {
@@ -55,7 +55,7 @@ public extension Peripheral {
                 )
                 completion(.success(services))
             } catch let e as PeripheralError {
-                completion(.failure(e))                 // ✅ non wrappare di nuovo
+                completion(.failure(e))
             } catch {
                 completion(.failure(.cbError(detail: error)))
             }
