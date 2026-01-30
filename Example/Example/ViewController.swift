@@ -1,9 +1,6 @@
 //
-//  ViewController.swift
-//  Example
-//
 //  Created by Alessio Orlando on 31/05/17.
-//  Copyright © 2019 Alessio Orlando. All rights reserved.
+//  Copyright © 2026 Alessio Orlando. All rights reserved.
 //
 
 import UIKit

@@ -1,5 +1,5 @@
 //
-//  Copyright ©2026 Alessio Orlando. All rights reserved.
+//  Copyright © 2026 Alessio Orlando. All rights reserved.
 //
 
 import UIKit
