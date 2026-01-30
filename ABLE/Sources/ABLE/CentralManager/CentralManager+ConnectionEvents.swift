@@ -7,6 +7,11 @@
 import CoreBluetooth
 
 public extension CentralManager {
+    
+    /// Async stream of CoreBluetooth connection events.
+    func connectionEvents() -> AsyncStream<ConnectionEvent> {
+        connectionEventsCoordinator.stream()
+    }
 
     func registerForConnectionEvents(options: [CBConnectionEventMatchingOption : Any]? = nil) {
         cbCentralManager.registerForConnectionEvents(options: options)

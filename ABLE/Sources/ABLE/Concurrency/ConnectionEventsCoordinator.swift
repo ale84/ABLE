@@ -47,7 +47,7 @@ actor ConnectionEventsCoordinator {
         }
     }
 
-    func finishAll() {
+    func finishPermanently() {
         guard !isFinished else { return }
         isFinished = true
         for (_, c) in continuations { c.finish() }
