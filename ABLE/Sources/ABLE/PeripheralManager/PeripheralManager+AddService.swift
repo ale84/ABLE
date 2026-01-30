@@ -46,7 +46,7 @@ public extension PeripheralManager {
         }
     }
 
-    /// Bridge legacy (closure) sopra async
+    /// Bridge legacy (closure) 
     func add(_ service: CBMutableService, completion: @escaping AddServiceCompletion) {
         Task {
             do {

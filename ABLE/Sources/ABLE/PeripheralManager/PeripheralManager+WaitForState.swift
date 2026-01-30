@@ -45,7 +45,7 @@ public extension PeripheralManager {
         }
     }
 
-    // Legacy bridge sopra async
+    // Legacy bridge
     func waitForPoweredOn(withTimeout timeout: TimeInterval = 3,
                           completion: @escaping WaitForStateCompletion) {
         wait(for: .poweredOn, timeout: timeout, completion: completion)

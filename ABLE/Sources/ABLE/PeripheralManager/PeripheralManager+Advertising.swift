@@ -62,8 +62,7 @@ public extension PeripheralManager {
         cbPeripheralManager.stopAdvertising()
     }
 
-    // MARK: Legacy bridge (closure) sopra async — mantiene signature esistente
-
+    // MARK: Legacy bridge (closure)
     func startAdvertising(_ advertisementData: [String: Any]?,
                           completion: @escaping StartAdvertisingCompletion) {
         Task {

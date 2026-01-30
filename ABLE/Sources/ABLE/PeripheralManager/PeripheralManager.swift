@@ -49,10 +49,8 @@ public class PeripheralManager: NSObject {
     
     private(set) var cbPeripheralManager: CBPeripheralManagerType
     
-    private var waitForStateAttempts: Set<WaitForStateAttempt> = []
     private var addServiceCompletion: AddServiceCompletion?
     private var startAdvertisingCompletion: StartAdvertisingCompletion?
-    private var addServiceAttempts: Set<AddServiceAttempt> = []
     
     private var cbPeripheralManagerDelegateProxy: CBPeripheralManagerDelegateProxy?
     
@@ -120,41 +118,12 @@ public class PeripheralManager: NSObject {
         Task { [writeRequestsCoordinator] in await writeRequestsCoordinator.finish() }
         Task { [readyToUpdateSubscribersCoordinator] in await readyToUpdateSubscribersCoordinator.finish() }
     }
-    
-    // MARK: Utilities
-    private func getWaitForStateAttempt(for timer: Timer) -> WaitForStateAttempt? {
-        waitForStateAttempts.filter { $0.timer == timer }.last
-    }
-}
-
-// MARK: Timers handling.
-extension PeripheralManager {
-    @objc private func handleWaitStateTimeoutReached(_ timer: Timer) {
-        Logger.debug("ble wait for state timeout reached.")
-        if let attempt = getWaitForStateAttempt(for: timer), attempt.isValid {
-            attempt.invalidate()
-            attempt.completion(state)
-            waitForStateAttempts.remove(attempt)
-            Logger.debug("Invalidated wait for state attempt: \(attempt).")
-            Logger.debug("Wait for state attempts: \(waitForStateAttempts).")
-        }
-    }
 }
 
 // MARK: CBPeripheralManager delegate.
 extension PeripheralManager: CBPeripheralManagerDelegateType {
     public func peripheralManagerDidUpdateState(_ peripheral: CBPeripheralManagerType) {
         Logger.debug("peripheral manager updated state: \(state)")
-        
-        // legacy behavior
-        var toRemove: Set<WaitForStateAttempt> = []
-        waitForStateAttempts.filter({ $0.isValid && $0.state == state }).forEach {
-            Logger.debug("Wait for state attempt success.")
-            $0.completion(state)
-            $0.invalidate()
-            toRemove.insert($0)
-        }
-        waitForStateAttempts.subtract(toRemove)
         
         bluetoothStateUpdate?(state)
         
@@ -247,7 +216,6 @@ public extension PeripheralManager {
         case cancelled
         case waitForStateTimeout(desired: ManagerState, lastState: ManagerState)
         
-        
         case addServiceReplaced(serviceUUID: CBUUID)
         case addServiceCancelled(serviceUUID: CBUUID)
         case addServiceTimeout(serviceUUID: CBUUID, lastState: ManagerState)
@@ -265,52 +233,6 @@ public extension PeripheralManager {
         
         var notificationName: Notification.Name {
             Notification.Name(rawValue)
-        }
-    }
-
-    enum ManagerNotification: String {
-        case bluetoothStateChanged = "it.able.centralmanager.bluetoothstatechangednotification"
-        
-        var notificationName: Notification.Name {
-            Notification.Name(rawValue)
-        }
-    }
-}
-
-// MARK: Private Support.
-private extension PeripheralManager {
-    
-    struct WaitForStateAttempt: Hashable {
-        var state: ManagerState
-        var completion: WaitForStateCompletion
-        var timer: Timer
-        var isValid: Bool {
-            return timer.isValid
-        }
-        
-        func invalidate() {
-            timer.invalidate()
-        }
-        
-        static func == (lhs: WaitForStateAttempt, rhs: WaitForStateAttempt) -> Bool {
-            return lhs.timer == rhs.timer
-        }
-        
-        func hash(into hasher: inout Hasher) {
-            hasher.combine(timer.hashValue)
-        }
-    }
-    
-    struct AddServiceAttempt: Hashable {
-        private(set) var service: CBMutableService
-        private(set) var completion: AddServiceCompletion
-        
-        static func == (lhs: AddServiceAttempt, rhs: AddServiceAttempt) -> Bool {
-            return lhs.hashValue == rhs.hashValue
-        }
-        
-        func hash(into hasher: inout Hasher) {
-            hasher.combine(service.hashValue)
         }
     }
 }

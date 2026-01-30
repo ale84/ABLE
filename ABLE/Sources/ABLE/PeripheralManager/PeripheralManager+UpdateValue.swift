@@ -13,7 +13,6 @@ public extension PeripheralManager {
         readyToUpdateSubscribersCoordinator.stream()
     }
     
-    /// Variante sync “raw” (senza callback): utile anche internamente
     @discardableResult
     func updateValue(_ value: Data,
                      for characteristic: CBMutableCharacteristic,
@@ -21,13 +20,11 @@ public extension PeripheralManager {
         cbPeripheralManager.updateValue(value, for: characteristic, onSubscribedCentrals: centrals)
     }
     
-    /// Variante async: se buffer pieno, aspetta "ready" e ritenta finché riesce o scade timeout/cancel
     func updateValueWhenReady(_ value: Data,
                               for characteristic: CBMutableCharacteristic,
                               onSubscribedCentrals centrals: [CBCentral]?,
                               timeout: Duration? = .seconds(3)) async throws {
         
-        // Fast-path: se va al primo colpo, fine
         if updateValue(value, for: characteristic, onSubscribedCentrals: centrals) {
             return
         }
@@ -54,12 +51,10 @@ public extension PeripheralManager {
                             throw PeripheralManagerError.updateValueTimeout(lastState: self.state)
                         }
                         
-                        // aspetta il primo che completa/throw
                         let _ = try await group.next()!
                         group.cancelAll()
                     }
                 } else {
-                    // no-timeout: aspetta all'infinito finché non diventa ready e l'update passa
                     for await _ in readyStream {
                         if updateValue(value, for: characteristic, onSubscribedCentrals: centrals) {
                             return
@@ -83,7 +78,7 @@ public extension PeripheralManager {
         let ok = updateValue(value, for: characteristic, onSubscribedCentrals: centrals)
         if ok { return true }
 
-        // Bridge: ascolta UN SOLO evento "ready", poi chiama callback e termina
+        // Bridge: listen to a single "ready" event, then call callback and finish
         Task { [weak self] in
             guard let self else { return }
             for await _ in self.readyToUpdateSubscribersStream {
