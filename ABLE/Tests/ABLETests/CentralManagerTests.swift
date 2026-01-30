@@ -6,12 +6,12 @@
 import XCTest
 @testable import ABLE
 
-class CentralManagerTests: XCTestCase {
+final class CentralManagerTests: XCTestCase {
     
     let centralMock = CBCentralManagerMock()
     
     lazy var central: CentralManager = {
-        return CentralManager(with: centralMock, queue: DispatchQueue.main)
+        CentralManager(with: centralMock, queue: DispatchQueue.main)
     }()
     
     override func setUp() {
@@ -62,16 +62,21 @@ class CentralManagerTests: XCTestCase {
     }
     
     func testScanTimeout() {
-        let expectation = XCTestExpectation(description: "Scan should timeout after 3 seconds.")
+        let expectation = XCTestExpectation(description: "Scan should complete after 3 seconds.")
 
-        centralMock.managerState = .poweredOn
-        
-        central.scanForPeripherals(withServices: nil, timeoutInterval: 3.0) { result in
-            expectation.fulfill()
-        }
-        
-        wait(for: [expectation], timeout: 3.5)
+           centralMock.managerState = .poweredOn
 
+           central.scanForPeripherals(withServices: nil, timeoutInterval: 3.0, timeoutCompletion: { result in
+               switch result {
+               case .success:
+                   break
+               case .failure:
+                   XCTFail("Legacy duration scan should not fail.")
+               }
+               expectation.fulfill()
+           })
+
+           wait(for: [expectation], timeout: 3.5)
     }
     
     func testConnectToPeripheralSuccess() {
