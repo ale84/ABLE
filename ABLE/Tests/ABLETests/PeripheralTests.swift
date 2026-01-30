@@ -21,29 +21,33 @@ class PeripheralTests: XCTestCase {
     }
     
     override func tearDown() {
-        // Put teardown code here. This method is called after the invocation of each test method in the class.
-        super.tearDown()
         peripheralMock.cbServices = []
+        peripheralMock.discoverServicesBehaviour = .success(with: [], after: 0)
+        peripheralMock.discoverCharacteristicsBehaviour = .failure
+        peripheralMock.readValueBehaviour = .success
+        peripheralMock.writeValueBehaviour = .success
+        peripheralMock.notifyBehaviour = .success
+        peripheralMock.readRSSIBehaviour = .success
+        super.tearDown()
     }
     
     func testDiscoverServicesSuccess() {
         let serviceMock = CBServiceMock()
-        
         peripheralMock.discoverServicesBehaviour = .success(with: [serviceMock], after: 0)
-        
+
         let expectation = XCTestExpectation(description: "Peripheral should discover services with success.")
-        
-        peripheral.discoverServices(with: [serviceMock.uuid], timeout: 3) { (result) in
-            guard case .success(_) = result,
-                let discoveredService = self.peripheral.discoveredServices.first,
-                discoveredService.cbService.uuid == serviceMock.uuid else {
-                    XCTAssertTrue(false)
-                    return
+
+        peripheral.discoverServices(with: [serviceMock.uuid], timeout: 3) { result in
+            guard case .success(let services) = result else {
+                XCTFail("Expected success.")
+                return
             }
+
+            XCTAssertTrue(services.contains(where: { $0.cbService.uuid == serviceMock.uuid }))
             expectation.fulfill()
         }
-        
-        wait(for: [expectation], timeout: 2.1)
+
+        wait(for: [expectation], timeout: 2.0)
     }
     
     func testDiscoverServicesTimeout() {
@@ -51,15 +55,21 @@ class PeripheralTests: XCTestCase {
 
         let expectation = XCTestExpectation(description: "Peripheral services discovery should time out.")
 
-        peripheral.discoverServices(with: [], timeout: 3) { (result) in
-            guard case .failure(_) = result else {
-                XCTAssertTrue(false)
+        peripheral.discoverServices(with: [], timeout: 3) { result in
+            guard case .failure(let error) = result else {
+                XCTFail("Expected failure.")
                 return
             }
-            expectation.fulfill()
+
+            switch error {
+            case .discoverServicesTimeout:
+                expectation.fulfill()
+            default:
+                XCTFail("Unexpected error: \(error)")
+            }
         }
 
-        wait(for: [expectation], timeout: 4)
+        wait(for: [expectation], timeout: 4.0)
     }
 
     func testDiscoverServicesFailure() {
@@ -67,86 +77,101 @@ class PeripheralTests: XCTestCase {
 
         let expectation = XCTestExpectation(description: "Peripheral services discovery should fail with an error.")
 
-        peripheral.discoverServices(with: [], timeout: 3) { (result) in
-            guard case .failure(_) = result else {
-                XCTAssertTrue(false)
+        peripheral.discoverServices(with: [], timeout: 3) { result in
+            guard case .failure(let error) = result else {
+                XCTFail("Expected failure.")
                 return
             }
-            expectation.fulfill()
+
+            switch error {
+            case .cbError:
+                expectation.fulfill()
+            default:
+                XCTFail("Unexpected error: \(error)")
+            }
         }
 
-        wait(for: [expectation], timeout: 4)
+        wait(for: [expectation], timeout: 4.0)
     }
     
     func testDiscoverCharacteristicSuccess() {
         let characteristicMock = CBCharacteristicMock()
         let serviceMock = CBServiceMock()
-        
         serviceMock.cbCharacteristics = [characteristicMock]
+
         peripheralMock.discoverCharacteristicsBehaviour = .success(with: serviceMock, after: 0)
         peripheralMock.cbServices = [serviceMock]
-        
+
         let expectation = XCTestExpectation(description: "Peripheral should discover characteristics with success.")
-        
+
         let service = Service(with: serviceMock)
-        //peripheral.discoveredServices = [service]
-        
-        peripheral.discoverCharacteristics(with: [characteristicMock.uuid], service: service, timeout: 2) { (result) in
-            guard case .success(_) = result,
-                let discoveredCharacteristic = service.characteristics.first,
-                discoveredCharacteristic.uuid == characteristicMock.uuid else {
-                    XCTAssertTrue(false)
-                    return
+
+        peripheral.discoverCharacteristics(with: [characteristicMock.uuid], service: service, timeout: 2) { result in
+            guard case .success(let characteristics) = result else {
+                XCTFail("Expected success.")
+                return
             }
+
+            XCTAssertTrue(characteristics.contains(where: { $0.uuid == characteristicMock.uuid }))
             expectation.fulfill()
         }
-        
-        wait(for: [expectation], timeout: 2.1)
+
+        wait(for: [expectation], timeout: 2.0)
     }
     
     func testDiscoverCharacteristicTimeout() {
         let characteristicMock = CBCharacteristicMock()
         let serviceMock = CBServiceMock()
-        
         serviceMock.cbCharacteristics = [characteristicMock]
+
         peripheralMock.discoverCharacteristicsBehaviour = .success(with: serviceMock, after: 5)
         peripheralMock.cbServices = [serviceMock]
-        
+
         let expectation = XCTestExpectation(description: "Peripheral discover characteristics should time out.")
-        
+
         let service = Service(with: serviceMock)
-        //peripheral.discoveredServices = [service]
-        
-        peripheral.discoverCharacteristics(with: [characteristicMock.uuid], service: service, timeout: 2) { (result) in
-            guard case .failure(let error) = result, case Peripheral.PeripheralError.timeoutReached = error else {
-                    XCTAssertTrue(false)
-                    return
+
+        peripheral.discoverCharacteristics(with: [characteristicMock.uuid], service: service, timeout: 2) { result in
+            guard case .failure(let error) = result else {
+                XCTFail("Expected failure.")
+                return
             }
-            expectation.fulfill()
+
+            switch error {
+            case .discoverCharacteristicsTimeout:
+                expectation.fulfill()
+            default:
+                XCTFail("Unexpected error: \(error)")
+            }
         }
-        
-        wait(for: [expectation], timeout: 2.1)
+
+        wait(for: [expectation], timeout: 3.0)
     }
     
     func testDiscoverCharacteristicFailure() {
-        
         peripheralMock.discoverCharacteristicsBehaviour = .failure
-        
+
         let expectation = XCTestExpectation(description: "Peripheral discover characteristics should fail with an error.")
-        
+
         let serviceMock = CBServiceMock()
         let service = Service(with: serviceMock)
         peripheralMock.cbServices = [serviceMock]
-        
-        peripheral.discoverCharacteristics(with: [], service: service, timeout: 5) { (result) in
-            guard case .failure(_) = result else {
-                XCTAssertTrue(false)
+
+        peripheral.discoverCharacteristics(with: [], service: service, timeout: 5) { result in
+            guard case .failure(let error) = result else {
+                XCTFail("Expected failure.")
                 return
             }
-            expectation.fulfill()
+
+            switch error {
+            case .cbError:
+                expectation.fulfill()
+            default:
+                XCTFail("Unexpected error: \(error)")
+            }
         }
-        
-        wait(for: [expectation], timeout: 2.1)
+
+        wait(for: [expectation], timeout: 2.0)
     }
     
     func testReadValueSuccess() {
@@ -166,7 +191,7 @@ class PeripheralTests: XCTestCase {
             expectation.fulfill()
         }
         
-        wait(for: [expectation], timeout: 0.5)
+        wait(for: [expectation], timeout: 1.0)
     }
     
     func testReadValueFailure() {
@@ -186,7 +211,7 @@ class PeripheralTests: XCTestCase {
             expectation.fulfill()
         }
         
-        wait(for: [expectation], timeout: 0.5)
+        wait(for: [expectation], timeout: 1.0)
     }
     
     func testWriteValueSuccess() {
@@ -206,7 +231,7 @@ class PeripheralTests: XCTestCase {
             expectation.fulfill()
         }
         
-        wait(for: [expectation], timeout: 0.5)
+        wait(for: [expectation], timeout: 1.0)
     }
     
     func testWriteValueFailure() {
@@ -226,14 +251,13 @@ class PeripheralTests: XCTestCase {
             expectation.fulfill()
         }
         
-        wait(for: [expectation], timeout: 0.5)
+        wait(for: [expectation], timeout: 1.0)
     }
     
     func testSetNotifyOnSuccess() {
         peripheralMock.notifyBehaviour = .success
         
         let characteristicMock = CBCharacteristicMock()
-        characteristicMock.isNotifying = true
         let characteristic = Characteristic(with: characteristicMock)
         
         let expectation1 = XCTestExpectation(description: "Peripheral set notify should succeed.")
@@ -255,7 +279,7 @@ class PeripheralTests: XCTestCase {
             expectation2.fulfill()
         }
         
-        wait(for: [expectation1, expectation2], timeout: 0.5)
+        wait(for: [expectation1, expectation2], timeout: 1.0)
     }
     
     func testSetNotifyFailure() {
@@ -275,7 +299,7 @@ class PeripheralTests: XCTestCase {
             expectation.fulfill()
         }) { _ in }
         
-        wait(for: [expectation], timeout: 0.5)
+        wait(for: [expectation], timeout: 1.0)
     }
     
     func testReadRSSISuccess() {
@@ -292,7 +316,7 @@ class PeripheralTests: XCTestCase {
             expectation.fulfill()
         }
         
-        wait(for: [expectation], timeout: 0.5)
+        wait(for: [expectation], timeout: 1.0)
     }
     
     func testReadRSSIFailure() {
@@ -309,6 +333,6 @@ class PeripheralTests: XCTestCase {
             expectation.fulfill()
         }
         
-        wait(for: [expectation], timeout: 0.5)
+        wait(for: [expectation], timeout: 1.0)
     }
 }

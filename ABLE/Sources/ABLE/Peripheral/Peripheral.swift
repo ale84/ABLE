@@ -95,7 +95,7 @@ public extension Peripheral {
         case discoverServicesTimeout
 
         case discoverCharacteristicsReplaced(service: CBUUID)
-        case discoverCharacteristicsTimedOut(service: CBUUID)
+        case discoverCharacteristicsTimeout(service: CBUUID)
         case discoverCharacteristicsCancelled(service: CBUUID)
         
         case notifyReplaced(characteristic: CBUUID)

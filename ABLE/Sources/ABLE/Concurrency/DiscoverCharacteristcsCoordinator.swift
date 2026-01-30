@@ -36,7 +36,7 @@ actor DiscoverCharacteristicsCoordinator {
                 do { try await Task.sleep(for: timeout) } catch { return }
                 self.fail(
                     serviceUUID: serviceUUID,
-                    error: Peripheral.PeripheralError.discoverCharacteristicsTimedOut(service: serviceUUID)
+                    error: Peripheral.PeripheralError.discoverCharacteristicsTimeout(service: serviceUUID)
                 )
             }
         }
