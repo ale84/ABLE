@@ -9,7 +9,7 @@ import CoreBluetooth
 actor NotifyCoordinator {
 
     struct Entry {
-        var token: UUID                      // identifica lo stream owner attuale
+        var token: UUID                      // identifies the current stream owner
         var continuation: AsyncThrowingStream<Data, Error>.Continuation?
         var updateState: Peripheral.SetNotifyUpdateStateCompletion?
         var updateValue: Peripheral.SetNotifyUpdateValueCallback?
@@ -53,14 +53,13 @@ actor NotifyCoordinator {
         }
     }
 
-    /// Registra/replace lo stream per questa characteristic. Replace chiude il vecchio stream (ma NON stoppa CB: quello è demandato all'onTermination, che col token non farà danni).
     private func registerStreamContinuation(
         _ continuation: AsyncThrowingStream<Data, Error>.Continuation,
         token: UUID,
         for characteristicUUID: CBUUID
     ) {
         if let prev = entries[characteristicUUID] {
-            // chiudi stream precedente con errore di replace
+            // close the previous stream with replace error
             prev.continuation?.finish(
                 throwing: Peripheral.PeripheralError.notifyReplaced(characteristic: characteristicUUID)
             )
@@ -68,7 +67,7 @@ actor NotifyCoordinator {
             prev.updateValue?(.failure(.notifyReplaced(characteristic: characteristicUUID)))
         }
 
-        // conserva eventuali callback legacy già registrate
+        // keep already registered legacy callback
         let legacyState = entries[characteristicUUID]?.updateState
         let legacyValue = entries[characteristicUUID]?.updateValue
 
@@ -81,14 +80,14 @@ actor NotifyCoordinator {
         )
     }
 
-    /// Termination di uno stream. Ritorna true solo se lo stream che termina è ancora l'owner attuale.
+    /// Stream termination. Returns true only if the terminating stream is still the current owner.
     private func terminateStream(token: UUID, characteristicUUID: CBUUID) -> Bool {
         guard let entry = entries[characteristicUUID] else { return false }
         guard entry.token == token else {
-            // stream vecchio rimpiazzato: non toccare nulla, non stoppare
+            // old stream replaced
             return false
         }
-        // questo era l'owner attuale: rimuovi l'entry
+        // this was the current owner: remove the entry
         entries[characteristicUUID] = nil
         return true
     }
@@ -110,7 +109,7 @@ actor NotifyCoordinator {
         }
 
         var entry = entries[characteristicUUID] ?? Entry(
-            token: UUID(), // token “dummy” per legacy; non usato per onTermination
+            token: UUID(), // dummy token for legacy; not used for onTermination
             continuation: nil,
             updateState: nil,
             updateValue: nil,
@@ -119,13 +118,13 @@ actor NotifyCoordinator {
 
         entry.updateState = updateState
         entry.updateValue = updateValue
-        // non toccare continuation/token se già c'è uno stream attivo: legacy può coesistere come listener
+        // don't touch continuation/token if there is already an active stream; legacy can coexist as listener
         entries[characteristicUUID] = entry
     }
 
     func unregister(characteristicUUID: CBUUID) {
         if let entry = entries.removeValue(forKey: characteristicUUID) {
-            // chiudi stream se esiste (esplicito stop da legacy)
+            // close stream if it exists
             entry.continuation?.finish(
                 throwing: Peripheral.PeripheralError.notifyCancelled(characteristic: characteristicUUID)
             )
@@ -157,7 +156,7 @@ actor NotifyCoordinator {
             entry.updateState?(.success(()))
             entries[characteristicUUID] = entry
         } else {
-            // notify disabilitato -> termina
+            // notify disabled -> terminate
             entry.updateState?(.success(()))
             entries[characteristicUUID] = nil
             entry.continuation?.finish()

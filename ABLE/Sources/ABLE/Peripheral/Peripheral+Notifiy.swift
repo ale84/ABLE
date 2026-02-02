@@ -33,14 +33,16 @@ public extension Peripheral {
         if enabled {
             Task { [weak self] in
                 guard let self else { return }
+
                 await self.notifyCoordinator.registerLegacy(
                     characteristicUUID: uuid,
                     replace: true,
                     updateState: updateState,
                     updateValue: updateValue
                 )
+
+                self.cbPeripheral.setNotifyValue(true, for: characteristic.cbCharacteristic)
             }
-            cbPeripheral.setNotifyValue(true, for: characteristic.cbCharacteristic)
         } else {
             // stop: best-effort
             Task { [weak self] in
