@@ -42,7 +42,11 @@ final class PeripheralManagerAsyncTests: XCTestCase {
     func testStateStreamEmitsUpdates() async throws {
         cbPeripheralManager.stateBehaviour = .transition(from: .poweredOff, to: .poweredOn, after: 0.05)
 
-        let received = try await first(from: peripheralManager.stateStream, timeout: .seconds(1))
+        let received = try await first(
+            from: peripheralManager.stateStream(),
+            timeout: .seconds(1),
+            where: { $0 == .poweredOn }
+        )
         XCTAssertEqual(received, .poweredOn)
     }
 
@@ -163,28 +167,3 @@ final class PeripheralManagerAsyncTests: XCTestCase {
         XCTAssertEqual(reqs[1].value, Data([0xBB]))
     }
 }
-
-// MARK: - Helpers
-
-private struct TimeoutError: Error {}
-
-private func first<T>(
-    from stream: AsyncStream<T>,
-    timeout: Duration
-) async throws -> T {
-    try await withThrowingTaskGroup(of: T.self) { group in
-        group.addTask {
-            for await value in stream { return value }
-            throw CancellationError()
-        }
-        group.addTask {
-            try await Task.sleep(for: timeout)
-            throw TimeoutError()
-        }
-        let v = try await group.next()!
-        group.cancelAll()
-        return v
-    }
-}
-
-

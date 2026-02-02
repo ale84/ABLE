@@ -79,7 +79,7 @@ public final class CBCentralManagerMock: CBCentralManagerType {
     public func retrievePeripherals(withIdentifiers identifiers: [UUID]) -> [CBPeripheralType] { [] }
 
     public func scanForPeripherals(withServices: [CBUUID]?, options: [String : Any]?) {
-        // deterministico: scopri subito tutti
+        
         for p in peripherals {
             cbDelegate?.centralManager(self,
                                        didDiscover: p.cbPeripheral,
@@ -109,15 +109,15 @@ public final class CBCentralManagerMock: CBCentralManagerType {
     // MARK: Internals
 
     private func applyWaitForPoweredOnBehaviour() {
-        // opzionale: cancella solo i task “state-related” se vuoi evitare eventi vecchi
+
         switch waitForPoweredOnBehaviour {
         case .alreadyPoweredOn:
             managerState = .poweredOn
-            // spesso utile notificare subito
             cbDelegate?.centralManagerDidUpdateState(self)
 
         case .poweredOn(let seconds):
             managerState = .poweredOff
+            cbDelegate?.centralManagerDidUpdateState(self)
             schedule(after: seconds) { [weak self] in
                 guard let self else { return }
                 self.managerState = .poweredOn

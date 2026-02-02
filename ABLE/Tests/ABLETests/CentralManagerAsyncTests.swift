@@ -299,27 +299,3 @@ final class CentralManagerAsyncTests: XCTestCase {
         XCTAssertEqual(event.peripheral.cbPeripheral.name, "ConnectionEventTest")
     }    
 }
-
-// MARK: Utility.
-extension CentralManagerAsyncTests {
-    private func first<T>(
-        from stream: AsyncStream<T>,
-        timeout: Duration
-    ) async throws -> T {
-        try await withThrowingTaskGroup(of: T.self) { group in
-            group.addTask {
-                for await value in stream { return value }
-                throw CancellationError() // stream ended without values
-            }
-            group.addTask {
-                try await Task.sleep(for: timeout)
-                throw TimeoutError()
-            }
-            let v = try await group.next()!
-            group.cancelAll()
-            return v
-        }
-    }
-
-    private struct TimeoutError: Error {}
-}

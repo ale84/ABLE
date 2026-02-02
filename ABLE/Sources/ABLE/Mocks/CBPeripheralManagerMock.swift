@@ -148,9 +148,11 @@ public final class CBPeripheralManagerMock: CBPeripheralManagerType {
         switch stateBehaviour {
         case .already(let state):
             managerState = state
+            cbDelegate?.peripheralManagerDidUpdateState(self)   // needed to update the state on the coordinator as well
 
         case .transition(let from, let to, let after):
             managerState = from
+            cbDelegate?.peripheralManagerDidUpdateState(self)   // needed to update the state on the coordinator as well
             schedule(after: after) { [weak self] in
                 guard let self else { return }
                 self.managerState = to
