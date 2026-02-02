@@ -7,18 +7,33 @@ import Foundation
 
 
 actor ManagerStateCoordinator {
-
     private var continuations: [UUID: AsyncStream<ManagerState>.Continuation] = [:]
     private var isFinished = false
-    private var lastState: ManagerState?
+    private var lastState: ManagerState
 
-    nonisolated func stream() -> AsyncStream<ManagerState> {
+    init(initial: ManagerState) {
+        self.lastState = initial
+    }
+
+    func getCurrent() -> ManagerState { lastState }
+
+    func update(_ newValue: ManagerState) {
+        guard !isFinished else { return }
+        guard newValue != lastState else { return }
+
+        lastState = newValue
+        for c in continuations.values {
+            c.yield(newValue)
+        }
+    }
+
+    nonisolated func stream(includeCurrent: Bool = true) -> AsyncStream<ManagerState> {
         AsyncStream { continuation in
             let id = UUID()
 
             Task { [weak self] in
                 guard let self else { return }
-                await self.addContinuation(continuation, id: id)
+                await self.addContinuation(continuation, id: id, replay: includeCurrent)
             }
 
             continuation.onTermination = { @Sendable _ in
@@ -30,7 +45,11 @@ actor ManagerStateCoordinator {
         }
     }
 
-    private func addContinuation(_ continuation: AsyncStream<ManagerState>.Continuation, id: UUID) {
+    private func addContinuation(
+        _ continuation: AsyncStream<ManagerState>.Continuation,
+        id: UUID,
+        replay: Bool
+    ) {
         guard !isFinished else {
             continuation.finish()
             return
@@ -38,8 +57,7 @@ actor ManagerStateCoordinator {
 
         continuations[id] = continuation
 
-        // replay ultimo stato noto (se presente)
-        if let lastState {
+        if replay {
             continuation.yield(lastState)
         }
     }
@@ -48,21 +66,11 @@ actor ManagerStateCoordinator {
         continuations[id] = nil
     }
 
-    func yield(_ state: ManagerState) {
-        guard !isFinished else { return }
-
-        lastState = state
-
-        for (_, c) in continuations {
-            c.yield(state)
-        }
-    }
-
     func finish() {
         guard !isFinished else { return }
         isFinished = true
 
-        for (_, c) in continuations {
+        for c in continuations.values {
             c.finish()
         }
         continuations.removeAll()

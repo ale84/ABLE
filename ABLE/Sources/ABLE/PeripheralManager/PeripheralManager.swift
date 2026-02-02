@@ -8,10 +8,6 @@ import CoreBluetooth
 
 public class PeripheralManager: NSObject {
     
-    public var state: ManagerState {
-        cbPeripheralManager.managerState
-    }
-    
     public var isAdvertising: Bool {
         cbPeripheralManager.isAdvertising
     }
@@ -55,7 +51,7 @@ public class PeripheralManager: NSObject {
     private var cbPeripheralManagerDelegateProxy: CBPeripheralManagerDelegateProxy?
     
     // MARK: Async api support.
-    internal let managerStateCoordinator = ManagerStateCoordinator()
+    internal let managerStateCoordinator = ManagerStateCoordinator(initial: .unknown)
     internal let addServiceCoordinator = AddServiceCoordinator()
     internal let startAdvertisingCoordinator = StartAdvertisingCoordinator()
     internal let readyToUpdateSubscribersCoordinator = ReadyToUpdateSubscribersCoordinator()
@@ -81,6 +77,10 @@ public class PeripheralManager: NSObject {
         super.init()
         
         cbPeripheralManager.cbDelegate = self
+        
+        Task {
+            await managerStateCoordinator.update(state)
+        }
     }
     
     public convenience init(queue: DispatchQueue?,
@@ -135,7 +135,7 @@ extension PeripheralManager: CBPeripheralManagerDelegateType {
         
         Task { [weak self] in
             guard let self else { return }
-            await self.managerStateCoordinator.yield(self.state)
+            await self.managerStateCoordinator.update(self.state)
         }
     }
     

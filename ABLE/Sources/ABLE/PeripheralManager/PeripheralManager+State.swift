@@ -3,13 +3,23 @@
 //  Copyright © 2026 Alessio Orlando. All rights reserved.
 //
 
+// TODO: CentralManager and PeripheralManager share almost identical state-handling logic
+// (ManagerStateCoordinator wiring, stateStream, wait(for:timeout:)).
+// This was intentionally duplicated to keep behavior explicit while stabilizing
+// async state semantics and race conditions.
+// Consider extracting a shared abstraction once the API is fully stabilized.
+
 import Foundation
 import CoreBluetooth
 
 public extension PeripheralManager {
 
-    var stateStream: AsyncStream<ManagerState> {
-        managerStateCoordinator.stream()
+    var state: ManagerState {
+        cbPeripheralManager.managerState
+    }
+    
+    func stateStream(includeCurrent: Bool = true) -> AsyncStream<ManagerState> {
+        managerStateCoordinator.stream(includeCurrent: includeCurrent)
     }
 
     func waitForPoweredOn(timeout: Duration = .seconds(3)) async throws {
@@ -17,10 +27,7 @@ public extension PeripheralManager {
     }
 
     func wait(for desired: ManagerState, timeout: Duration = .seconds(3)) async throws -> ManagerState {
-        let current = state
-        if current == desired { return current }
-
-        let stream = managerStateCoordinator.stream()
+        let stream = managerStateCoordinator.stream(includeCurrent: true)
 
         do {
             return try await withThrowingTaskGroup(of: ManagerState.self) { group in
@@ -28,7 +35,7 @@ public extension PeripheralManager {
                     for await newState in stream {
                         if newState == desired { return newState }
                     }
-                    return current
+                    throw PeripheralManagerError.cancelled
                 }
 
                 group.addTask {

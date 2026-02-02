@@ -42,7 +42,7 @@ public class CentralManager: NSObject {
     
     // MARK: - Async stream support
     internal let scanCoordinator = ScanCoordinator<Peripheral>()
-    internal let managerStateCoordinator = ManagerStateCoordinator()
+    internal let managerStateCoordinator = ManagerStateCoordinator(initial: .unknown)
     internal let connectionCoordinator = ConnectionCoordinator()
     internal let disconnectionCoordinator = DisconnectionCoordinator()
     internal let connectionEventsCoordinator = ConnectionEventsCoordinator()
@@ -68,6 +68,11 @@ public class CentralManager: NSObject {
         
         retrieveCachedPeripherals()
         cbCentralManager.cbDelegate = self
+        
+        Task {
+            await managerStateCoordinator.update(state)
+        }
+
     }
     
     public convenience init(queue: DispatchQueue?,
@@ -78,10 +83,6 @@ public class CentralManager: NSObject {
         self.init(with: manager, queue: queue, options: options, userDefaults: userDefaults, stateUpdate: stateUpdate)
         self.cbDelegateProxy = CBCentralManagerDelegateProxy(withTarget: self)
         manager.delegate = cbDelegateProxy
-    }
-    
-    public var state: ManagerState {
-        cbCentralManager.managerState
     }
     
     private func addPeripheral(_ peripheral: Peripheral) {
@@ -199,7 +200,7 @@ extension CentralManager: CBCentralManagerDelegateType {
                                         object: self,
                                         userInfo: ["state": state])
                 
-        Task { await managerStateCoordinator.yield(state) }
+        Task { await managerStateCoordinator.update(state) }
     }
     
     public func centralManager(_ central: CBCentralManagerType, didConnect cbPeripheral: CBPeripheralType) {
