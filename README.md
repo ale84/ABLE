@@ -1,4 +1,5 @@
 # ABLE
+[![CI](https://github.com/ale84/ABLE/actions/workflows/ci.yml/badge.svg)](https://github.com/ale84/ABLE/actions/workflows/ci.yml)
 
 **Modern Swift Concurrency–first BLE library for iOS**
 
