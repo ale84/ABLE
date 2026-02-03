@@ -1,87 +1,212 @@
 # ABLE
-[![Build Status](https://travis-ci.org/ale84/ABLE.svg?branch=master)](https://travis-ci.org/ale84/ABLE)
 
-BLE library for iOS.
+**Modern Swift Concurrency–first BLE library for iOS**
 
-This lightweight library is a wrapper around the CoreBluetooth api, which adds support for closures to ease handling all ble operations.
+ABLE is a lightweight wrapper around **CoreBluetooth** that provides:
 
-Additionaly, this library supports specifying custom timeouts for all ble operation, which is not possibile by default with CoreBluetooth.
+- Async / await–first API
+- Deterministic concurrency (no delegate spaghetti)
+- Explicit timeouts and cancellation
+- Testable architecture (no CoreBluetooth types in actors)
+- Legacy closure-based APIs still supported (bridged internally)
 
-A few other utility functions are provided as well.
+The async APIs are the **source of truth**.  
+Legacy APIs are implemented as a compatibility layer on top.
 
-# Usage
-You can use CentralManager or PeripheralManager objects just as you would with CoreBluetooth to perform your operations, as most api mirrors those of CoreBluetooth.
+---
 
-# CentralManager
-This is an example of how you can use a CentralManager to perform Central role tasks:
+## Philosophy
+
+ABLE is designed around a **unidirectional, deterministic flow**:
+
+```
+CoreBluetooth delegate
+        ↓
+Coordinator actor
+        ↓
+async function / AsyncStream
+```
+
+Key principles:
+
+- No `Timer` in core logic (only `Task.sleep`)
+- Replace semantics for concurrent operations
+- Explicit cancellation and timeout handling
+- CoreBluetooth types kept **outside** actors
+- Fully mockable for unit testing
+
+---
+
+## Installation
+
+### Swift Package Manager (recommended)
+
 ```swift
-central = CentralManager(queue: DispatchQueue.main)
+.package(url: "https://github.com/ale84/ABLE", .upToNextMajor(from: "1.0.0")),
+```
 
-// Wait for powered on state to begin using the central, specifying the desired timeout.
-central.waitForPoweredOn(withTimeout: 6.0) { (state) in
-    guard state == .poweredOn else {
-        return
+> Carthage and CocoaPods are no longer supported.
+
+---
+
+## CentralManager (async)
+
+```swift
+let central = CentralManager(queue: .main)
+
+// Observe bluetooth state
+Task {
+    for await state in central.stateStream() {
+        print("Central state:", state)
     }
+}
 
-    self.central.scanForPeripherals(withServices: nil, timeoutInterval: 6.0) { result in
-        switch result {
-        case .success(let peripherals):
-            print("timeout reached: \(peripherals)")
-        // Connect to peripheral...
-        case .failure(let error):
-            print("scan error: \(error)")
-            // Handle error.
-        }
+// Wait for poweredOn
+try await central.waitForPoweredOn(timeout: .seconds(6))
+
+// Scan for peripherals
+for await peripheral in central.scan(services: nil) {
+    print("Discovered:", peripheral.name ?? "Unknown")
+}
+```
+
+Available async APIs include:
+
+- `stateStream()`
+- `waitForPoweredOn()`
+- `scan(services:) -> AsyncStream<Peripheral>`
+- `connect(_:)`
+- `disconnect(_:)`
+- connection events stream
+
+---
+
+## PeripheralManager (async)
+
+```swift
+let peripheralManager = PeripheralManager(queue: .main)
+
+// Observe state
+Task {
+    for await state in peripheralManager.stateStream() {
+        print("PeripheralManager state:", state)
+    }
+}
+
+// Wait for poweredOn
+try await peripheralManager.waitForPoweredOn(timeout: .seconds(6))
+
+// Create and add a service
+let service = CBMutableService(
+    type: CBUUID(string: "DE036077-4293-4768-B9EF-66429B46A3CB"),
+    primary: true
+)
+
+try await peripheralManager.add(service)
+
+// Start advertising
+try await peripheralManager.startAdvertising()
+
+// Handle events
+Task {
+    for await _ in peripheralManager.readyToUpdateSubscribersStream {
+        print("Ready to update subscribers")
+    }
+}
+
+Task {
+    for await request in peripheralManager.readRequestsStream {
+        print("Read request:", request)
     }
 }
 ```
-# PeripheralManager
-This is an example of how you can use a PeripheralManager to perform Peripheral role tasks:
+
+---
+
+## Peripheral (async)
+
 ```swift
-let peripheralManager = PeripheralManager(queue: DispatchQueue.main)
+// Read value
+let data = try await peripheral.readValue(for: characteristic)
 
-peripheralManager.waitForPoweredOn(withTimeout: 6.0) { (state) in
-    guard state == .poweredOn else {
-        return
-    }
+// Write value
+try await peripheral.write(Data(), for: characteristic)
 
-    let service = CBMutableService(type: CBUUID(string: "DE036077-4293-4768-B9EF-66429B46A3CB"), primary: true)
-    peripheralManager.add(service) { (result) in
-        switch result {
-        case .success(let service):
-            print("added service: \(service)")
-
-            // Start advertising.
-            peripheralManager.startAdvertising { (result) in
-                print("advertising result: \(result)")
-            }
-        case .failure(let error):
-            print("add service failure: \(error)")
-        }
-    }
+// Notifications
+for try await value in peripheral.notifications(for: characteristic) {
+    print("Notified value:", value)
 }
 ```
-# Installation
 
-### Swift Package Manager
-For Swift Package Manager, add the following package to your Package.swift file.
-```
-.package(url: "https://github.com/ale84/ABLE", .upToNextMajor(from: "0.9.0")),
+---
+
+## Legacy APIs
+
+All original closure-based APIs are still available:
+
+```swift
+central.waitForPoweredOn(withTimeout: 3) { state in
+    ...
+}
+
+peripheral.setNotifyValue(
+    true,
+    for: characteristic,
+    updateState: { result in
+        ...
+    },
+    updateValue: { result in
+        ...
+    }
+)
 ```
 
-### Carthage
-If you're using [Carthage](https://github.com/Carthage/Carthage) you can add a dependency on ABLE by adding it to your Cartfile:
+Internally, **legacy APIs are bridged to async implementations**.  
+No duplicate logic, no divergence in behavior.
+
+---
+
+## Example App
+
+A minimal SwiftUI example app is included in the repository:
+
 ```
-github "ale84/ABLE"
+Examples/
+ └─ ABLEExample
 ```
 
-### CocoaPods
-Add the following entry to your Podfile:
-```rb
-pod 'ABLE'
-```
+The example demonstrates:
 
-# Tests
-A full set of unit tests for the library is implemented by mocking the main CoreBluetooth classes.
+- CentralManager async scan
+- PeripheralManager async advertising
+- State observation via `AsyncStream`
+- Structured concurrency (no delegate usage)
 
-You can use the mocks provided with the library for your own logic tests, or you can write your own mocks if you need further customization.
+The example is intentionally minimal and focused on API usage.
+
+---
+
+## Testing
+
+ABLE is fully unit-tested.
+
+- CoreBluetooth types are abstracted behind protocols
+- Deterministic mocks for CentralManager and PeripheralManager
+- Async APIs tested with `AsyncStream` helpers
+- No reliance on runloops or timers
+
+The mock implementations are reusable for client-side testing.
+
+---
+
+## Requirements
+
+- iOS 16+
+- Swift 5.9+
+- Swift Concurrency
+
+---
+
+## License
+
+MIT
