@@ -38,6 +38,35 @@ Key principles:
 
 ---
 
+## Swift 6 Concurrency Notes
+
+ABLE adopts Swift Concurrency extensively and currently targets **Swift 5.9+**.
+
+Full Swift 6 concurrency compliance is partially limited by the fact that  
+**CoreBluetooth is not yet fully annotated for `Sendable` and actor isolation**.  
+For this reason, some Swift 6 diagnostics related to `Sendable` conformance are  
+intentionally relaxed using:
+
+```swift
+@preconcurrency import CoreBluetooth
+````
+
+CoreBluetooth objects are **explicitly confined** within the library and never  
+treated as `Sendable`.
+
+### Planned Improvements
+
+- Evaluate migrating `Peripheral` to an actor-based model to fully isolate  
+  CoreBluetooth state.
+- Refine async streams to expose fully `Sendable` payloads where appropriate.
+- Remove remaining Swift 6 concurrency warnings once CoreBluetooth becomes  
+  concurrency-annotated or when a larger API refactor is justified.
+
+These changes are considered **non-breaking internal refactors** and are tracked  
+as future improvements rather than current blockers.
+
+---
+
 ## Installation
 
 ### Swift Package Manager (recommended)
