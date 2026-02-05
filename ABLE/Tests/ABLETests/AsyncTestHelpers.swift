@@ -38,4 +38,40 @@ func first<S: AsyncSequence>(
     }
 }
 
+actor AsyncIteratorBox<S: AsyncSequence> {
+    private var iterator: S.AsyncIterator
+
+    init(_ sequence: S) {
+        self.iterator = sequence.makeAsyncIterator()
+    }
+
+    func next() async throws -> S.Element? {
+        var it = iterator                
+        let value = try await it.next()
+        iterator = it
+        return value
+    }
+}
+
+func next<T>(
+    from box: AsyncIteratorBox<AsyncStream<T>>,
+    timeout: Duration
+) async throws -> T {
+    try await withThrowingTaskGroup(of: T.self) { group in
+        group.addTask {
+            guard let value = try await box.next() else {
+                throw AsyncTestError.sequenceFinished
+            }
+            return value
+        }
+        group.addTask {
+            try await Task.sleep(for: timeout)
+            throw AsyncTestError.timeout
+        }
+
+        let v = try await group.next()!
+        group.cancelAll()
+        return v
+    }
+}
 

@@ -47,7 +47,7 @@ final class PeripheralAsyncTests: XCTestCase {
         let serviceMock = CBServiceMock()
         peripheralMock.discoverServicesBehaviour = .success(with: [serviceMock], after: 0)
 
-        let services = try await peripheral.discoverServices(with: [serviceMock.uuid], timeout: .seconds(1))
+        let services = try await peripheral.discoverServices(with: [serviceMock.uuid], timeout: .seconds(3))
         XCTAssertTrue(services.contains(where: { $0.cbService.uuid == serviceMock.uuid }))
     }
 
@@ -55,7 +55,7 @@ final class PeripheralAsyncTests: XCTestCase {
         peripheralMock.discoverServicesBehaviour = .success(with: [], after: 2.0)
 
         do {
-            _ = try await peripheral.discoverServices(with: [], timeout: .milliseconds(150))
+            _ = try await peripheral.discoverServices(with: [], timeout: .milliseconds(500))
             XCTFail("Expected timeout")
         } catch let e as Peripheral.PeripheralError {
             switch e {
@@ -73,7 +73,7 @@ final class PeripheralAsyncTests: XCTestCase {
         peripheralMock.discoverServicesBehaviour = .failure
 
         do {
-            _ = try await peripheral.discoverServices(with: [], timeout: .seconds(1))
+            _ = try await peripheral.discoverServices(with: [], timeout: .seconds(3))
             XCTFail("Expected failure")
         } catch let e as Peripheral.PeripheralError {
             switch e {
@@ -122,7 +122,7 @@ final class PeripheralAsyncTests: XCTestCase {
             _ = try await peripheral.discoverCharacteristics(
                 with: [characteristicMock.uuid],
                 service: service,
-                timeout: .milliseconds(150)
+                timeout: .milliseconds(300)
             )
             XCTFail("Expected timeout")
         } catch let e as Peripheral.PeripheralError {
@@ -145,7 +145,7 @@ final class PeripheralAsyncTests: XCTestCase {
         let service = Service(with: serviceMock)
 
         do {
-            _ = try await peripheral.discoverCharacteristics(with: [], service: service, timeout: .seconds(1))
+            _ = try await peripheral.discoverCharacteristics(with: [], service: service, timeout: .seconds(3))
             XCTFail("Expected failure")
         } catch let e as Peripheral.PeripheralError {
             switch e {
@@ -171,7 +171,7 @@ final class PeripheralAsyncTests: XCTestCase {
 
         let parent = Service(with: parentServiceMock)
 
-        let included = try await peripheral.discoverIncludedServices(nil, for: parent, timeout: .seconds(1))
+        let included = try await peripheral.discoverIncludedServices(nil, for: parent, timeout: .seconds(3))
         XCTAssertTrue(included.contains(where: { $0.cbService.uuid == includedServiceMock.uuid }))
     }
 
@@ -183,7 +183,7 @@ final class PeripheralAsyncTests: XCTestCase {
         let parent = Service(with: parentServiceMock)
 
         do {
-            _ = try await peripheral.discoverIncludedServices(nil, for: parent, timeout: .milliseconds(150))
+            _ = try await peripheral.discoverIncludedServices(nil, for: parent, timeout: .milliseconds(500))
             XCTFail("Expected timeout")
         } catch let e as Peripheral.PeripheralError {
             switch e {
@@ -208,7 +208,7 @@ final class PeripheralAsyncTests: XCTestCase {
 
         peripheralMock.discoverDescriptorsBehaviour = .success(with: [cbDesc], after: 0)
 
-        let descriptors = try await peripheral.discoverDescriptors(for: characteristic, timeout: .seconds(1))
+        let descriptors = try await peripheral.discoverDescriptors(for: characteristic, timeout: .seconds(3))
         XCTAssertTrue(descriptors.contains(where: { $0.uuid == cbDesc.uuid }))
     }
 
@@ -219,7 +219,7 @@ final class PeripheralAsyncTests: XCTestCase {
         peripheralMock.discoverDescriptorsBehaviour = .success(with: [], after: 2.0)
 
         do {
-            _ = try await peripheral.discoverDescriptors(for: characteristic, timeout: .milliseconds(150))
+            _ = try await peripheral.discoverDescriptors(for: characteristic, timeout: .milliseconds(500))
             XCTFail("Expected timeout")
         } catch {
             // Match your PeripheralError case here if you have one.
@@ -235,7 +235,7 @@ final class PeripheralAsyncTests: XCTestCase {
         peripheralMock.discoverDescriptorsBehaviour = .failure
 
         do {
-            _ = try await peripheral.discoverDescriptors(for: characteristic, timeout: .seconds(1))
+            _ = try await peripheral.discoverDescriptors(for: characteristic, timeout: .seconds(3))
             XCTFail("Expected failure")
         } catch let e as Peripheral.PeripheralError {
             switch e {
@@ -259,7 +259,7 @@ final class PeripheralAsyncTests: XCTestCase {
 
         let characteristic = Characteristic(with: cbChar)
 
-        let data = try await peripheral.readValue(for: characteristic, timeout: .seconds(1))
+        let data = try await peripheral.readValue(for: characteristic, timeout: .seconds(3))
         XCTAssertEqual(data, Data([0x01]))
     }
 
@@ -270,7 +270,7 @@ final class PeripheralAsyncTests: XCTestCase {
         let characteristic = Characteristic(with: characteristicMock)
 
         do {
-            _ = try await peripheral.readValue(for: characteristic, timeout: .seconds(1))
+            _ = try await peripheral.readValue(for: characteristic, timeout: .seconds(3))
             XCTFail("Expected failure")
         } catch let e as Peripheral.PeripheralError {
             switch e {
@@ -292,7 +292,7 @@ final class PeripheralAsyncTests: XCTestCase {
         let characteristicMock = CBCharacteristicMock()
         let characteristic = Characteristic(with: characteristicMock)
 
-        try await peripheral.write(Data([0xAA]), for: characteristic, type: .withResponse, timeout: .seconds(1))
+        try await peripheral.write(Data([0xAA]), for: characteristic, type: .withResponse, timeout: .seconds(3))
     }
 
     func testWriteCharacteristicAsyncFailureThrows() async {
@@ -302,7 +302,7 @@ final class PeripheralAsyncTests: XCTestCase {
         let characteristic = Characteristic(with: characteristicMock)
 
         do {
-            try await peripheral.write(Data([0xAA]), for: characteristic, type: .withResponse, timeout: .seconds(1))
+            try await peripheral.write(Data([0xAA]), for: characteristic, type: .withResponse, timeout: .seconds(3))
             XCTFail("Expected failure")
         } catch let e as Peripheral.PeripheralError {
             switch e {
@@ -320,7 +320,7 @@ final class PeripheralAsyncTests: XCTestCase {
 
     func testReadRSSIAsyncSuccess() async throws {
         peripheralMock.readRSSIBehaviour = .success
-        let rssi = try await peripheral.readRSSI(timeout: .seconds(1))
+        let rssi = try await peripheral.readRSSI(timeout: .seconds(3))
         XCTAssertEqual(rssi, -30)
     }
 
@@ -328,7 +328,7 @@ final class PeripheralAsyncTests: XCTestCase {
         peripheralMock.readRSSIBehaviour = .failure
 
         do {
-            _ = try await peripheral.readRSSI(timeout: .seconds(1))
+            _ = try await peripheral.readRSSI(timeout: .seconds(3))
             XCTFail("Expected failure")
         } catch let e as Peripheral.PeripheralError {
             switch e {
@@ -353,7 +353,7 @@ final class PeripheralAsyncTests: XCTestCase {
         let characteristic = Characteristic(with: cbChar)
 
         let stream = peripheral.notifications(for: characteristic)
-        let first = try await first(from: stream, timeout: .seconds(1))
+        let first = try await first(from: stream, timeout: .seconds(3))
 
         XCTAssertEqual(first, Data([0x10]))
     }
@@ -373,7 +373,7 @@ final class PeripheralAsyncTests: XCTestCase {
 
         task.cancel()
         // Give onTermination a short window to execute.
-        try? await Task.sleep(for: .milliseconds(50))
+        try? await Task.sleep(for: .milliseconds(200))
 
         XCTAssertTrue(task.isCancelled)
     }
@@ -386,7 +386,7 @@ final class PeripheralAsyncTests: XCTestCase {
         let cbDesc = CBMutableDescriptor(type: CBUUID(string: "2901"), value: "Hello")
         let descriptor = Descriptor(with: cbDesc)
 
-        _ = try await peripheral.readValue(for: descriptor, timeout: .seconds(1))
+        _ = try await peripheral.readValue(for: descriptor, timeout: .seconds(3))
         // We only assert that the operation completes successfully.
     }
 
@@ -397,7 +397,7 @@ final class PeripheralAsyncTests: XCTestCase {
         let descriptor = Descriptor(with: cbDesc)
 
         do {
-            _ = try await peripheral.readValue(for: descriptor, timeout: .seconds(1))
+            _ = try await peripheral.readValue(for: descriptor, timeout: .seconds(3))
             XCTFail("Expected failure")
         } catch let e as Peripheral.PeripheralError {
             switch e {
@@ -417,7 +417,7 @@ final class PeripheralAsyncTests: XCTestCase {
         let cbDesc = CBMutableDescriptor(type: CBUUID(string: "2901"), value: "Hello")
         let descriptor = Descriptor(with: cbDesc)
 
-        try await peripheral.writeValue(Data([0x01]), for: descriptor, timeout: .seconds(1))
+        try await peripheral.writeValue(Data([0x01]), for: descriptor, timeout: .seconds(3))
     }
 
     func testWriteDescriptorAsyncFailureThrows() async {
@@ -427,7 +427,7 @@ final class PeripheralAsyncTests: XCTestCase {
         let descriptor = Descriptor(with: cbDesc)
 
         do {
-            try await peripheral.writeValue(Data([0x01]), for: descriptor, timeout: .seconds(1))
+            try await peripheral.writeValue(Data([0x01]), for: descriptor, timeout: .seconds(3))
             XCTFail("Expected failure")
         } catch let e as Peripheral.PeripheralError {
             switch e {

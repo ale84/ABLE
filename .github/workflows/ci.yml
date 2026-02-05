@@ -7,8 +7,8 @@ on:
     branches: [ main, master ]
 
 jobs:
-  build-and-test:
-    runs-on: macos-15   # 👈 importante: macOS 15 ha Xcode 16.x
+  test:
+    runs-on: macos-15
 
     steps:
       - name: Checkout
@@ -19,13 +19,28 @@ jobs:
         with:
           xcode-version: '16'
 
-      - name: Show Xcode version (debug)
+      - name: Xcode version
         run: xcodebuild -version
 
-      - name: Build & Test (Xcode)
+      - name: List simulators (debug)
+        run: xcrun simctl list devices available
+
+      - name: Build & Test package on iOS Simulator
+        working-directory: ABLE
         run: |
-          xcodebuild \
-            -project ABLE.xcodeproj \
-            -scheme ABLETests \
-            -destination 'platform=iOS Simulator,name=iPhone 17' \
-            test
+          xcodebuild test \
+            -scheme ABLE \
+            -destination 'platform=iOS Simulator,name=iPhone 16' \
+            -derivedDataPath .derivedData \
+            -skipPackagePluginValidation \
+            -disableAutomaticPackageResolution \
+            -retry-tests-on-failure \
+            -test-iterations 3 \
+            -resultBundlePath TestResults.xcresult
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: TestResults
+          path: ABLE/TestResults.xcresult

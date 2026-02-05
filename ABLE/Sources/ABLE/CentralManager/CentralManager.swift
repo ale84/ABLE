@@ -2,7 +2,6 @@
 //  Copyright © 2026 Alessio Orlando. All rights reserved.
 //
 
-import UIKit
 import CoreBluetooth
 
 public class CentralManager: NSObject {

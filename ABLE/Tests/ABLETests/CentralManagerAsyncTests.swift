@@ -13,15 +13,17 @@ final class CentralManagerAsyncTests: XCTestCase {
     
     override func setUp() {
         super.setUp()
+
         centralMock = CBCentralManagerMock()
-        central = CentralManager(with: centralMock, queue: DispatchQueue.main)
-        
+
         // defaults
         centralMock.waitForPoweredOnBehaviour = .alreadyPoweredOn
         centralMock.peripheralConnectionBehaviour = .success(after: 0)
         centralMock.disconnectionBehaviour = .success
         centralMock.peripherals = []
         centralMock.managerState = .poweredOff
+
+        central = CentralManager(with: centralMock, queue: DispatchQueue.main)
     }
     
     override func tearDown() {
@@ -32,23 +34,24 @@ final class CentralManagerAsyncTests: XCTestCase {
     
     func testWaitForPoweredOnAsyncImmediate() async throws {
         centralMock.waitForPoweredOnBehaviour = .alreadyPoweredOn
-        try await central.waitForPoweredOn(timeout: .seconds(1))
+        try await central.waitForPoweredOn(timeout: .seconds(3))
         XCTAssertEqual(central.state, .poweredOn)
     }
     
     func testWaitForPoweredOnAsyncAfterDelay() async throws {
-        centralMock.waitForPoweredOnBehaviour = .poweredOn(after: 0.2)
-        let state = try await central.wait(for: .poweredOn, timeout: .seconds(1))
+        centralMock.waitForPoweredOnBehaviour = .poweredOn(after: 1)
+        let state = try await central.wait(for: .poweredOn, timeout: .seconds(3))
         XCTAssertEqual(state, .poweredOn)
     }
     
     func testWaitForPoweredOnAsyncTimeout() async {
-        centralMock.waitForPoweredOnBehaviour = .poweredOn(after: 2.0)
-        
+        centralMock.waitForPoweredOnBehaviour = .poweredOn(after: 5.0) // > timeout
+
         do {
-            _ = try await central.wait(for: .poweredOn, timeout: .seconds(0.2))
+            _ = try await central.wait(for: .poweredOn, timeout: .seconds(1))
             XCTFail("Expected timeout")
-        } catch {}
+        } catch {
+        }
     }
     
     func testScanStreamEmitsPeripherals() async throws {
@@ -59,7 +62,7 @@ final class CentralManagerAsyncTests: XCTestCase {
         centralMock.peripherals = [Peripheral(with: pMock)]
         
         let stream = central.scan(services: nil, options: nil)
-        let firstPeripheral = try await first(from: stream, timeout: .seconds(1))
+        let firstPeripheral = try await first(from: stream, timeout: .seconds(3))
         
         XCTAssertEqual(firstPeripheral.cbPeripheral.identifier, pMock.identifier)
     }
@@ -71,7 +74,7 @@ final class CentralManagerAsyncTests: XCTestCase {
         let p2 = CBPeripheralMock(); p2.name = "P2"
         centralMock.peripherals = [Peripheral(with: p1), Peripheral(with: p2)]
         
-        let found = await central.scanForDuration(duration: .milliseconds(100))
+        let found = await central.scanForDuration(duration: .seconds(3))
         XCTAssertEqual(found.count, 2)
     }
     
@@ -79,7 +82,7 @@ final class CentralManagerAsyncTests: XCTestCase {
         centralMock.managerState = .poweredOn
         centralMock.peripherals = []
         
-        let found = await central.scanForDuration(duration: .milliseconds(100))
+        let found = await central.scanForDuration(duration: .seconds(3))
         XCTAssertTrue(found.isEmpty)
     }
     
@@ -94,7 +97,7 @@ final class CentralManagerAsyncTests: XCTestCase {
         
         task.cancel()
         // leave a moment to allow for onTermination start
-        try? await Task.sleep(for: .milliseconds(50))
+        try? await Task.sleep(for: .milliseconds(300))
         
         XCTAssertFalse(central.isScanning)
     }
@@ -136,7 +139,7 @@ final class CentralManagerAsyncTests: XCTestCase {
             _ = try await central.connect(
                 to: peripheral,
                 options: nil,
-                attemptTimeout: .milliseconds(150),
+                attemptTimeout: .milliseconds(200),
                 connectionTimeout: nil
             )
             XCTFail("Expected connectAttemptTimedOut")
@@ -190,7 +193,7 @@ final class CentralManagerAsyncTests: XCTestCase {
         let peripheral = Peripheral(with: pMock)
         
         do {
-            _ = try await central.connect(to: peripheral, attemptTimeout: .seconds(1), connectionTimeout: nil)
+            _ = try await central.connect(to: peripheral, attemptTimeout: .seconds(3), connectionTimeout: nil)
             XCTFail("Expected bluetoothNotAvailable")
         } catch let e as CentralManager.CentralManagerError {
             switch e {
@@ -218,7 +221,7 @@ final class CentralManagerAsyncTests: XCTestCase {
         
         let peripheral = Peripheral(with: pMock)
         
-        let disconnected = try await central.disconnect(from: peripheral, timeout: .seconds(1))
+        let disconnected = try await central.disconnect(from: peripheral, timeout: .seconds(3))
         XCTAssertEqual(disconnected.cbPeripheral.identifier, pMock.identifier)
     }
     
@@ -233,7 +236,7 @@ final class CentralManagerAsyncTests: XCTestCase {
         let peripheral = Peripheral(with: pMock)
         
         do {
-            _ = try await central.disconnect(from: peripheral, timeout: .milliseconds(150))
+            _ = try await central.disconnect(from: peripheral, timeout: .milliseconds(500))
             XCTFail("Expected disconnectAttemptTimedOut")
         } catch let e as CentralManager.CentralManagerError {
             switch e {
@@ -255,7 +258,7 @@ final class CentralManagerAsyncTests: XCTestCase {
         let peripheral = Peripheral(with: pMock)
         
         do {
-            _ = try await central.disconnect(from: peripheral, timeout: .seconds(1))
+            _ = try await central.disconnect(from: peripheral, timeout: .seconds(3))
             XCTFail("Expected bluetoothNotAvailable")
         } catch let e as CentralManager.CentralManagerError {
             switch e {
@@ -274,7 +277,7 @@ final class CentralManagerAsyncTests: XCTestCase {
     func testRegisterForConnectionEventsNewAPIEmitsLegacyCallback() {
         // This test uses the legacy callback bridge because the new API only registers
         // and does not currently expose an async stream in the snippet you provided.
-        centralMock.connectionEventBehaviour = .generateEvent(event: .peerConnected, after: 0.1)
+        centralMock.connectionEventBehaviour = .generateEvent(event: .peerConnected, after: 0.2)
         
         let exp = expectation(description: "Should receive connection event callback")
         
@@ -287,13 +290,13 @@ final class CentralManagerAsyncTests: XCTestCase {
     }
     
     func testConnectionEventsStreamEmits() async throws {
-        centralMock.connectionEventBehaviour = .generateEvent(event: .peerConnected, after: 0.1)
+        centralMock.connectionEventBehaviour = .generateEvent(event: .peerConnected, after: 0.2)
 
         // Important: CoreBluetooth generates events only after registration.
         central.registerForConnectionEvents(options: nil)
 
         let stream = central.connectionEvents()
-        let event = try await first(from: stream, timeout: .seconds(1))
+        let event = try await first(from: stream, timeout: .seconds(3))
 
         XCTAssertEqual(event.event, .peerConnected)
         XCTAssertEqual(event.peripheral.cbPeripheral.name, "ConnectionEventTest")

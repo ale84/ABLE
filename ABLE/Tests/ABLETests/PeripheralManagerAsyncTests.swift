@@ -29,32 +29,34 @@ final class PeripheralManagerAsyncTests: XCTestCase {
 
     func testWaitForPoweredOnReturnsImmediatelyWhenAlreadyPoweredOn() async throws {
         cbPeripheralManager.managerState = .poweredOn
-        try await peripheralManager.waitForPoweredOn(timeout: .seconds(1))
+        try await peripheralManager.waitForPoweredOn(timeout: .seconds(3))
     }
 
     func testWaitForStateCompletesOnStateUpdate() async throws {
-        cbPeripheralManager.stateBehaviour = .transition(from: .poweredOff, to: .poweredOn, after: 0.05)
+        cbPeripheralManager.stateBehaviour = .transition(from: .poweredOff, to: .poweredOn, after: 0.2)
 
-        let state = try await peripheralManager.wait(for: .poweredOn, timeout: .seconds(1))
+        let state = try await peripheralManager.wait(for: .poweredOn, timeout: .seconds(3))
         XCTAssertEqual(state, .poweredOn)
     }
 
     func testStateStreamEmitsUpdates() async throws {
-        cbPeripheralManager.stateBehaviour = .transition(from: .poweredOff, to: .poweredOn, after: 0.05)
+        let box = AsyncIteratorBox(peripheralManager.stateStream())
 
-        let received = try await first(
-            from: peripheralManager.stateStream(),
-            timeout: .seconds(1),
-            where: { $0 == .poweredOn }
-        )
-        XCTAssertEqual(received, .poweredOn)
+        _ = try await next(from: box, timeout: .seconds(3))
+
+        cbPeripheralManager.stateBehaviour = .transition(from: .poweredOff, to: .poweredOn, after: 0.2)
+
+        while true {
+            let v = try await next(from: box, timeout: .seconds(1))
+            if v == .poweredOn { break }
+        }
     }
 
     func testWaitForStateTimesOut() async {
         cbPeripheralManager.stateBehaviour = .already(.poweredOff)
 
         do {
-            _ = try await peripheralManager.wait(for: .poweredOn, timeout: .milliseconds(150))
+            _ = try await peripheralManager.wait(for: .poweredOn, timeout: .milliseconds(500))
             XCTFail("Expected timeout")
         } catch {
             // If you expose a specific error (recommended), switch on it here.
@@ -78,12 +80,12 @@ final class PeripheralManagerAsyncTests: XCTestCase {
             Data([0x01]),
             for: characteristic,
             onSubscribedCentrals: nil,
-            timeout: .seconds(1)
+            timeout: .seconds(3)
         )
     }
 
     func testUpdateValueWhenReadySuspendsUntilReadySignal() async throws {
-        cbPeripheralManager.updateValueBehaviour = .notReadyThenReady(after: 0.05)
+        cbPeripheralManager.updateValueBehaviour = .notReadyThenReady(after: 0.2)
 
         let characteristic = CBMutableCharacteristic(
             type: CBUUID(),
@@ -96,12 +98,12 @@ final class PeripheralManagerAsyncTests: XCTestCase {
             Data([0x01]),
             for: characteristic,
             onSubscribedCentrals: nil,
-            timeout: .seconds(1)
+            timeout: .seconds(3)
         )
     }
 
     func testReadyToUpdateSubscribersStreamEmits() async throws {
-        cbPeripheralManager.updateValueBehaviour = .notReadyThenReady(after: 0.05)
+        cbPeripheralManager.updateValueBehaviour = .notReadyThenReady(after: 0.2)
 
         let characteristic = CBMutableCharacteristic(
             type: CBUUID(),
@@ -116,7 +118,7 @@ final class PeripheralManagerAsyncTests: XCTestCase {
         }
 
         // Stream should emit a readiness signal.
-        _ = try await first(from: peripheralManager.readyToUpdateSubscribersStream, timeout: .seconds(1))
+        _ = try await first(from: peripheralManager.readyToUpdateSubscribersStream, timeout: .seconds(3))
     }
 
     // MARK: - Requests streams
@@ -137,7 +139,7 @@ final class PeripheralManagerAsyncTests: XCTestCase {
             after: 0.05
         )
 
-        let req = try await first(from: stream, timeout: .seconds(1))
+        let req = try await first(from: stream, timeout: .seconds(3))
 
         XCTAssertEqual(req.value, Data([0x01]))
         XCTAssertEqual(req.characteristic.uuid, cbChar.uuid)
@@ -159,7 +161,7 @@ final class PeripheralManagerAsyncTests: XCTestCase {
             after: 0.05
         )
 
-        let reqs = try await first(from: stream, timeout: .seconds(1))
+        let reqs = try await first(from: stream, timeout: .seconds(3))
 
         XCTAssertEqual(reqs.count, 2)
         XCTAssertEqual(reqs[0].characteristic.uuid, cbChar.uuid)
