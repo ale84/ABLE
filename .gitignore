@@ -36,6 +36,9 @@ xcuserdata/
 *.xcworkspace
 *.xcodeproj
 
+# Xcode test results
+*.xcresult
+
 # CocoaPods
 #
 # We recommend against adding the Pods directory to your .gitignore. However

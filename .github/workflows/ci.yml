@@ -26,7 +26,6 @@ jobs:
         run: xcrun simctl list devices available
 
       - name: Build & Test package on iOS Simulator
-        working-directory: ABLE
         run: |
           xcodebuild test \
             -scheme ABLE \
@@ -43,4 +42,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: TestResults
-          path: ABLE/TestResults.xcresult
+          path: TestResults.xcresult
