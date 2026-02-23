@@ -28,6 +28,14 @@ xcuserdata/
 *.dSYM.zip
 *.dSYM
 
+# Swift Package Manager
+.build/
+.swiftpm/
+
+# Xcode / SwiftPM caches
+*.xcworkspace
+*.xcodeproj
+
 # CocoaPods
 #
 # We recommend against adding the Pods directory to your .gitignore. However

@@ -8,6 +8,8 @@
 
 /* Begin PBXBuildFile section */
 		CA8A11BD2F30AC2A00C1EC2C /* ABLE in Frameworks */ = {isa = PBXBuildFile; productRef = CA8A11BC2F30AC2A00C1EC2C /* ABLE */; };
+		CA9B9C0F2F4C569C00E18889 /* ABLE in Frameworks */ = {isa = PBXBuildFile; productRef = CA8A11AB2F30A93D00C1EC2C /* ABLE */; };
+		CA9B9C1A2F4C56F600E18889 /* ABLE in Frameworks */ = {isa = PBXBuildFile; productRef = CA9B9C192F4C56F600E18889 /* ABLE */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -27,6 +29,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				CA9B9C1A2F4C56F600E18889 /* ABLE in Frameworks */,
+				CA9B9C0F2F4C569C00E18889 /* ABLE in Frameworks */,
 				CA8A11BD2F30AC2A00C1EC2C /* ABLE in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -72,6 +76,7 @@
 			packageProductDependencies = (
 				CA8A11AB2F30A93D00C1EC2C /* ABLE */,
 				CA8A11BC2F30AC2A00C1EC2C /* ABLE */,
+				CA9B9C192F4C56F600E18889 /* ABLE */,
 			);
 			productName = ABLEExample;
 			productReference = CA8A119C2F30A92000C1EC2C /* ABLEExample.app */;
@@ -102,7 +107,7 @@
 			mainGroup = CA8A11932F30A92000C1EC2C;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				CA8A11BB2F30AC2A00C1EC2C /* XCLocalSwiftPackageReference "../../ABLE" */,
+				CA9B9C182F4C56F600E18889 /* XCLocalSwiftPackageReference "../../../ABLE" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = CA8A119D2F30A92000C1EC2C /* Products */;
@@ -348,9 +353,9 @@
 /* End XCConfigurationList section */
 
 /* Begin XCLocalSwiftPackageReference section */
-		CA8A11BB2F30AC2A00C1EC2C /* XCLocalSwiftPackageReference "../../ABLE" */ = {
+		CA9B9C182F4C56F600E18889 /* XCLocalSwiftPackageReference "../../../ABLE" */ = {
 			isa = XCLocalSwiftPackageReference;
-			relativePath = ../../ABLE;
+			relativePath = ../../../ABLE;
 		};
 /* End XCLocalSwiftPackageReference section */
 
@@ -360,6 +365,10 @@
 			productName = ABLE;
 		};
 		CA8A11BC2F30AC2A00C1EC2C /* ABLE */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = ABLE;
+		};
+		CA9B9C192F4C56F600E18889 /* ABLE */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = ABLE;
 		};
